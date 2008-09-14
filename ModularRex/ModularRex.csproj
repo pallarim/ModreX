@@ -50,8 +50,16 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="XMLRPC, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\bin\XMLRPC.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RexNetwork\IClientRexAppearance.cs" />
+    <Compile Include="RexNetwork\IClientRexFaceExpression.cs" />
+    <Compile Include="RexNetwork\RexLogin\RexLocalLoginService.cs" />
+    <Compile Include="RexNetwork\RexLogin\RexLoginModule.cs" />
     <Compile Include="RexNetwork\RexPacketServer.cs" />
     <Compile Include="RexNetwork\RexUDPServer.cs" />
     <Compile Include="RexParts\ModrexAppearance.cs" />
@@ -81,6 +89,10 @@
       <Project>{DC3698B2-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Region.ClientStack</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\OpenSim\Region\Communications\Local\OpenSim.Region.Communications.Local.csproj">
+      <Project>{BFB5D807-0000-0000-0000-000000000000}</Project>
+      <Name>OpenSim.Region.Communications.Local</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\OpenSim\Region\Environment\OpenSim.Region.Environment.csproj">
       <Project>{DCBA491C-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Region.Environment</Name>
@@ -89,9 +101,6 @@
       <Project>{83169C4E-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Region.Interfaces</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RexTypes\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

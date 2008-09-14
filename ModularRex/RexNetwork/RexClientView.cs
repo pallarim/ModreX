@@ -11,7 +11,7 @@ namespace ModularRex.RexNetwork
 
     public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> vParams);
 
-    public class RexClientView : LLClientView 
+    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance
     {
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;

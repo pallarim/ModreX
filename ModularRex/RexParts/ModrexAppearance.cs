@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Timers;
 using log4net;
 using ModularRex.RexNetwork;
 using Nini.Config;
+using Nwc.XmlRpc;
 using OpenMetaverse;
-using OpenMetaverse.Packets;
 using OpenSim.Framework;
 using OpenSim.Region.Environment.Interfaces;
 using OpenSim.Region.Environment.Scenes;
@@ -16,63 +19,73 @@ namespace ModularRex.RexParts
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // This is the 'cheapest' time-wise conversion of the Rex code to a module.
-        // It's also the most likely to break horribly once OutPacket is depreciated
-        public void SendRexAppearanceAlpha(IClientAPI user, UUID agentID, string avatarAddress) //rex
+        private string m_rexAuthServer = "http://127.0.0.1:8002";
+        private Queue<XmlRpcRequest> m_reqAuthQueue = new Queue<XmlRpcRequest>();
+        private Timer m_reqAuthTimer = new Timer(1500);
+
+        private List<Scene> m_scenes = new List<Scene>();
+
+        public void RequestRexAuthentication(UUID avatarID, string authAddress)
         {
-            GenericMessagePacket gmp = new GenericMessagePacket();
-            gmp.MethodData.Method = Utils.StringToBytes("RexAppearance");
-            gmp.ParamList = new GenericMessagePacket.ParamListBlock[2];
-            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarAddress);
-            gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            gmp.ParamList[1].Parameter = Utils.StringToBytes(agentID.ToString());
-            
-            user.OutPacket(gmp, ThrottleOutPacketType.Task);
-        }
+            Hashtable ReqVals = new Hashtable();
+            ReqVals["avatar_uuid"] = avatarID.ToString();
+            ReqVals["AuthenticationAddress"] = authAddress;
 
-        // We converted the Send/Recieve GenericMessage into an IClientAPI function and event
-        // these are OnGenericMessage and SendGenericMessage, however this is still
-        // not ideal since we're doing "Packet Logic" in a Region Module.
-        public void SendRexAppearanceBeta(IClientAPI user, UUID agentID, string avatarAddress)
-        {
-            List<string> pack = new List<string>();
-            pack.Add(avatarAddress);
-            pack.Add(agentID.ToString());
+            ArrayList SendParams = new ArrayList();
+            SendParams.Add(ReqVals);
 
-            user.SendGenericMessage("RexAppearance", pack);
-        }
+            XmlRpcRequest RexReq = new XmlRpcRequest("get_user_by_uuid", SendParams);
 
-        // Final conversion:
-        //          RealXtendClientView derives from LLClientView
-        //          Implements additional SendXYZ/etc functions, and converts them
-        //          to genericmessage handlers, etc.
-        //
-        // This requires a 'smart' incoming ClientStack listener which will substantiate
-        // a RealXtendClientView instead of LLClientView when the Rex version string has
-        // been encountered.
-        //
-        // Upsides: Very clean, allows overriding of other methods and functionality
-        //          when required.
-        //          We dont send Rex packets to clients which dont support them
-        //          (big plus for the older packets which crash the viewer)
-        //
-        // Downsides: Using the Rex protocol in conjunction with another version string
-        //            wont work. This is fixable in time by converting checks from 
-        //            RealXtendClientView to IRexClientView (that particular mod is 
-        //            relatively painless)
-
-        public void SendRexAppearanceGamma(IClientAPI user, UUID agentID, string avatarAddress)
-        {
-            if(user is RexClientView)
+            lock(m_reqAuthQueue)
             {
-                RexClientView rex = (RexClientView) user;
-                rex.SendRexAppearance(agentID, avatarAddress);
+                m_reqAuthQueue.Enqueue(RexReq);
+            }
+
+            m_reqAuthTimer.AutoReset = false;
+            m_reqAuthTimer.Stop();
+            m_reqAuthTimer.Start();
+        }
+
+        public void SendAppearanceToAllUsers(UUID user, string avatarServerURL)
+        {
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachScenePresence(
+                    delegate(ScenePresence avatar)
+                        {
+                            if (avatar.ControllingClient is RexClientView)
+                            {
+                                ((RexClientView) avatar.ControllingClient).SendRexAppearance(
+                                    user, avatarServerURL);
+                            }
+                        });
             }
         }
 
+
+
         public void Initialise(Scene scene, IConfigSource source)
         {
+            try
+            {
+                if(!source.Configs["realXtend"].GetBoolean("enabled",false))
+                {
+                    return;
+                }
+
+                m_rexAuthServer = source.Configs["realXtend"].GetString("authentication_server",
+                                                                        m_rexAuthServer);
+                m_log.Info("RexAppearance Module Being Used");
+            }
+            catch (Exception)
+            {
+                m_log.Info("Rex Config Error, Disabled");
+                return;
+            }
+
+
+            m_scenes.Add(scene);
+
             scene.EventManager.OnNewClient += EventManager_OnNewClient;
         }
 
@@ -98,7 +111,27 @@ namespace ModularRex.RexParts
 
         public void PostInitialise()
         {
-            
+            m_reqAuthTimer.Elapsed += m_reqAuthTimer_Elapsed;
+        }
+
+        void m_reqAuthTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            while(m_reqAuthQueue.Count > 0)
+            {
+                XmlRpcRequest req; 
+                lock(m_reqAuthQueue)
+                {
+                    req = m_reqAuthQueue.Dequeue();
+                }
+
+
+                XmlRpcResponse authreply = req.Send(m_rexAuthServer, 9000);
+                string rexAsAddress = ((Hashtable) authreply.Value)["as_address"].ToString();
+                //string rexSkypeURL = ((Hashtable) authreply.Value)["skype_url"].ToString();
+                UUID userID = ((Hashtable) authreply.Value)["uuid"].ToString();
+
+                SendAppearanceToAllUsers(userID, rexAsAddress);
+            }
         }
 
         public void Close()
