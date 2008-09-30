@@ -2,13 +2,14 @@
 using Nwc.XmlRpc;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications;
+using OpenSim.Framework.Communications.Cache;
 using OpenSim.Region.Communications.Local;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
     class RexLocalLoginService : LocalLoginService 
     {
-        public RexLocalLoginService(UserManagerBase userManager, string welcomeMess, CommunicationsLocal parent, NetworkServersInfo serversInfo, bool authenticate) : base(userManager, welcomeMess, parent, serversInfo, authenticate)
+        public RexLocalLoginService(UserManagerBase userManager, string welcomeMess, IInterServiceInventoryServices interServiceInventoryService, LocalBackEndServices gridService, NetworkServersInfo serversInfo, bool authenticate, LibraryRootFolder libraryRootFolder) : base(userManager, welcomeMess, interServiceInventoryService, gridService, serversInfo, authenticate, libraryRootFolder)
         {
         }
 

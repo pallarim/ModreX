@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Timers;
 using log4net;
 using ModularRex.RexNetwork;
 using Nini.Config;
-using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Environment.Interfaces;
@@ -14,40 +11,26 @@ using OpenSim.Region.Environment.Scenes;
 
 namespace ModularRex.RexParts
 {
-    class ModrexAppearance : IRegionModule
+    public class ModrexAppearance : IRegionModule
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private string m_rexAuthServer = "http://127.0.0.1:8002";
-        private Queue<XmlRpcRequest> m_reqAuthQueue = new Queue<XmlRpcRequest>();
-        private Timer m_reqAuthTimer = new Timer(1500);
-
-        private List<Scene> m_scenes = new List<Scene>();
-
-        public void RequestRexAuthentication(UUID avatarID, string authAddress)
-        {
-            Hashtable ReqVals = new Hashtable();
-            ReqVals["avatar_uuid"] = avatarID.ToString();
-            ReqVals["AuthenticationAddress"] = authAddress;
-
-            ArrayList SendParams = new ArrayList();
-            SendParams.Add(ReqVals);
-
-            XmlRpcRequest RexReq = new XmlRpcRequest("get_user_by_uuid", SendParams);
-
-            lock(m_reqAuthQueue)
-            {
-                m_reqAuthQueue.Enqueue(RexReq);
-            }
-
-            m_reqAuthTimer.AutoReset = false;
-            m_reqAuthTimer.Stop();
-            m_reqAuthTimer.Start();
-        }
+        private readonly List<Scene> m_scenes = new List<Scene>();
 
         public void SendAppearanceToAllUsers(UUID user, string avatarServerURL)
         {
+            m_log.Info("[REXAPR] Sending user " + user + " appearance to all users. [" + avatarServerURL + "]");
+            // Ignore empty avatars
+            if (String.IsNullOrEmpty(avatarServerURL))
+            {
+                m_log.Info("[REXAPR] Skipping blank URL on user...");
+                return;
+            }
+
+            // Send to every agent in every scene
+            // We may want to target this more cleanly
+            // in future.
             foreach (Scene scene in m_scenes)
             {
                 scene.ForEachScenePresence(
@@ -62,6 +45,51 @@ namespace ModularRex.RexParts
             }
         }
 
+        public void SendAllAppearancesToUser(RexClientView target)
+        {
+            m_log.Info("[REXAPR] Sending all appearances to user " + target.AgentId + ".");
+            List<UUID> sent = new List<UUID>();
+
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachScenePresence(
+                    delegate(ScenePresence avatar)
+                        {
+                            if (avatar.ControllingClient is RexClientView &&
+                                !sent.Contains(avatar.ControllingClient.AgentId) &&
+                                avatar.ControllingClient != target &&
+                                !string.IsNullOrEmpty(
+                                     ((RexClientView) avatar.ControllingClient)
+                                         .RexAvatarURL))
+                            {
+                                target.SendRexAppearance(avatar.ControllingClient.AgentId,
+                                                         ((RexClientView) avatar.ControllingClient)
+                                                             .RexAvatarURL);
+                                sent.Add(avatar.ControllingClient.AgentId);
+                            }
+                        });
+            }            
+        }
+
+        public void SendAllAppearancesToAllUsers()
+        {
+            m_log.Info("[REXAPR] Sending all appearances to all users.");
+            List<UUID> sent = new List<UUID>();
+
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachScenePresence(
+                    delegate(ScenePresence avatar)
+                        {
+                            if (avatar.ControllingClient is RexClientView &&
+                                !sent.Contains(avatar.ControllingClient.AgentId))
+                            {
+                                sent.Add(avatar.ControllingClient.AgentId);
+                                SendAllAppearancesToUser((RexClientView) avatar.ControllingClient);
+                            }
+                        });
+            }
+        }
 
 
         public void Initialise(Scene scene, IConfigSource source)
@@ -73,8 +101,6 @@ namespace ModularRex.RexParts
                     return;
                 }
 
-                m_rexAuthServer = source.Configs["realXtend"].GetString("authentication_server",
-                                                                        m_rexAuthServer);
                 m_log.Info("RexAppearance Module Being Used");
             }
             catch (Exception)
@@ -83,7 +109,7 @@ namespace ModularRex.RexParts
                 return;
             }
 
-
+            m_log.Info("[REXAPPEAR] Added Scene");
             m_scenes.Add(scene);
 
             scene.EventManager.OnNewClient += EventManager_OnNewClient;
@@ -97,6 +123,11 @@ namespace ModularRex.RexParts
                 RexClientView mcv = (RexClientView) client;
 
                 mcv.OnRexAppearance += mcv_OnRexAppearance;
+
+                // Send initial appearance to others
+                SendAppearanceToAllUsers(mcv.AgentId, mcv.RexAvatarURL);
+                // Send others appearance to us
+                SendAllAppearancesToUser((RexClientView) client);
             }
         }
 
@@ -106,32 +137,12 @@ namespace ModularRex.RexParts
         /// <param name="sender">IClientApi of the sender</param>
         void mcv_OnRexAppearance(RexClientView sender)
         {
-            
+            SendAppearanceToAllUsers(sender.AgentId, sender.RexAvatarURL);
         }
 
         public void PostInitialise()
         {
-            m_reqAuthTimer.Elapsed += m_reqAuthTimer_Elapsed;
-        }
-
-        void m_reqAuthTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            while(m_reqAuthQueue.Count > 0)
-            {
-                XmlRpcRequest req; 
-                lock(m_reqAuthQueue)
-                {
-                    req = m_reqAuthQueue.Dequeue();
-                }
-
-
-                XmlRpcResponse authreply = req.Send(m_rexAuthServer, 9000);
-                string rexAsAddress = ((Hashtable) authreply.Value)["as_address"].ToString();
-                //string rexSkypeURL = ((Hashtable) authreply.Value)["skype_url"].ToString();
-                UUID userID = ((Hashtable) authreply.Value)["uuid"].ToString();
-
-                SendAppearanceToAllUsers(userID, rexAsAddress);
-            }
+            m_log.Info("[REXAPPEAR] PostInit called");
         }
 
         public void Close()
@@ -141,7 +152,7 @@ namespace ModularRex.RexParts
 
         public string Name
         {
-            get { return "RealXtendAppearanceModule"; }
+            get { return "RexAppearance"; }
         }
 
         public bool IsSharedModule

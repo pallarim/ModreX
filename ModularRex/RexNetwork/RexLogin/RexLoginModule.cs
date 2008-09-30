@@ -9,7 +9,6 @@ namespace ModularRex.RexNetwork.RexLogin
 {
     class RexLoginModule : IRegionModule 
     {
-        private RexLocalLoginService m_lls;
         private Scene m_firstScene;
 
         public void Initialise(Scene scene, IConfigSource source)
@@ -19,7 +18,6 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void PostInitialise()
         {
-            //m_lls = new RexLocalLoginService();
         }
 
         public void Close()
