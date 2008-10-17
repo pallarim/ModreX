@@ -66,6 +66,10 @@
     <Compile Include="RexParts\ModrexFacialExpression.cs" />
     <Compile Include="RexNetwork\RexClientView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RexParts\ModrexVoice.cs" />
+    <Compile Include="RexParts\RexObjects\RexObjectGroup.cs" />
+    <Compile Include="RexParts\RexObjects\RexObjectPart.cs" />
+    <Compile Include="RexParts\RexScriptTestModule.cs" />
     <Compile Include="RexParts\RexTestModule.cs" />
   </ItemGroup>
   <ItemGroup>

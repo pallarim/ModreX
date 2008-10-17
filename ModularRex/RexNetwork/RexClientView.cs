@@ -8,6 +8,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
+using OpenSim.Region.ClientStack;
 using OpenSim.Region.ClientStack.LindenUDP;
 
 namespace ModularRex.RexNetwork
@@ -15,6 +16,8 @@ namespace ModularRex.RexNetwork
     public delegate void RexAppearanceDelegate(RexClientView sender);
 
     public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> vParams);
+
+    public delegate void RexAvatarProperties(RexClientView sender, List<string> parameters);
 
     public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance
     {
@@ -27,21 +30,22 @@ namespace ModularRex.RexNetwork
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
+        public event RexAvatarProperties OnRexAvatarProperties;
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
                              LLPacketServer packServer, AgentCircuitManager authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP)
+                             UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP)
+                   sessionId, circuitCode, proxyEP, userSettings)
         {
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
                              LLPacketServer packServer, AgentCircuitManager authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL)
+                             UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP)
+                   sessionId, circuitCode, proxyEP, userSettings)
         {
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
 
@@ -97,8 +101,44 @@ namespace ModularRex.RexNetwork
                 if (OnRexFaceExpression != null)
                 {
                     OnRexFaceExpression(this, args);
+                    return;
                 }
             }
+
+            if (method == "RexAvatarProp")
+            {
+                if(OnRexAvatarProperties != null)
+                {
+                    OnRexAvatarProperties(this, args);
+                    return;
+                }
+            }
+
+            m_log.Warn("[REXCLIENTVIEW] Unhandled GenericMessage (" + method + ") {");
+            foreach (string s in args)
+            {
+                m_log.Warn("\t" + s);
+            }
+            m_log.Warn("}");
+
+        }
+
+        public void SendRexScriptCommand(string unit, string command, string parameters)
+        {
+            List<string> pack = new List<string>();
+
+            pack.Add(unit);
+            pack.Add(command);
+
+            if (!string.IsNullOrEmpty(parameters))
+                pack.Add(parameters);
+
+            SendGenericMessage("RexScr", pack);
+        }
+
+        public void SendRexInventoryMessage(string message)
+        {
+            SendRexScriptCommand("hud", "ShowInventoryMessage(\"" + message + "\")", "");
         }
 
         public void SendRexFaceExpression(List<string> expressionData)

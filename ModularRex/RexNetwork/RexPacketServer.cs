@@ -2,13 +2,15 @@
 using OpenMetaverse.Packets;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
+using OpenSim.Region.ClientStack;
 using OpenSim.Region.ClientStack.LindenUDP;
 
 namespace ModularRex.RexNetwork
 {
     public class RexPacketServer : LLPacketServer 
     {
-        public RexPacketServer(LLClientStackNetworkHandler networkHandler) : base(networkHandler)
+        public RexPacketServer(ILLClientStackNetworkHandler networkHandler, ClientStackUserSettings userSettings)
+            : base(networkHandler, userSettings)
         {
         }
 
@@ -23,7 +25,7 @@ namespace ModularRex.RexNetwork
             return
                 new RexClientView(remoteEP, scene, assetCache, packServer,
                                   authenSessions, agentId, sessionId,
-                                  circuitCode, proxyEP);
+                                  circuitCode, proxyEP, new ClientStackUserSettings());
         }
 
         public override bool AddNewClient(EndPoint epSender, UseCircuitCodePacket useCircuit, AssetCache assetCache, AgentCircuitManager circuitManager, EndPoint proxyEP)

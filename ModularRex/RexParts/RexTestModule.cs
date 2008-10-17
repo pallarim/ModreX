@@ -19,26 +19,27 @@ namespace ModularRex.RexParts
 
         void EventManager_OnNewClient(OpenSim.Framework.IClientAPI client)
         {
-            if(client is RexClientView)
+            if (client is RexClientView)
             {
                 m_log.Info(
                     "[REXCLIENT] Confirmed connection from RexPacketServer. This user can use Rex functionalities.");
 
-                RexClientView rcv = (RexClientView) client;
+                RexClientView rcv = (RexClientView)client;
                 rcv.OnRexAppearance += rcv_OnRexAppearance;
                 rcv.OnRexFaceExpression += rcv_OnRexFaceExpression;
-                rcv.OnChatFromViewer += rcv_OnChatFromViewer;
-            } else
+                rcv.OnChatFromClient += rcv_OnChatFromClient;
+            }
+            else
             {
                 m_log.Info("[REXCLIENT] User is not entering via RexPacketServer. Ignoring.");
             }
         }
 
-        void rcv_OnChatFromViewer(object sender, OpenSim.Framework.OSChatMessage e)
+        void rcv_OnChatFromClient(object sender, OpenSim.Framework.OSChatMessage e)
         {
-            if(e.Message.StartsWith("/rexauth "))
+            if (e.Message.StartsWith("/rexauth "))
             {
-                ((RexClientView) e.Sender).RexAuthURL = e.Message.Split(' ')[1];
+                ((RexClientView)e.Sender).RexAuthURL = e.Message.Split(' ')[1];
             }
             if (e.Message.StartsWith("/rexav "))
             {
