@@ -13,11 +13,6 @@ namespace ModularRex.RexParts
         public void Initialise(Scene scene, IConfigSource source)
         {
             scene.EventManager.OnNewClient += new EventManager.OnNewClientDelegate(EventManager_OnNewClient);
-            scene.EventManager.OnRezScript += new EventManager.NewRezScript(EventManager_OnRezScript);
-        }
-
-        void EventManager_OnRezScript(uint localID, OpenMetaverse.UUID itemID, string script, int startParam, bool postOnRez, string engine)
-        {
         }
 
         void EventManager_OnNewClient(OpenSim.Framework.IClientAPI client)

@@ -33,7 +33,7 @@ namespace ModularRex.RexNetwork
         public event RexAvatarProperties OnRexAvatarProperties;
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
-                             LLPacketServer packServer, AgentCircuitManager authenSessions, UUID agentId,
+                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
@@ -42,7 +42,7 @@ namespace ModularRex.RexNetwork
         }
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
-                             LLPacketServer packServer, AgentCircuitManager authenSessions, UUID agentId,
+                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
@@ -140,6 +140,24 @@ namespace ModularRex.RexNetwork
         {
             SendRexScriptCommand("hud", "ShowInventoryMessage(\"" + message + "\")", "");
         }
+
+        public void SendRexScrollMessage(string message, double time)
+        {
+            SendRexScriptCommand("hud", "ShowScrollMessage(\"" + message + "\", \"" + time + "\")", "");
+        }
+
+        public void SendRexTutorialMessage(string message, double time)
+        {
+            SendRexScriptCommand("hud", "ShowScrollMessage(\"" + message + "\", \"" + time + "\")", "");
+        }
+
+        public void SendRexFadeInAndOut(string message, double between, double time)
+        {
+            SendRexScriptCommand("hud",
+                                 "ShowInventoryMessage(\"" + message + "\","
+                                 + " \"" + between + "\", \"" + time + "\")", "");
+        }
+
 
         public void SendRexFaceExpression(List<string> expressionData)
         {

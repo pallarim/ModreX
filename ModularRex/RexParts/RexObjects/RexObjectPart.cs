@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 using OpenMetaverse;
 using OpenSim.Region.Environment.Scenes;
 
@@ -27,6 +29,13 @@ namespace ModularRex.RexParts.RexObjects
 
 
 
+        }
+
+        public static RexObjectPart FromRexXml(XmlReader xmlReader)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof (RexObjectPart));
+            RexObjectPart newobject = (RexObjectPart)serializer.Deserialize(xmlReader);
+            return newobject;
         }
 
     }

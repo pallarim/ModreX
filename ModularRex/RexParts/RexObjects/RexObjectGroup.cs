@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Xml;
 using OpenSim.Region.Environment.Scenes;
 
 namespace ModularRex.RexParts.RexObjects
@@ -9,8 +7,14 @@ namespace ModularRex.RexParts.RexObjects
     {
         public void FromSceneObjectGroup(SceneObjectGroup origin)
         {
+            // Dodgy, but hey it works!
             string xml = origin.ToXmlString2();
-            
+            SetFromXml(xml);
+        }
+
+        protected override SceneObjectPart CreatePartFromXml(XmlTextReader reader)
+        {
+            return RexObjectPart.FromXml(reader);
         }
     }
 }
