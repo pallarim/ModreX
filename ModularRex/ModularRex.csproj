@@ -66,6 +66,10 @@
     <Compile Include="RexNetwork\RexClientView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RexParts\ModrexVoice.cs" />
+    <Compile Include="RexParts\ModRexVoice\VoiceChatServer.cs" />
+    <Compile Include="RexParts\ModRexVoice\VoiceClient.cs" />
+    <Compile Include="RexParts\ModRexVoice\VoicePacket.cs" />
+    <Compile Include="RexParts\ModRexVoice\VoicePacketHeader.cs" />
     <Compile Include="RexParts\RexObjects\RexObjectGroup.cs" />
     <Compile Include="RexParts\RexObjects\RexObjectPart.cs" />
     <Compile Include="RexParts\RexScriptTestModule.cs" />
