@@ -24,6 +24,7 @@ namespace ModularRex.RexNetwork
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private string m_rexAccountID;
         private string m_rexAvatarURL;
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
@@ -80,6 +81,17 @@ namespace ModularRex.RexNetwork
         {
             get { return m_rexSkypeURL; }
             set { m_rexSkypeURL = value; }
+        }
+
+        public string RexAccount
+        {
+            get { return m_rexAccountID; }
+            set
+            {
+                // Todo: More solid data checking here.
+                m_rexAccountID = value;
+                RexAuthURL = m_rexAccountID.Split('@')[1];
+            }
         }
 
         public string RexAuthURL

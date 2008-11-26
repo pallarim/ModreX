@@ -18,6 +18,8 @@ namespace ModularRex.RexNetwork.RexLogin
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly List<Scene> m_scenes = new List<Scene>();
+        private Dictionary<UUID, string> m_authUrl = new Dictionary<UUID, string>();
+
         private RexUDPServer m_udpserver;
         private IConfigSource m_config;
 
@@ -32,6 +34,23 @@ namespace ModularRex.RexNetwork.RexLogin
             m_config = source;
 
             m_scenes.Add(scene);
+
+            scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
+        }
+
+        /// <summary>
+        /// Used to transmit in the Account Name to the new RexClientView
+        /// Would like to pipe it via the RexClientView constructor,
+        /// but doing so would require a stactic dictionary of expected
+        /// values.
+        /// </summary>
+        void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
+        {
+            RexClientView rex;
+            if(client.TryGet(out rex))
+            {
+                rex.RexAuthURL = m_authUrl[rex.AgentId];
+            }
         }
 
 
@@ -170,6 +189,10 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 UUID agentID = GetAgentID(account);
 
+                // Used to transmit the login URL to the 
+                // RexAvatar class when it connects.
+                m_authUrl[agentID] = account;
+
                 logResponse.CircuitCode = Util.RandomClass.Next();
 
 
@@ -177,7 +200,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 logResponse.Lastname = "aka " + account;
                 logResponse.Firstname = "Rex User";
 
-
+                
 
                 logResponse.AgentID = agentID;
                 logResponse.SessionID = GetSessionID(account);
