@@ -5,7 +5,6 @@ using log4net;
 using ModularRex.RexNetwork;
 using Nini.Config;
 using OpenMetaverse;
-using OpenSim.Framework;
 using OpenSim.Region.Environment.Interfaces;
 using OpenSim.Region.Environment.Scenes;
 
@@ -36,10 +35,10 @@ namespace ModularRex.RexParts
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            if (avatar.ControllingClient is RexClientView)
+                            RexClientView rex;
+                            if (avatar.ClientView.TryGet(out rex))
                             {
-                                ((RexClientView) avatar.ControllingClient).SendRexAppearance(
-                                    user, avatarServerURL);
+                                rex.SendRexAppearance(user, avatarServerURL);
                             }
                         });
             }
@@ -55,17 +54,20 @@ namespace ModularRex.RexParts
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            if (avatar.ControllingClient is RexClientView &&
-                                !sent.Contains(avatar.ControllingClient.AgentId) &&
-                                avatar.ControllingClient != target &&
-                                !string.IsNullOrEmpty(
-                                     ((RexClientView) avatar.ControllingClient)
-                                         .RexAvatarURL))
+                            RexClientView rex;
+                            if (avatar.ClientView.TryGet(out rex))
                             {
-                                target.SendRexAppearance(avatar.ControllingClient.AgentId,
-                                                         ((RexClientView) avatar.ControllingClient)
-                                                             .RexAvatarURL);
-                                sent.Add(avatar.ControllingClient.AgentId);
+                                if (!sent.Contains(rex.AgentId) &&
+                                    rex != target &&
+                                    !string.IsNullOrEmpty(
+                                         rex.RexAvatarURL))
+                                {
+                                    target.SendRexAppearance(
+                                        avatar.ControllingClient.AgentId,
+                                        ((RexClientView) avatar.ControllingClient)
+                                            .RexAvatarURL);
+                                    sent.Add(avatar.ControllingClient.AgentId);
+                                }
                             }
                         });
             }            
@@ -81,11 +83,14 @@ namespace ModularRex.RexParts
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            if (avatar.ControllingClient is RexClientView &&
-                                !sent.Contains(avatar.ControllingClient.AgentId))
+                            RexClientView rex;
+                            if (avatar.ClientView.TryGet(out rex))
                             {
-                                sent.Add(avatar.ControllingClient.AgentId);
-                                SendAllAppearancesToUser((RexClientView) avatar.ControllingClient);
+                                if (!sent.Contains(avatar.ControllingClient.AgentId))
+                                {
+                                    sent.Add(rex.AgentId);
+                                    SendAllAppearancesToUser(rex);
+                                }
                             }
                         });
             }
@@ -112,20 +117,18 @@ namespace ModularRex.RexParts
             m_log.Info("[REXAPPEAR] Added Scene");
             m_scenes.Add(scene);
 
-            scene.EventManager.OnNewClient += EventManager_OnNewClient;
+            scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
         }
 
-        void EventManager_OnNewClient(IClientAPI client)
+        void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
         {
-            // Check if the client was insubstantiated as a RexClientView.
-            if(client is RexClientView)
+            RexClientView rex;
+            if (client.TryGet(out rex))
             {
-                RexClientView mcv = (RexClientView) client;
-
-                mcv.OnRexAppearance += mcv_OnRexAppearance;
+                rex.OnRexAppearance += mcv_OnRexAppearance;
 
                 // Send initial appearance to others
-                SendAppearanceToAllUsers(mcv.AgentId, mcv.RexAvatarURL);
+                SendAppearanceToAllUsers(rex.AgentId, rex.RexAvatarURL);
                 // Send others appearance to us
                 SendAllAppearancesToUser((RexClientView) client);
             }
