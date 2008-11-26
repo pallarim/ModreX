@@ -19,6 +19,14 @@ namespace ModularRex.RexNetwork
 
     public delegate void RexAvatarProperties(RexClientView sender, List<string> parameters);
 
+    /// <summary>
+    /// Inherits from LLClientView the majority of functionality
+    /// Overrides and extends for Rex-specific functionality.
+    /// 
+    /// In the case whereby functionality uses the same packets but differs
+    /// between Rex and LL, you can use a override on those specific functions
+    /// to overload the request.
+    /// </summary>
     public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance
     {
         private static readonly ILog m_log =
@@ -39,6 +47,8 @@ namespace ModularRex.RexNetwork
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
         {
+            // Rex communication now occurs via GenericMessage
+            // We have a special handler here below.
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
@@ -48,12 +58,19 @@ namespace ModularRex.RexNetwork
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
         {
+            // Rex communication now occurs via GenericMessage
+            // We have a special handler here below.
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
 
             RexAvatarURL = rexAvatarURL;
             RexAuthURL = rexAuthURL;
         }
 
+        /// <summary>
+        /// Registers interfaces for IClientCore,
+        /// every time you make a new Rex-specific
+        /// Interface. Make sure to register it here.
+        /// </summary>
         protected override void RegisterInterfaces()
         {
             RegisterInterface<IClientRexAppearance>(this);
@@ -63,6 +80,10 @@ namespace ModularRex.RexNetwork
             base.RegisterInterfaces();
         }
 
+        /// <summary>
+        /// The avatar URL for this avatar
+        /// Eg: http://avatar.com:10000/uuid/
+        /// </summary>
         public string RexAvatarURL
         {
             get { return m_rexAvatarURL; }
@@ -77,12 +98,30 @@ namespace ModularRex.RexNetwork
             }
         }
 
+        /// <summary>
+        /// Skype username of the avatar
+        /// eg: Skypeuser
+        /// </summary>
         public string RexSkypeURL
         {
             get { return m_rexSkypeURL; }
             set { m_rexSkypeURL = value; }
         }
 
+        /// <summary>
+        /// The full Rex Username of this account
+        /// Eg: user@hostname.com:10001
+        /// 
+        /// Note: This is not filled immedietely on
+        /// creation. This property is filled in
+        /// via Login and may not be availible
+        /// immedietely upon connect.
+        /// 
+        /// The above glitch is scheduled to be
+        /// fixed by a new RexCommsManager which
+        /// will allow this to be set at spawn in
+        /// login.
+        /// </summary>
         public string RexAccount
         {
             get { return m_rexAccountID; }
@@ -94,6 +133,10 @@ namespace ModularRex.RexNetwork
             }
         }
 
+        /// <summary>
+        /// The URL of the Avatar's Authentication Server
+        /// Eg: http://authentication.com:10001/
+        /// </summary>
         public string RexAuthURL
         {
             get { return m_rexAuthURL; }
@@ -106,6 +149,13 @@ namespace ModularRex.RexNetwork
             }
         }
 
+        /// <summary>
+        /// Special - used to convert GenericMessage packets
+        /// to their appropriate Rex equivilents.
+        /// 
+        /// Eg: GenericMessage(RexAppearance) ->
+        ///     OnRexAppearance(...)
+        /// </summary>
         void RealXtendClientView_OnGenericMessage(object sender, string method, List<string> args)
         {
             //TODO: Convert to Dictionary<Method, GenericMessageHandler>
@@ -144,6 +194,15 @@ namespace ModularRex.RexNetwork
 
         }
 
+        /// <summary>
+        /// Sends a Rex Script Command to the viewer
+        /// attached to this ClientView.
+        /// 
+        /// If you are coding something, try use
+        /// SendRex*** instead, as many of them
+        /// will trigger this instead with type
+        /// and parameter checking.
+        /// </summary>
         public void SendRexScriptCommand(string unit, string command, string parameters)
         {
             List<string> pack = new List<string>();

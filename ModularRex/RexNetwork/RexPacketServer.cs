@@ -9,6 +9,14 @@ using OpenSim.Region.ClientStack.LindenUDP;
 
 namespace ModularRex.RexNetwork
 {
+    /// <summary>
+    /// Inherits all important functions from LLPacketServer
+    /// Differences:
+    ///     - Spawns RexClientView instead of LLClientView
+    ///     - May need to connect up some custom handlers
+    ///       for any new rex-only packets if any
+    ///       still exist.
+    /// </summary>
     public class RexPacketServer : LLPacketServer 
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
