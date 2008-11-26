@@ -53,6 +53,15 @@ namespace ModularRex.RexNetwork
             RexAuthURL = rexAuthURL;
         }
 
+        protected override void RegisterInterfaces()
+        {
+            RegisterInterface<IClientRexAppearance>(this);
+            RegisterInterface<IClientRexFaceExpression>(this);
+            RegisterInterface<RexClientView>(this);
+
+            base.RegisterInterfaces();
+        }
+
         public string RexAvatarURL
         {
             get { return m_rexAvatarURL; }
