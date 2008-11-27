@@ -52,7 +52,7 @@ namespace ModularRex.RexParts.RexPython
         {
             try
             {
-                m_PythonEnabled = config.Configs["Startup"].GetBoolean("rex_python", true);
+                m_PythonEnabled = config.Configs["Startup"].GetBoolean("rex_python", false);
             }
             catch (Exception)
             {

@@ -21,7 +21,14 @@ namespace ModularRex.RexParts
         public Rex_BuiltIn_Commands(IScriptEngine scriptEngine, SceneObjectPart host, uint localID, UUID itemID)
             : base()
         {
-            base.Initialize(scriptEngine, host, localID, itemID);
+            try
+            {
+                base.Initialize(scriptEngine, host, localID, itemID);
+            }
+            catch (Exception)
+            {
+                m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed");
+            }
         }
 
         /* are in db for assets, but in UI for textures only - also this now works for just textures 
@@ -641,7 +648,7 @@ namespace ModularRex.RexParts
 
         #region RexPrimdata variables
         
-        public int GetRexDrawType(string vPrimLocalId)
+        public int GetRexDrawType(string vPrimLocalId) 
         {
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
