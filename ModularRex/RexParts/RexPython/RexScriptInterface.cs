@@ -1,0 +1,708 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.IO;
+
+using OpenSim.Framework;
+using OpenSim.Framework.Communications.Cache;
+
+using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Environment.Scenes.Scripting;
+using OpenSim.Region.Environment.Interfaces;
+using OpenSim.Region.ScriptEngine.Shared;
+using OpenSim.Region.ScriptEngine.Interfaces;
+using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
+
+using OpenMetaverse;
+
+namespace ModularRex.RexParts.RexPython
+{
+    public class RexScriptInterface : Rex_BuiltIn_Commands
+    {
+        private RexScriptEngine myScriptEngine;
+
+        public RexScriptInterface(IScriptEngine ScriptEngine, SceneObjectPart host, uint localID, UUID itemID, RexScriptEngine vScriptEngine)
+            : base(ScriptEngine, host, localID, itemID)
+        {   
+            myScriptEngine = vScriptEngine;
+
+            foreach (System.Collections.Generic.KeyValuePair<string, IRegionModule> de in myScriptEngine.World.Modules)
+            {
+                if (de.Value is IScriptEngine)
+                {
+                    if (((IScriptEngine)de.Value).ScriptEngineName == "ScriptEngine.DotNetEngine")
+                        m_ScriptEngine = ((IScriptEngine)de.Value);
+                }
+            }
+            if (m_ScriptEngine == null)
+                throw new Exception("Could not find DotNetEngine");
+            //this was causing lots of errors. instead of creating a new instance of .Net script engine, check for an existing one and use that
+            //this requires of using .NET scripting engine when using the python engine.
+            //m_ScriptEngine = new OpenSim.Region.ScriptEngine.DotNetEngine.ScriptEngine();
+            //m_ScriptEngine.World = myScriptEngine.World;
+        }
+
+        private EntityBase GetEntityBase(uint vId)
+        {
+            SceneObjectPart part = myScriptEngine.World.GetSceneObjectPart(vId);
+            if (part != null && (EntityBase)(part.ParentGroup) != null)
+                return (EntityBase)(part.ParentGroup);
+            else
+                return null;
+        }
+
+        // Functions exposed to Python!
+        // *********************************
+        public bool SetScriptRunner(string vId)
+        {
+            uint id = System.Convert.ToUInt32(vId, 10);
+
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(id);
+            if (tempobj != null)
+            {
+                m_host = tempobj;
+                m_localID = tempobj.LocalId;
+                m_itemID = tempobj.UUID;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public void CommandToClient(string vPresenceId, string vUnit, string vCommand, string vCmdParams)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView client = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    client.SendRexScriptCommand(vUnit, vCommand, vCmdParams);
+                }
+            }
+        }
+
+        public bool GetPhysics(string vId)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+                return ((tempobj.ObjectFlags & (uint)PrimFlags.Physics) != 0);
+            else
+                return false;
+        }
+
+        public void SetPhysics(string vId, bool vbUsePhysics)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                if (vbUsePhysics)
+                    tempobj.AddFlag(PrimFlags.Physics);
+                else
+                    tempobj.RemFlag(PrimFlags.Physics);
+
+                tempobj.DoPhysicsPropertyUpdate(vbUsePhysics, false);
+                tempobj.ScheduleFullUpdate();
+            }
+            else
+                myScriptEngine.Log.WarnFormat("[PythonScript]: SetPhysics for nonexisting object:" + vId);     
+        }
+
+ 
+         
+        public void SetMass(string vId, float vMass)
+        {   
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                if (tempobj is RexObjects.RexObjectPart)
+                {
+                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+                    rexObj.SetMass(vMass);
+                }
+            }
+            else
+                myScriptEngine.Log.WarnFormat("[PythonScript]: SetMass for nonexisting object:" + vId); 
+            
+        }
+
+        public void SetVelocity(string vId, LSL_Types.Vector3 vVelocity)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (((SceneObjectPart)tempobj) != null)
+            {
+                Vector3 tempvel = new Vector3((float)vVelocity.x, (float)vVelocity.y, (float)vVelocity.z);
+                tempobj.Velocity = tempvel;
+            }
+        }
+
+        public bool GetUsePrimVolumeCollision(string vId)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                if (tempobj is RexObjects.RexObjectPart)
+                {
+                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+                    return rexObj.GetUsePrimVolumeCollision();
+                }
+            }
+            return false;
+        }
+
+        public void SetUsePrimVolumeCollision(string vId, bool vUseVolumeCollision)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                if (tempobj is RexObjects.RexObjectPart)
+                {
+                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+                    rexObj.SetUsePrimVolumeCollision(vUseVolumeCollision);
+                }
+            }
+            else
+                myScriptEngine.Log.WarnFormat("[PythonScript]: SetPrimVolumeCollision for nonexisting object:" + vId);
+        }
+
+        public int GetPrimLocalIdFromUUID(string vUUID)
+        {
+            UUID tempid = UUID.Zero;
+            try
+            {
+                tempid = new UUID(vUUID);
+            }
+            catch (Exception) { }
+            
+            if(tempid != UUID.Zero)            
+            {
+                SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(tempid);
+                if(tempobj != null)
+                    return (int)tempobj.LocalId;
+                else
+                    myScriptEngine.Log.WarnFormat("[PythonScript]: GetPrimLocalIdFromUUID did not find prim with uuid:" + vUUID);
+            }
+            return 0;
+        }
+
+
+
+        // text messaging
+        // ******************************
+        public void SendGeneralAlertAll(string vId, string vMessage)
+        {
+            myScriptEngine.World.SendGeneralAlert(vMessage);
+        }
+
+        public void SendAlertToAvatar(string vId,string vPresenceId, string vMessage, bool vbModal)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                temppre.ControllingClient.SendAgentAlertMessage(vMessage, vbModal);
+            }
+        }
+
+
+
+        // Actor finding.
+        public List<string> GetRadiusActors(string vId,float vRadius)
+        {
+            List<string> TempList = new List<string>();
+            EntityBase tempobj = null;
+            try
+            {
+                tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            }
+            catch (Exception) { }
+            try
+            {
+                if (tempobj == null)
+                    tempobj = myScriptEngine.World.GetScenePresence(new UUID(vId));
+            }
+            catch (Exception) { }                               
+            
+            if (tempobj != null)
+            {
+                List<EntityBase> EntitiesList = myScriptEngine.World.GetEntities();
+                foreach (EntityBase ent in EntitiesList) 
+                {
+                    if (ent is SceneObjectGroup || ent is ScenePresence)
+                    {
+                        if (Util.GetDistanceTo(ent.AbsolutePosition, tempobj.AbsolutePosition) < vRadius)
+                            TempList.Add(ent.LocalId.ToString());
+                    }
+                }
+            }
+            return TempList;
+        }
+
+        public List<string> GetRadiusAvatars(string vId, float vRadius)
+        {
+            List<string> TempList = new List<string>();
+            EntityBase tempobj = null;
+            
+            try
+            {
+                tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            }
+            catch(Exception) { }
+            try
+            {
+                if (tempobj == null)
+                    tempobj = myScriptEngine.World.GetScenePresence(new UUID(vId));
+            }
+            catch (Exception) { }
+            
+            if (tempobj != null)
+            {
+                List<EntityBase> EntitiesList = myScriptEngine.World.GetEntities();
+                foreach (EntityBase ent in EntitiesList) 
+                {
+                    if (ent is ScenePresence)
+                    {
+                        if (Util.GetDistanceTo(ent.AbsolutePosition, tempobj.AbsolutePosition) < vRadius)
+                            TempList.Add(ent.LocalId.ToString());
+                    }
+                }
+            }
+            return TempList;
+        }
+
+
+
+        public string SpawnActor(LSL_Types.Vector3 vLoc, int vShape, bool vbTemporary, string vPyClass)
+        {
+            throw new NotImplementedException("Could not spawn actor to scene");
+            //UUID TempID = myScriptEngine.World.RegionInfo.MasterAvatarAssignedUUID;
+            //Vector3 pos = new Vector3((float)vLoc.x, (float)vLoc.y, (float)vLoc.z);
+            //Quaternion rot = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+
+            //uint AddResult = myScriptEngine.World.AddNewPrimReturningId(TempID, pos, rot, GetShape(vShape),vbTemporary,vPyClass);
+            //return AddResult.ToString();
+        }
+
+        public bool DestroyActor(string vId)
+        {
+           
+            EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null && tempobj is RexObjects.RexObjectGroup)
+            {
+                ((RexObjects.RexObjectGroup)tempobj).DeleteMe = true; // Do not call DeleteSceneObjectGroup for deleting directly
+                return true;
+            }
+            return false;
+        }
+          
+        private static PrimitiveBaseShape GetShape(int vShape)
+        {
+            PrimitiveBaseShape shape = new PrimitiveBaseShape();
+            
+            shape.PCode = 9;
+            shape.PathBegin = 0;
+            shape.PathEnd = 0;
+            shape.PathScaleX = 100;
+            shape.PathScaleY = 100;
+            shape.PathShearX = 0;
+            shape.PathShearY = 0;
+            shape.PathSkew = 0;
+            shape.ProfileBegin = 0;
+            shape.ProfileEnd = 0;
+            shape.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+            //shape.Scale.X = shape.Scale.Y = shape.Scale.Z = 0.5f;
+            shape.PathCurve = 16;
+            shape.ProfileCurve = 1;
+            shape.ProfileHollow = 0;
+            shape.PathRadiusOffset = 0;
+            shape.PathRevolutions = 0;
+            shape.PathTaperX = 0;
+            shape.PathTaperY = 0;
+            shape.PathTwist = 0;
+            shape.PathTwistBegin = 0;
+            Primitive.TextureEntry ntex = new Primitive.TextureEntry(new UUID("00000000-0000-1111-9999-000000000005"));
+            shape.TextureEntry = ntex.ToBytes(); 
+            return shape;
+        }
+
+        // Scenepresence related
+        public string SPGetFullName(string vPresenceId)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                string TempString = temppre.Firstname + " " + temppre.Lastname;
+                return TempString;
+            }
+            else
+                return "";
+        }
+        public string SPGetFirstName(string vPresenceId)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+                return temppre.Firstname;           
+            else
+                return "";
+        }
+        public string SPGetLastName(string vPresenceId)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+                return temppre.Lastname;
+            else
+                return "";
+        }
+
+        public void SPDoLocalTeleport(string vPresenceId, LSL_Types.Vector3 vLocation)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                Vector3 position = new Vector3((float)vLocation.x, (float)vLocation.y, (float)vLocation.z);
+                Vector3 lookAt = new Vector3(0,0,0);
+                temppre.ControllingClient.SendTeleportLocationStart();
+                temppre.ControllingClient.SendLocalTeleport(position, lookAt,0);
+                temppre.Teleport(position);
+            }
+        }
+
+        public float SPGetMovementModifier(string vPresenceId)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    return rexclient.RexMovementSpeedMod;
+                }
+            }
+            return 0.0f;
+        }
+
+        public void SPSetMovementModifier(string vPresenceId,float vSpeedModifier)
+        {
+         
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    rexclient.RexMovementSpeedMod = vSpeedModifier;
+                }
+            }
+        }
+
+        public LSL_Types.Vector3 SPGetPos(string vPresenceId)
+        {
+            LSL_Types.Vector3 loc = new LSL_Types.Vector3(0, 0, 0);
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                loc.x = temppre.AbsolutePosition.X;
+                loc.y = temppre.AbsolutePosition.Y;
+                loc.z = temppre.AbsolutePosition.Z;
+            }
+            return loc;
+        }
+
+        public LSL_Types.Quaternion SPGetRot(string vPresenceId)
+        {
+            LSL_Types.Quaternion rot = new LSL_Types.Quaternion(0, 0, 0, 1);
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                rot.x = temppre.Rotation.X;
+                rot.y = temppre.Rotation.Y;
+                rot.z = temppre.Rotation.Z;
+                rot.s = temppre.Rotation.W;
+            }
+            return rot;
+        }
+
+        public void SPSetRot(string vPresenceId,LSL_Types.Quaternion vRot, bool vbRelative)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView client = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    string sparams = vRot.x.ToString() + " " + vRot.y.ToString() + " " + vRot.z.ToString() + " " + vRot.s.ToString();
+                    sparams = sparams.Replace(",", ".");
+                    if (vbRelative)
+                        client.SendRexScriptCommand("client", "setrelrot", sparams);
+                    else
+                        client.SendRexScriptCommand("client", "setrot", sparams);
+                }
+            }    
+        }
+
+        public bool SPGetWalkDisabled(string vPresenceId)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    return rexclient.RexWalkDisabled;
+                }
+            }
+            return false;
+        }
+
+        public void SPSetWalkDisabled(string vPresenceId, bool vbValue)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    rexclient.RexWalkDisabled = vbValue;
+                }
+            }
+        }
+
+        public bool SPGetFlyDisabled(string vPresenceId)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    return rexclient.RexFlyDisabled;
+                }
+            }
+            return false;
+        }
+
+        public void SPSetFlyDisabled(string vPresenceId, bool vbValue)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    rexclient.RexFlyDisabled = vbValue;
+                }
+            }
+        }
+
+        // Rexbot related
+        public void BotWalkTo(string vPresenceId, LSL_Types.Vector3 vDest)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                Vector3 dest = new Vector3((float)vDest.x, (float)vDest.y, (float)vDest.z);
+                (temppre.ControllingClient as IRexBot).WalkTo(dest);
+            }
+        }
+
+        public void BotFlyTo(string vPresenceId, LSL_Types.Vector3 vDest)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                Vector3 dest = new Vector3((float)vDest.x, (float)vDest.y, (float)vDest.z);
+                (temppre.ControllingClient as IRexBot).FlyTo(dest);
+            }
+        }
+
+        public void BotRotateTo(string vPresenceId, LSL_Types.Vector3 vTarget)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                Vector3 dest = new Vector3((float)vTarget.x, (float)vTarget.y, (float)vTarget.z);
+                (temppre.ControllingClient as IRexBot).RotateTo(dest);
+            }
+        }
+
+        // deprecated. prefer BotPauseAutoMove() or BotStopAutoMove()
+        public void BotEnableAutoMove(string vPresenceId, bool vEnable)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                (temppre.ControllingClient as IRexBot).EnableAutoMove(vEnable, true);
+            }
+        }
+
+        // Temporarily pause bot auto movement. bot will still warp to destination if it is deemed stuck
+        public void BotPauseAutoMove(string vPresenceId, bool vEnable)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                (temppre.ControllingClient as IRexBot).PauseAutoMove(vEnable);
+            }
+        }
+
+        // Stop/start bot auto movement. Bot will not warp to destination after it has been stopped, no logic
+        // for checking if bot is stuck
+        public void BotStopAutoMove(string vPresenceId, bool vEnable)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                (temppre.ControllingClient as IRexBot).StopAutoMove(vEnable);
+            }
+        }
+
+
+
+
+        
+
+        // Functions not supported at the moment.
+        /*  
+        public bool GetFreezed(string vId)
+        {
+            EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                return tempobj.IsFreezed;
+            }
+            else
+            {
+                return false;
+            }
+             
+            return false;
+        }
+
+        public void SetFreezed(string vId, bool vbFreeze)
+        {
+            EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                tempobj.IsFreezed = vbFreeze;
+                if (tempobj is ScenePresence && vbFreeze)
+                    ((ScenePresence)tempobj).rxStopAvatarMovement();
+            }
+             
+        } */
+
+        /* 
+        public int GetPhysicsMode(string vId)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+                return tempobj.GetPhysicsMode();
+            else
+                return 0;
+             
+            return 0;
+        }
+
+        public void SetPhysicsMode(string vId, int vPhysicsMode)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+            {
+                tempobj.SetPhysicsMode(vPhysicsMode);
+            }
+            else
+                myScriptEngine.Log.Verbose("PythonScript", "SetPhysicsMode for nonexisting object:" + vId); 
+        }
+        */
+
+
+        /* 
+        public bool GetUseGravity(string vId)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+                return tempobj.GetUseGravity();
+            else
+                return false;
+            
+            return false;
+        }
+
+        public void SetUseGravity(string vId, bool vbUseGravity)
+        {
+            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            if (tempobj != null)
+                tempobj.SetUseGravity(vbUseGravity);
+            else
+                myScriptEngine.Log.Verbose("PythonScript", "SetUseGravity for nonexisting object:" + vId);     
+        }
+        */
+
+        /* 
+        public void SetLocationFast(string vId,rxVector vLoc)
+        {
+            EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            if (((SceneObjectGroup)tempobj) != null)
+            {
+                bool hasPrim = ((SceneObjectGroup)tempobj).HasChildPrim(tempobj.UUID);
+                if (hasPrim != false)
+                {
+                    LLVector3 TempLoc = new LLVector3((float)vLoc.x, (float)vLoc.y, (float)vLoc.z);
+                    LLVector3 TempOffset = new LLVector3(0, 0, 0);
+                    ((SceneObjectGroup)tempobj).GrabMovement(TempOffset, TempLoc, null); // tucofixme, might break some day, because sending null remoteClient parameter
+                }
+            }
+        }
+        */
+
+        public float TimeOfDay //is double in LL interface, but float inside opensim estate info
+        {
+            get
+            {
+                return (float)myScriptEngine.World.RegionInfo.EstateSettings.SunPosition;//sunHour; //llGetTimeOfDay();
+            }
+
+            set
+            {
+                myScriptEngine.World.RegionInfo.EstateSettings.SunPosition = value;
+                IEstateModule estate = myScriptEngine.World.RequestModuleInterface<IEstateModule>();
+                if (estate is OpenSim.Region.Environment.Modules.World.Estate.EstateManagementModule)
+                    ((OpenSim.Region.Environment.Modules.World.Estate.EstateManagementModule)estate).sendRegionInfoPacketToAll();
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+

@@ -36,6 +36,10 @@ namespace ModularRex.RexNetwork
         private string m_rexAvatarURL;
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
+        public string AvatarStorageOverride;
+        public float RexMovementSpeedMod;
+        public bool RexWalkDisabled;
+        public bool RexFlyDisabled;
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
@@ -288,6 +292,106 @@ namespace ModularRex.RexNetwork
                 RexAvatarURL = rexAsAddress;
                 RexSkypeURL = rexSkypeURL;
             }
+        }
+
+        internal void SendRexFog(float vStart, float vEnd, float vR, float vG, float vB)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexWaterHeight(float vHeight)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexPostProcess(int vEffectId, bool vbToggle)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexRttCamera(int command, string name, UUID uUID, Vector3 pos, Vector3 lookat, int width, int height)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexViewport(int command, string name, float vX, float vY, float vWidth, float vHeight)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexToggleWindSound(bool vbToggle)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexCameraClientSideEffect(bool enable, UUID uUID, Vector3 pos, Quaternion rot)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexSetAmbientLight(Vector3 lightDir, Vector3 lightC, Vector3 ambientC)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexPlayFlashAnimation(UUID uUID, float left, float top, float right, float bottom, float timeToDeath)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexPreloadAvatarAssets(List<string> vAssetsList)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexForceFOV(float fov, bool enable)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexForceCamera(int forceMode, float minZoom, float maxZoom)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexSky(int type, string images, float curvature, float tiling)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexPreloadAssets(Dictionary<UUID, uint> tempassetlist)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendMediaURL(UUID assetId, string mediaURL, byte vRefreshRate)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void RexIKSendLimbTarget(UUID vAgentID, int vLimbId, Vector3 vDest, float vTimeToTarget, float vStayTime, float vConstraintAngle, string vStartAnim, string vTargetAnim, string vEndAnim)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SendRexAvatarAnimation(UUID agentID, string vAnimName, float vRate, float vFadeIn, float vFadeOut, int nRepeats, bool vbStopAnim) //rex
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexAvatarMorph(UUID uUID, string vMorphName, float vWeight, float vTime)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexMeshAnimation(UUID uUID, string vAnimName, float vRate, bool vbLooped, bool vbStopAnim)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        internal void SendRexClientSideEffect(string assetId, float vTimeUntilLaunch, float vTimeUntilDeath, Vector3 pos, Quaternion rot, float vSpeed)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

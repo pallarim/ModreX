@@ -5,6 +5,8 @@ namespace ModularRex.RexParts.RexObjects
 {
     public class RexObjectGroup : SceneObjectGroup 
     {
+        public new RexObjectPart RootPart;
+
         public void FromSceneObjectGroup(SceneObjectGroup origin)
         {
             // Dodgy, but hey it works!
@@ -16,5 +18,8 @@ namespace ModularRex.RexParts.RexObjects
         {
             return RexObjectPart.FromXml(reader);
         }
+
+        public bool TemporaryPrim;
+        public bool DeleteMe;
     }
 }
