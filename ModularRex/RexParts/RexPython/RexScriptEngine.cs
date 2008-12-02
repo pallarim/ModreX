@@ -58,13 +58,12 @@ namespace ModularRex.RexParts.RexPython
             {
                 m_PythonEnabled = true;
             }
-
-            InitializeEngine(scene);
+            World = scene;
         }
 
         public void PostInitialise()
         {
-
+            InitializeEngine(World);
         }
 
         public void CloseDown()
@@ -78,8 +77,6 @@ namespace ModularRex.RexParts.RexPython
 
         public void InitializeEngine(Scene Sceneworld)
         {
-            World = Sceneworld;
-
             if (m_PythonEnabled)
             {
                 Log.InfoFormat("[RexScriptEngine]: Rex PythonScriptEngine initializing");

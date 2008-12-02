@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-
+using System.Reflection;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
 
@@ -12,7 +12,7 @@ using OpenSim.Region.Environment.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared;
 using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
-
+using log4net;
 using OpenMetaverse;
 
 namespace ModularRex.RexParts.RexPython
@@ -20,9 +20,10 @@ namespace ModularRex.RexParts.RexPython
     public class RexScriptInterface : Rex_BuiltIn_Commands
     {
         private RexScriptEngine myScriptEngine;
+        private static readonly ILog m_log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public RexScriptInterface(IScriptEngine ScriptEngine, SceneObjectPart host, uint localID, UUID itemID, RexScriptEngine vScriptEngine)
-            : base(ScriptEngine, host, localID, itemID)
         {   
             myScriptEngine = vScriptEngine;
 
@@ -31,7 +32,11 @@ namespace ModularRex.RexParts.RexPython
                 if (de.Value is IScriptEngine)
                 {
                     if (((IScriptEngine)de.Value).ScriptEngineName == "ScriptEngine.DotNetEngine")
+                    {
                         m_ScriptEngine = ((IScriptEngine)de.Value);
+                        m_log.Info("[REXSCRIPT]: Found DotNetEngine");
+                    }
+                    //Console.WriteLine(((IScriptEngine)de.Value).ScriptEngineName);
                 }
             }
             if (m_ScriptEngine == null)
@@ -40,6 +45,14 @@ namespace ModularRex.RexParts.RexPython
             //this requires of using .NET scripting engine when using the python engine.
             //m_ScriptEngine = new OpenSim.Region.ScriptEngine.DotNetEngine.ScriptEngine();
             //m_ScriptEngine.World = myScriptEngine.World;
+            try
+            {
+                base.Initialize(m_ScriptEngine, host, localID, itemID);
+            }
+            catch (Exception e)
+            {
+                m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed: " + e.ToString());
+            }
         }
 
         private EntityBase GetEntityBase(uint vId)

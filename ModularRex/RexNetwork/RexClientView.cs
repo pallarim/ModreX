@@ -15,9 +15,13 @@ namespace ModularRex.RexNetwork
 {
     public delegate void RexAppearanceDelegate(RexClientView sender);
 
-    public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> vParams);
+    public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> parameters);
 
     public delegate void RexAvatarProperties(RexClientView sender, List<string> parameters);
+
+    public delegate void ReceiveRexStartUp(RexClientView remoteClient, UUID agentID, string status);
+
+    public delegate void ReceiveRexClientScriptCmd(RexClientView remoteClient, UUID agentID, List<string> parameters);
 
     /// <summary>
     /// Inherits from LLClientView the majority of functionality
@@ -44,6 +48,8 @@ namespace ModularRex.RexNetwork
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
         public event RexAvatarProperties OnRexAvatarProperties;
+        public event ReceiveRexStartUp OnReceiveRexStartUp;
+        public event ReceiveRexClientScriptCmd OnReceiveRexClientScriptCmd;
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
@@ -146,8 +152,14 @@ namespace ModularRex.RexNetwork
             get { return m_rexAuthURL; }
             set
             {
-                m_rexAuthURL = value;
-
+                if (value.Contains("@"))
+                {
+                    m_rexAuthURL = "http://" + value.Split('@')[1];
+                }
+                else
+                {
+                    m_rexAuthURL = value;
+                }
                 // Request Agent Properties Asynchronously
                 ThreadPool.QueueUserWorkItem(RequestProperties);
             }
@@ -186,6 +198,22 @@ namespace ModularRex.RexNetwork
                 {
                     OnRexAvatarProperties(this, args);
                     return;
+                }
+            }
+
+            if (method == "rexscr")
+            {
+                if (OnReceiveRexClientScriptCmd != null)
+                {
+                    OnReceiveRexClientScriptCmd(this, AgentId, args);
+                }
+            }
+
+            if (method == "RexStartup")
+            {
+                if (OnReceiveRexStartUp != null)
+                {
+                    OnReceiveRexStartUp(this, AgentId, args[0]);
                 }
             }
 
@@ -282,15 +310,23 @@ namespace ModularRex.RexNetwork
 
             m_log.Info("[REXCLIENT] Sending XMLRPC Request to " + RexAuthURL);
             XmlRpcResponse authreply = req.Send(RexAuthURL, 9000);
-            string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString();
-            UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
-
-            // Sanity check
-            if (userID == AgentId)
+            if (!((Hashtable)authreply.Value).ContainsKey("error_type"))
             {
-                RexAvatarURL = rexAsAddress;
-                RexSkypeURL = rexSkypeURL;
+                string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
+                string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString();
+                UUID userID = new UUID(((Hashtable)authreply.Value)["uuid"].ToString());
+
+                // Sanity check
+                if (userID == AgentId)
+                {
+                    RexAvatarURL = rexAsAddress;
+                    RexSkypeURL = rexSkypeURL;
+                }
+            }
+            else
+            {
+                //Error has occurred
+                m_log.Warn("[REXCLIENT]: User not found");
             }
         }
 

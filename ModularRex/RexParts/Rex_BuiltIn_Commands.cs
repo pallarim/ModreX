@@ -18,18 +18,17 @@ namespace ModularRex.RexParts
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public Rex_BuiltIn_Commands(IScriptEngine scriptEngine, SceneObjectPart host, uint localID, UUID itemID)
-            : base()
-        {
-            try
-            {
-                base.Initialize(scriptEngine, host, localID, itemID);
-            }
-            catch (Exception)
-            {
-                m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed");
-            }
-        }
+        //public void Initialize(IScriptEngine scriptEngine, SceneObjectPart host, uint localID, UUID itemID)
+        //{
+        //    try
+        //    {
+        //        base.Initialize(scriptEngine, host, localID, itemID);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed: " + e.ToString());
+        //    }
+        //}
 
         /* are in db for assets, but in UI for textures only - also this now works for just textures 
            TODO: options for which faces to affect, e.g. main &/ some individual faces */

@@ -42,11 +42,8 @@ namespace ModularRex.RexParts.RexPython
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity;
             //myScriptEngine.World.EventManager.OnPythonScriptCommand += OnPythonScriptCommand;
             //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange;
-            //myScriptEngine.World.EventManager.OnRexClientScriptCommand += OnRexClientScriptCommand;
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision;
-            //myScriptEngine.World.EventManager.OnRexScriptListen += OnRexScriptListen;
-            //myScriptEngine.World.EventManager.OnRexClientStartUp += OnRexClientStartUp;
-              
+            //myScriptEngine.World.EventManager.OnRexScriptListen += OnRexScriptListen;  
         }
 
 
@@ -82,6 +79,7 @@ namespace ModularRex.RexParts.RexPython
         {
             try
             {      
+                //IRexBot related
                 if (vPresence.ControllingClient is IRexBot)
                 {
                     string EventParams = "\"add_bot\"," + vPresence.LocalId.ToString() + "," + "\"" + vPresence.UUID.ToString() + "\"";
@@ -91,6 +89,14 @@ namespace ModularRex.RexParts.RexPython
                 {
                     string EventParams = "\"add_presence\"," + vPresence.LocalId.ToString() + "," + "\"" + vPresence.UUID.ToString() + "\"";
                     myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                }
+
+                //Tie up some RexClientView events
+                RexNetwork.RexClientView rex;
+                if (vPresence.ClientView.TryGet(out rex))
+                {
+                    rex.OnReceiveRexStartUp += OnRexClientStartUp;
+                    rex.OnReceiveRexClientScriptCmd += OnRexClientScriptCommand;
                 }
             }
             catch (Exception e)
@@ -196,15 +202,15 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientScriptCommand(ScenePresence avatar, List<string> vCommands)
+        public void OnRexClientScriptCommand(RexNetwork.RexClientView remoteClient, UUID agentID, List<string> commands)
         {
             try
             {
                 string Paramlist = "";
-                foreach (string s in vCommands)
+                foreach (string s in commands)
                     Paramlist = Paramlist + "," + "\"" + s + "\"";
-            
-                string EventParams = "\"client_event\",\"" + avatar.UUID.ToString() + "\"" + Paramlist;
+
+                string EventParams = "\"client_event\",\"" + agentID.ToString() + "\"" + Paramlist;
                 myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
@@ -257,11 +263,11 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientStartUp(ScenePresence avatar, string vStatus)
+        public void OnRexClientStartUp(RexNetwork.RexClientView client, UUID agentID, string status)
         {
             try
             {
-                string EventParams = "\"client_startup\",\"" + avatar.UUID.ToString() + "\",\"" + vStatus + "\"";
+                string EventParams = "\"client_startup\",\"" + agentID.ToString() + "\",\"" + status + "\"";
                 myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
