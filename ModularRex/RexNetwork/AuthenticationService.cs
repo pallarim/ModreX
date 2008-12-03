@@ -37,7 +37,7 @@ namespace ModularRex.RexNetwork
                 }
 
                 Hashtable requestData = new Hashtable();
-                requestData.Add("account", account);
+                requestData.Add("avatar_account", account);
 
                 XmlRpcResponse response = DoRequest("get_user_by_account", requestData, authUrl);
 
@@ -113,7 +113,7 @@ namespace ModularRex.RexNetwork
 
         }
 
-        public static UserProfileData GetUserByUuid(string avatarUuid, string authUrl)
+        public static RexUserProfileData GetUserByUuid(string avatarUuid, string authUrl)
         {
             m_log.Info("[AUTHENTICATIONSERVICE]: GetUserByUuid");
 
@@ -374,7 +374,7 @@ namespace ModularRex.RexNetwork
                 }
 
                 Hashtable responseData = (Hashtable)response.Value;
-                if (responseData != null && responseData.Contains("sessionHash") && responseData.Contains("avatarStorageUrl") && requestData.Contains("gridUrl"))
+                if (responseData != null && responseData.Contains("sessionHash") && responseData.Contains("avatarStorageUrl") && responseData.Contains("gridUrl"))
                 {
                     sessionHash = (string)responseData["sessionHash"];
                     string gridUrlTemp = (string)responseData["gridUrl"];
@@ -427,7 +427,7 @@ namespace ModularRex.RexNetwork
                 }
 
                 Hashtable responseData = (Hashtable)response.Value;
-                if (responseData != null && responseData.Contains("sessionHash") && responseData.Contains("avatarStorageUrl") && requestData.Contains("gridUrl"))
+                if (responseData != null && responseData.Contains("sessionHash") && responseData.Contains("avatarStorageUrl") && responseData.Contains("gridUrl"))
                 {
                     sessionHash = (string)responseData["sessionHash"];
                     string gridUrlTemp = (string)responseData["gridUrl"];
@@ -495,6 +495,56 @@ namespace ModularRex.RexNetwork
 
         }
 
+        public static bool UpdateUserAgent(string agentID, string regionHandle, string currentPos, string currentAddress, string authUrl)
+        {
+            m_log.Info("[AUTHENTICATIONSERVICE]: UpdateUserAgent");
+
+            try
+            {
+
+                if (agentID == null || agentID.Length == 0 ||
+                    currentPos == null || currentPos.Length == 0 ||
+                    currentAddress == null || currentAddress.Length == 0 ||
+                    regionHandle == null || regionHandle.Length == 0 ||
+                    authUrl == null || authUrl.Length == 0)
+                {
+                    m_log.Warn("[AUTHENTICATIONSERVICE] UpdateUserAgent: Parameters invalid.");
+                    return false;
+                }
+
+                Hashtable requestData = new Hashtable();
+                requestData.Add("agentID", agentID);
+                requestData.Add("currentPos", currentPos);
+                requestData.Add("current_address", currentAddress);
+                requestData.Add("regionhandle", regionHandle);
+
+                XmlRpcResponse response = DoRequest("update_user_agent", requestData, authUrl);
+
+                if (response == null)
+                {
+                    m_log.Warn("[AUTHENTICATIONSERVICE] UpdateUserAgent: Response is null.");
+                    return false;
+                }
+
+                Hashtable responseData = (Hashtable)response.Value;
+                if (responseData != null && responseData.Contains("update"))
+                {
+                    string request = (string)responseData["update"];
+                    if (request.Equals("success"))
+                    {
+                        return true;
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                m_log.Error("[AUTHENTICATIONSERVICE]: UpdateUserAgent", e);
+            }
+
+            return false;
+        }
+
         public static bool UpdateUserAgent(string agentID, string agentOnline, string logoutTime, string agentCurrentPosX, string agentCurrentPosY, string agentCurrentPosZ, string authUrl)
         {
             m_log.Info("[AUTHENTICATIONSERVICE]: UpdateUserAgent");
@@ -518,9 +568,9 @@ namespace ModularRex.RexNetwork
                 requestData.Add("agentID", agentID);
                 requestData.Add("agentOnline", agentOnline);
                 requestData.Add("logoutTime", logoutTime);
-                requestData.Add("agent_CurrentPosX", agentCurrentPosX);
-                requestData.Add("agent_CurrentPosY", agentCurrentPosY);
-                requestData.Add("agent_CurrentPosZ", agentCurrentPosZ);
+                requestData.Add("agent_currentPosX", agentCurrentPosX);
+                requestData.Add("agent_currentPosY", agentCurrentPosY);
+                requestData.Add("agent_currentPosZ", agentCurrentPosZ);
 
                 XmlRpcResponse response = DoRequest("update_user_agent", requestData, authUrl);
 
