@@ -40,12 +40,39 @@ namespace ModularRex.RexParts.RexPython
             ///other way, some need changes to core and some need changes to physics engine.
             //myScriptEngine.World.EventManager.OnAddEntity += OnAddEntity;
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity;
-            //myScriptEngine.World.EventManager.OnPythonScriptCommand += OnPythonScriptCommand;
             //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange;
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision;
             //myScriptEngine.World.EventManager.OnRexScriptListen += OnRexScriptListen;  
+            OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
         }
 
+        private void PythonScriptCommand(string[] cmdparams)
+        {
+            try
+            {
+                if (cmdparams.Length >= 1)
+                {
+                    string command = cmdparams[0].ToLower();
+                    switch (command)
+                    {
+                        case "help":
+                            myScriptEngine.Log.Info("[RexScriptEngine]: Python commands available:");
+                            myScriptEngine.Log.Info("[RexScriptEngine]:    python restart - restarts the python engine");
+                            break;
+                        case "restart":
+                            myScriptEngine.RestartPythonEngine();
+                            break;                      
+                        default:
+                            myScriptEngine.Log.WarnFormat("[RexScriptEngine]: Unknown PythonScriptEngine command:" + cmdparams[0]);
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnPythonScriptCommand: " + e.ToString());
+            }
+        }
 
         public void touch_start(uint localID, uint originalID, Vector3 offsetPos, IClientAPI remoteClient)//(uint localID, Vector3 offsetPos, IClientAPI remoteClient)
         {
@@ -155,21 +182,6 @@ namespace ModularRex.RexParts.RexPython
             catch (Exception e)
             {
                 myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRemoveEntity: " + e.ToString());
-            }
-        }
-
-        public void OnPythonScriptCommand(string vCommand)
-        {
-            try
-            {
-                if (vCommand.ToLower() == "restart")
-                    myScriptEngine.RestartPythonEngine();
-                else
-                    Console.WriteLine("Unknown PythonScriptEngine command:"+vCommand);
-            }
-            catch (Exception e)
-            {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnPythonScriptCommand: " + e.ToString());
             }
         }
 

@@ -90,6 +90,10 @@
       <Project>{CB52B7E7-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Framework.Communications</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\OpenSim\Framework\Console\OpenSim.Framework.Console.csproj">
+      <Project>{0ED8EBE8-0000-0000-0000-000000000000}</Project>
+      <Name>OpenSim.Framework.Console</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\OpenSim\Framework\OpenSim.Framework.csproj">
       <Project>{8ACA2445-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Framework</Name>
