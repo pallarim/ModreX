@@ -58,6 +58,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RexDBObjects\RexFriendListItem.cs" />
+    <Compile Include="RexDBObjects\RexUserAgentData.cs" />
+    <Compile Include="RexDBObjects\RexUserProfileData.cs" />
+    <Compile Include="RexNetwork\AuthenticationService.cs" />
     <Compile Include="RexNetwork\IClientRexAppearance.cs" />
     <Compile Include="RexNetwork\IClientRexFaceExpression.cs" />
     <Compile Include="RexNetwork\RexLogin\RexLoginModule.cs" />
