@@ -1,9 +1,11 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Environment.Scenes;
+using log4net;
 
 namespace ModularRex.RexParts.RexPython
 {
@@ -11,6 +13,8 @@ namespace ModularRex.RexParts.RexPython
     class RexEventManager
     {
         private RexScriptEngine myScriptEngine;
+        private static readonly ILog m_log
+            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);  
 
         // tuco fixme, is there a better way to do this search???
         private EntityBase GetEntityBase(uint vId)
@@ -25,7 +29,7 @@ namespace ModularRex.RexParts.RexPython
         public RexEventManager(RexScriptEngine vScriptEngine)
         {   
             myScriptEngine = vScriptEngine;
-            myScriptEngine.Log.InfoFormat("[RexScriptEngine]: Hooking up to server events");
+            m_log.InfoFormat("[RexScriptEngine]: Hooking up to server events");
             myScriptEngine.World.EventManager.OnObjectGrab += touch_start;
             // myScriptEngine.World.EventManager.OnRezScript += OnRezScript;
             // myScriptEngine.World.EventManager.OnRemoveScript += OnRemoveScript;
@@ -38,12 +42,13 @@ namespace ModularRex.RexParts.RexPython
             ///TODO:
             ///These events were added to forked version. Some of them can be handled 
             ///other way, some need changes to core and some need changes to physics engine.
-            //myScriptEngine.World.EventManager.OnAddEntity += OnAddEntity;
-            //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity;
-            //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange;
-            //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision;
-            //myScriptEngine.World.EventManager.OnRexScriptListen += OnRexScriptListen;  
-            OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
+            //myScriptEngine.World.EventManager.OnAddEntity += OnAddEntity; //this was previously launched from Scene or InnerScene
+            //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity; //this was previously launched from Scene
+            //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange; //this was launched from SceneObjectPart
+            //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision; //this was launched from PhysicActor
+            myScriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
+            myScriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
+            myScriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
         }
 
         private void PythonScriptCommand(string[] cmdparams)
@@ -56,21 +61,21 @@ namespace ModularRex.RexParts.RexPython
                     switch (command)
                     {
                         case "help":
-                            myScriptEngine.Log.Info("[RexScriptEngine]: Python commands available:");
-                            myScriptEngine.Log.Info("[RexScriptEngine]:    python restart - restarts the python engine");
+                            m_log.Info("[RexScriptEngine]: Python commands available:");
+                            m_log.Info("[RexScriptEngine]:    python restart - restarts the python engine");
                             break;
                         case "restart":
                             myScriptEngine.RestartPythonEngine();
                             break;                      
                         default:
-                            myScriptEngine.Log.WarnFormat("[RexScriptEngine]: Unknown PythonScriptEngine command:" + cmdparams[0]);
+                            m_log.WarnFormat("[RexScriptEngine]: Unknown PythonScriptEngine command:" + cmdparams[0]);
                             break;
                     }
                 }
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnPythonScriptCommand: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnPythonScriptCommand: " + e.ToString());
             }
         }
 
@@ -128,7 +133,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnNewPresence: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnNewPresence: " + e.ToString());
             }
         }
 
@@ -142,7 +147,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRemovePresence: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnRemovePresence: " + e.ToString());
             }
         }
 
@@ -168,7 +173,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnAddEntity: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnAddEntity: " + e.ToString());
             }
         }
 
@@ -181,7 +186,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRemoveEntity: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnRemoveEntity: " + e.ToString());
             }
         }
 
@@ -210,7 +215,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnPythonClassChange: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnPythonClassChange: " + e.ToString());
             }
         }
 
@@ -227,7 +232,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRexClientScriptCommand: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnRexClientScriptCommand: " + e.ToString());
             }
         }
 
@@ -240,38 +245,55 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnPrimVolumeCollision: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnPrimVolumeCollision: " + e.ToString());
             }
         }
         
-        public void OnRexScriptListen(uint vPrimLocalId, int vChannel, string vName, UUID vId, string vMessage)
+        /// <summary>
+        /// Listens to all world scripts and clients. Sends event from that to python scripts
+        /// </summary>
+        public void OnRexScriptListen(object sender, OSChatMessage chat)//uint vPrimLocalId, int vChannel, string vName, UUID vId, string vMessage)
         {
             try
             {
-                SceneObjectPart source = null;
-                ScenePresence avatar = null;
-                string sid = "0";
+                if (chat.Message != "")
+                {
+                    uint localId = 0;
+                    string sid = "0";
+                    string name = chat.From;
 
-                source = myScriptEngine.World.GetSceneObjectPart(vId);
-                if (source != null)
-                {
-                    if ((EntityBase)(source.ParentGroup) != null)
-                        sid = ((EntityBase)source.ParentGroup).LocalId.ToString(); 
+                    SceneObjectPart sop = myScriptEngine.World.GetSceneObjectPart(chat.SenderUUID);
+                    if (sop != null)
+                    {
+                        localId = sop.LocalId;
+                        sid = sop.ParentGroup.LocalId.ToString();
+                    }
+
+                    if (chat.Sender != null)
+                    {
+                        ScenePresence sp = myScriptEngine.World.GetScenePresence(chat.Sender.AgentId);
+                        if (sp != null)
+                        {
+                            localId = sp.LocalId;
+                            sid = chat.Sender.AgentId.ToString();
+                            if (name == "" || name == null) name = chat.Sender.Name; 
+                        }
+                    }
+
+                    //if (chat.SenderObject != null)
+                    //{
+                    //    m_log.Info("sender is an "+chat.SenderObject.GetType());
+                    //}
+
+                    string eventParams = "\"listen\"," + localId + "," + chat.Channel.ToString() + "," +
+                        "\"" + name + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + chat.Message + "\"";
+                    myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + eventParams + ")");
+                    //m_log.Info(eventParams);
                 }
-                else
-                {
-                    avatar = myScriptEngine.World.GetScenePresence(vId);
-                    if(avatar != null)
-                        sid = avatar.UUID.ToString();
-                }
-            
-                string EventParams = "\"listen\"," + vPrimLocalId.ToString() + "," + vChannel.ToString() + "," +
-                    "\"" + vName + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + vMessage.ToString() + "\"";
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRexScriptListen: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnRexScriptListen: " + e.ToString());
             }
         }
 
@@ -284,7 +306,7 @@ namespace ModularRex.RexParts.RexPython
             }
             catch (Exception e)
             {
-                myScriptEngine.Log.WarnFormat("[RexScriptEngine]: OnRexClientStartUp: " + e.ToString());
+                m_log.WarnFormat("[RexScriptEngine]: OnRexClientStartUp: " + e.ToString());
             }
         }
 
