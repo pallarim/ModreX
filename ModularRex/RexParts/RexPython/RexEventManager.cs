@@ -12,32 +12,32 @@ namespace ModularRex.RexParts.RexPython
     [Serializable]
     class RexEventManager
     {
-        private RexScriptEngine myScriptEngine;
+        private RexScriptEngine m_scriptEngine;
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);  
 
         // tuco fixme, is there a better way to do this search???
         private EntityBase GetEntityBase(uint vId)
         {
-            SceneObjectPart part = myScriptEngine.World.GetSceneObjectPart(vId);
+            SceneObjectPart part = m_scriptEngine.World.GetSceneObjectPart(vId);
             if (part != null && (EntityBase)(part.ParentGroup) != null)
                 return (EntityBase)(part.ParentGroup);
             else              
                 return null;
         }
 
-        public RexEventManager(RexScriptEngine vScriptEngine)
+        public RexEventManager(RexScriptEngine scriptEngine)
         {   
-            myScriptEngine = vScriptEngine;
+            m_scriptEngine = scriptEngine;
             m_log.InfoFormat("[RexScriptEngine]: Hooking up to server events");
-            myScriptEngine.World.EventManager.OnObjectGrab += touch_start;
+            m_scriptEngine.World.EventManager.OnObjectGrab += touch_start;
             // myScriptEngine.World.EventManager.OnRezScript += OnRezScript;
             // myScriptEngine.World.EventManager.OnRemoveScript += OnRemoveScript;
             // myScriptEngine.World.EventManager.OnFrame += OnFrame;
             //myScriptEngine.World.EventManager.OnNewClient += OnNewClient; 
-            myScriptEngine.World.EventManager.OnNewPresence += OnNewPresence;
-            myScriptEngine.World.EventManager.OnRemovePresence += OnRemovePresence;
-            myScriptEngine.World.EventManager.OnShutdown += OnShutDown;
+            m_scriptEngine.World.EventManager.OnNewPresence += OnNewPresence;
+            m_scriptEngine.World.EventManager.OnRemovePresence += OnRemovePresence;
+            m_scriptEngine.World.EventManager.OnShutdown += OnShutDown;
 
             ///TODO:
             ///These events were added to forked version. Some of them can be handled 
@@ -46,9 +46,10 @@ namespace ModularRex.RexParts.RexPython
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity; //this was previously launched from Scene
             //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange; //this was launched from SceneObjectPart
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision; //this was launched from PhysicActor
-            myScriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
-            myScriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
-            myScriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
+            m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
+            m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
+            m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
+
         }
 
         private void PythonScriptCommand(string[] cmdparams)
@@ -65,7 +66,7 @@ namespace ModularRex.RexParts.RexPython
                             m_log.Info("[RexScriptEngine]:    python restart - restarts the python engine");
                             break;
                         case "restart":
-                            myScriptEngine.RestartPythonEngine();
+                            m_scriptEngine.RestartPythonEngine();
                             break;                      
                         default:
                             m_log.WarnFormat("[RexScriptEngine]: Unknown PythonScriptEngine command:" + cmdparams[0]);
@@ -79,10 +80,10 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void touch_start(uint localID, uint originalID, Vector3 offsetPos, IClientAPI remoteClient)//(uint localID, Vector3 offsetPos, IClientAPI remoteClient)
+        public void touch_start(uint localID, uint originalID, Vector3 offsetPos, IClientAPI remoteClient, SurfaceTouchEventArgs surfaceArgs)//(uint localID, Vector3 offsetPos, IClientAPI remoteClient)
         {
             string EventParams = "\"touch_start\"," + localID.ToString() + "," + "\"" + remoteClient.AgentId.ToString() + "\"";
-            myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+            m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
         }
 
         /* 
@@ -115,12 +116,12 @@ namespace ModularRex.RexParts.RexPython
                 if (vPresence.ControllingClient is IRexBot)
                 {
                     string EventParams = "\"add_bot\"," + vPresence.LocalId.ToString() + "," + "\"" + vPresence.UUID.ToString() + "\"";
-                    myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");            
+                    m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");            
                 }
                 else    
                 {
                     string EventParams = "\"add_presence\"," + vPresence.LocalId.ToString() + "," + "\"" + vPresence.UUID.ToString() + "\"";
-                    myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                    m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
                 }
 
                 //Tie up some RexClientView events
@@ -143,7 +144,7 @@ namespace ModularRex.RexParts.RexPython
             {
                 // python handles if this presence was bot or human
                 string EventParams = "\"remove_presence\"," + "\"" + uuid.ToString() + "\"";
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {
@@ -169,7 +170,7 @@ namespace ModularRex.RexParts.RexPython
                     PythonClassName = tempobj.RootPart.RexClassName;
 
                 // Create the actor directly without using an event.
-                myScriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
+                m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
             }
             catch (Exception e)
             {
@@ -182,7 +183,7 @@ namespace ModularRex.RexParts.RexPython
             try
             {
                 string EventParams = "\"remove_entity\"," + "\"" + localID.ToString() + "\"";
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {
@@ -210,8 +211,8 @@ namespace ModularRex.RexParts.RexPython
                     else
                         PythonClassName = tempobj.RootPart.RexClassName;
                 }
-                if (myScriptEngine.IsEngineStarted)
-                    myScriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
+                if (m_scriptEngine.IsEngineStarted)
+                    m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
             }
             catch (Exception e)
             {
@@ -228,7 +229,7 @@ namespace ModularRex.RexParts.RexPython
                     Paramlist = Paramlist + "," + "\"" + s + "\"";
 
                 string EventParams = "\"client_event\",\"" + agentID.ToString() + "\"" + Paramlist;
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {
@@ -241,7 +242,7 @@ namespace ModularRex.RexParts.RexPython
             try
             {
                 string EventParams = "\"primvol_col\"," + ownID.ToString() + "," + "\"" + colliderID.ToString() + "\"";
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {
@@ -262,7 +263,7 @@ namespace ModularRex.RexParts.RexPython
                     string sid = "0";
                     string name = chat.From;
 
-                    SceneObjectPart sop = myScriptEngine.World.GetSceneObjectPart(chat.SenderUUID);
+                    SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(chat.SenderUUID);
                     if (sop != null)
                     {
                         localId = sop.LocalId;
@@ -271,7 +272,7 @@ namespace ModularRex.RexParts.RexPython
 
                     if (chat.Sender != null)
                     {
-                        ScenePresence sp = myScriptEngine.World.GetScenePresence(chat.Sender.AgentId);
+                        ScenePresence sp = m_scriptEngine.World.GetScenePresence(chat.Sender.AgentId);
                         if (sp != null)
                         {
                             localId = sp.LocalId;
@@ -287,7 +288,7 @@ namespace ModularRex.RexParts.RexPython
 
                     string eventParams = "\"listen\"," + localId + "," + chat.Channel.ToString() + "," +
                         "\"" + name + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + chat.Message + "\"";
-                    myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + eventParams + ")");
+                    m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + eventParams + ")");
                     //m_log.Info(eventParams);
                 }
             }
@@ -302,7 +303,7 @@ namespace ModularRex.RexParts.RexPython
             try
             {
                 string EventParams = "\"client_startup\",\"" + agentID.ToString() + "\",\"" + status + "\"";
-                myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
             }
             catch (Exception e)
             {

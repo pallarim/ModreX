@@ -248,6 +248,8 @@ namespace ModularRex.RexParts.RexObjects
             return (RexMaterialsDictionary)RexMaterials.Clone();
         }
 
+        public delegate void OnChangePythonClassDelegate(uint localID);
+        public event OnChangePythonClassDelegate OnChangePythonClass;
         private string m_RexClassName = String.Empty;
         public string RexClassName
         {
@@ -261,8 +263,10 @@ namespace ModularRex.RexParts.RexObjects
                 {
                     if (m_RexClassName != OldPythonClass)
                     {
-                        throw new NotImplementedException("TriggerOnChangePythonClass not implemented");
-                        //m_parentGroup.Scene.EventManager.TriggerOnChangePythonClass(LocalId);
+                        if (OnChangePythonClass != null)
+                        {
+                            OnChangePythonClass(this.m_localId);
+                        }
                     }
                 }
                 ScheduleRexPrimUpdate(true);
