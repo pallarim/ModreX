@@ -41,9 +41,13 @@ namespace ModularRex.RexNetwork
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
         public string AvatarStorageOverride;
-        public float RexMovementSpeedMod;
-        public bool RexWalkDisabled;
-        public bool RexFlyDisabled;
+
+        public float RexCharacterSpeedMod = 1.0f;
+        public float RexMovementSpeedMod = 1.0f;
+        public float RexVertMovementSpeedMod = 1.0f; 
+        public bool RexWalkDisabled = false;
+        public bool RexFlyDisabled = false;
+        public bool RexSitDisabled = false;
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
@@ -330,14 +334,38 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        internal void SendRexFog(float vStart, float vEnd, float vR, float vG, float vB)
+        /// <summary>
+        /// Sends Fog parameters to client. Only works underwater.
+        /// </summary>
+        /// <param name="start">meters from camera where the fog starts</param>
+        /// <param name="end">meters from camera where the fog ends</param>
+        /// <param name="red">redness in fog</param>
+        /// <param name="green">greeness in fog</param>
+        /// <param name="blue">blueness in fog</param>
+        public void SendRexFog(float start, float end, float red, float green, float blue)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(start.ToString());
+            pack.Add(end.ToString());
+            pack.Add(red.ToString());
+            pack.Add(green.ToString());
+            pack.Add(blue.ToString());
+
+            SendGenericMessage("RexFog", pack);
         }
 
-        internal void SendRexWaterHeight(float vHeight)
+        /// <summary>
+        /// Sends water height to client. Usually used when changing water height on the fly with scripting.
+        /// </summary>
+        /// <param name="height">Water height in meters</param>
+        public void SendRexWaterHeight(float height)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(height.ToString());
+
+            SendGenericMessage("RexWaterHeight", pack);
         }
 
         internal void SendRexPostProcess(int vEffectId, bool vbToggle)

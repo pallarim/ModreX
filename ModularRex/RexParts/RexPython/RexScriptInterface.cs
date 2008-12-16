@@ -340,6 +340,8 @@ namespace ModularRex.RexParts.RexPython
         }
 
         // Scenepresence related
+        // These are now in RexClientView, although most of them are not working properly yet.
+
         public string SPGetFullName(string vPresenceId)
         {
             UUID TempId = new UUID(vPresenceId);
@@ -527,6 +529,67 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
+        public float SPGetVertMovementModifier(string vPresenceId)
+        {
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    return rexclient.RexVertMovementSpeedMod;
+                }
+            }
+            return 0.0f;
+        }
+
+        public void SPSetVertMovementModifier(string vPresenceId, float vSpeedModifier)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    rexclient.RexVertMovementSpeedMod = vSpeedModifier;
+                }
+        }
+
+
+        public bool SPGetSitDisabled(string vPresenceId)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    return rexclient.RexSitDisabled;
+                }
+            }
+            return false;
+        }
+
+        public void SPSetSitDisabled(string vPresenceId, bool vbValue)
+        {
+
+            UUID TempId = new UUID(vPresenceId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null)
+            {
+                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                {
+                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    rexclient.RexSitDisabled = vbValue;
+                }
+            }
+        }
+
+
         // Rexbot related
         public void BotWalkTo(string vPresenceId, LSL_Types.Vector3 vDest)
         {
@@ -561,10 +624,13 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        // deprecated. prefer BotPauseAutoMove() or BotStopAutoMove()
-        public void BotEnableAutoMove(string vPresenceId, bool vEnable)
+        /// <summary>
+        /// deprecated. prefer BotPauseAutoMove() or BotStopAutoMove()
+        /// </summary>
+        [Obsolete("use BotPauseAutoMove() or BotStopAutoMove()")]
+        public void BotEnableAutoMove(string botId, bool vEnable)
         {
-            UUID TempId = new UUID(vPresenceId);
+            UUID TempId = new UUID(botId);
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null && temppre.ControllingClient is IRexBot)
             {
@@ -572,10 +638,14 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        // Temporarily pause bot auto movement. bot will still warp to destination if it is deemed stuck
-        public void BotPauseAutoMove(string vPresenceId, bool vEnable)
+        /// <summary>
+        /// Temporarily pause bot auto movement. bot will still warp to destination if it is deemed stuck
+        /// </summary>
+        /// <param name="botId">UUID of the bots ScenePresence</param>
+        /// <param name="vEnable"></param>
+        public void BotPauseAutoMove(string botId, bool vEnable)
         {
-            UUID TempId = new UUID(vPresenceId);
+            UUID TempId = new UUID(botId);
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null && temppre.ControllingClient is IRexBot)
             {
@@ -583,24 +653,24 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        // Stop/start bot auto movement. Bot will not warp to destination after it has been stopped, no logic
-        // for checking if bot is stuck
-        public void BotStopAutoMove(string vPresenceId, bool vEnable)
+        /// <summary>
+        /// Stop/start bot auto movement. Bot will not warp to destination after it has been stopped,
+        /// no logic for checking if bot is stuck
+        /// </summary>
+        /// <param name="botId">UUID of the bots ScenePresence</param>
+        /// <param name="vEnable"></param>
+        public void BotStopAutoMove(string botId, bool vEnable)
         {
-            UUID TempId = new UUID(vPresenceId);
+            UUID TempId = new UUID(botId);
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null && temppre.ControllingClient is IRexBot)
             {
                 (temppre.ControllingClient as IRexBot).StopAutoMove(vEnable);
             }
         }
-
-
-
-
         
 
-        // Functions not supported at the moment.
+        #region Functions not supported at the moment.
         /*  
         public bool GetFreezed(string vId)
         {
@@ -692,6 +762,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
         */
+        #endregion
 
         public float TimeOfDay //is double in LL interface, but float inside opensim estate info
         {
