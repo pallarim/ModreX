@@ -10,6 +10,8 @@ namespace ModularRex.RexParts
 {
     public class RexScriptTestModule : IRegionModule 
     {
+        private bool windToggle = true;
+
         public void Initialise(Scene scene, IConfigSource source)
         {
             scene.EventManager.OnNewClient += new EventManager.OnNewClientDelegate(EventManager_OnNewClient);
@@ -32,11 +34,58 @@ namespace ModularRex.RexParts
 
         void client_OnChatFromClient(object sender, OpenSim.Framework.OSChatMessage e)
         {
-            e.Sender.SendAlertMessage("Hello there");
-
-            if(e.Sender is RexClientView)
+            if (e.Message != "")
             {
-                ((RexClientView) e.Sender).SendRexScriptCommand("hud", "ShowInventoryMessage(\"Test\")", "");
+                switch (e.Message.Split(' ')[0])
+                {
+                    case "fog":
+                        if (e.Sender is RexClientView)
+                        {
+                            ((RexClientView)e.Sender).SendRexFog(0, 50, 50, 50, 50);
+                        }
+                        break;
+                    case "water":
+                        if (e.Sender is RexClientView)
+                        {
+                            if (e.Message.Split(' ').Length > 1)
+                            {
+                                ((RexClientView)e.Sender).SendRexWaterHeight(Convert.ToSingle(e.Message.Split(' ')[1]));
+                            }
+                            else
+                            {
+                                ((RexClientView)e.Sender).SendRexWaterHeight(50);
+                            }
+                        }
+                        break;
+                    case "postp":
+                        if (e.Sender is RexClientView)
+                        {
+                            if (e.Message.Split(' ').Length > 2)
+                            {
+                                bool toggle = Convert.ToBoolean(e.Message.Split(' ')[2]);
+                                int id = Convert.ToInt32(e.Message.Split(' ')[1]);
+                                ((RexClientView)e.Sender).SendRexPostProcess(id, toggle);
+                            }
+                        }
+                        break;
+                    case "wind":
+                        if (e.Sender is RexClientView)
+                        {
+                            ((RexClientView)e.Sender).SendRexToggleWindSound(!this.windToggle);
+                            windToggle = !windToggle;
+                            //((RexClientView)e.Sender).SendRexScriptCommand("hud", "ShowInventoryMessage(\"wind ="+windToggle.ToString()+" \")", "");
+                        }
+                        break;
+                    default:
+
+                        e.Sender.SendAlertMessage("Hello there");
+
+                        if (e.Sender is RexClientView)
+                        {
+                            ((RexClientView)e.Sender).SendRexScriptCommand("hud", "ShowInventoryMessage(\"Test\")", "");
+                        }
+                        break;
+                }
             }
         }
 

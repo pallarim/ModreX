@@ -368,39 +368,143 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexWaterHeight", pack);
         }
 
-        internal void SendRexPostProcess(int vEffectId, bool vbToggle)
+        /// <summary>
+        /// Sends post postprosessing effect toggle to client.
+        /// </summary>
+        /// <see cref="http://rexdeveloper.org/wiki/index.php?title=Content_Scripting_Python_Post-Process"/>
+        /// <param name="effectId">Id of the effect. See documentation for the effect ids</param>
+        /// <param name="toggle">True to set effect on. False to set effect off.</param>
+        public void SendRexPostProcess(int effectId, bool toggle)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(effectId.ToString());
+            pack.Add(toggle.ToString());
+
+            SendGenericMessage("RexPostP", pack);
         }
 
-        internal void SendRexRttCamera(int command, string name, UUID uUID, Vector3 pos, Vector3 lookat, int width, int height)
+        /// <summary>
+        /// Creates client side rtt camera
+        /// </summary>
+        /// <param name="command">0 to remove existing rtt camera (by name), 1 to add new rtt camera</param>
+        /// <param name="name">Unique identifier for the camera</param>
+        /// <param name="assetId">UUID of the texture that gets rendered to</param>
+        /// <param name="pos">Position of the camera in the world</param>
+        /// <param name="lookat">Point in the world the camera will look at</param>
+        /// <param name="width">Width of the texture</param>
+        /// <param name="height">Height of the texture</param>
+        public void SendRexRttCamera(int command, string name, UUID assetId, Vector3 pos, Vector3 lookat, int width, int height)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(command.ToString());
+            pack.Add(name);
+            pack.Add(assetId.ToString());
+            pack.Add(pos.ToString());
+            pack.Add(lookat.ToString());
+            pack.Add(width.ToString());
+            pack.Add(height.ToString());
+
+            SendGenericMessage("RexRttCam", pack);
         }
 
-        internal void SendRexViewport(int command, string name, float vX, float vY, float vWidth, float vHeight)
+        /// <summary>
+        /// Sends a viewport to client
+        /// </summary>
+        /// <param name="command">0 to remove existing viewport (by name), 1 to add new viewport.</param>
+        /// <param name="name">Unique identifier for the viewport</param>
+        /// <param name="posX">screen relative position of the left edge of the viewport</param>
+        /// <param name="posY">screen relative position of the top edge of the viewport</param>
+        /// <param name="width">screen relative width of the viewport</param>
+        /// <param name="height">screen relative height of the viewport</param>
+        public void SendRexViewport(int command, string name, float posX, float posY, float width, float height)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(command.ToString());
+            pack.Add(name);
+            pack.Add(posX.ToString());
+            pack.Add(posY.ToString());
+            pack.Add(width.ToString());
+            pack.Add(height.ToString());
+
+            SendGenericMessage("RexSetViewport", pack);
         }
 
-        internal void SendRexToggleWindSound(bool vbToggle)
+        /// <summary>
+        /// Toggles the wind sound on client
+        /// </summary>
+        /// <param name="toggle"></param>
+        public void SendRexToggleWindSound(bool toggle)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(toggle.ToString());
+
+            SendGenericMessage("RexToggleWindSound", pack);
         }
 
-        internal void SendRexCameraClientSideEffect(bool enable, UUID uUID, Vector3 pos, Quaternion rot)
+        /// <summary>
+        /// Sends Rex clientside camera effects, particle script attached to camera etc.
+        /// </summary>
+        /// <param name="enable">True to enable the effect, False to disable</param>
+        /// <param name="assetId">Id of the effect</param>
+        /// <param name="pos">Offset position from the camera</param>
+        /// <param name="rot">Offset rotation from the camera</param>
+        public void SendRexCameraClientSideEffect(bool enable, UUID assetId, Vector3 pos, Quaternion rot)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(assetId.ToString());
+            pack.Add(pos.ToString());
+            pack.Add(rot.ToString());
+            pack.Add(enable.ToString());
+
+            SendGenericMessage("RexSCSEffect", pack);
         }
 
-        internal void SendRexSetAmbientLight(Vector3 lightDir, Vector3 lightC, Vector3 ambientC)
+        /// <summary>
+        /// Overrides default lighting conditions and ambient light in the world.
+        /// 
+        /// Note that this override is a hard one. The user will be unable to change the lighting
+        /// conditions in any way after they are overridden. 
+        /// </summary>
+        /// <param name="direction">Direction of the global light (sun)</param>
+        /// <param name="colour">Colour of the global light</param>
+        /// <param name="ambientColour">Colour of the ambient light (the light that is always present)</param>
+        public void SendRexSetAmbientLight(Vector3 direction, Vector3 colour, Vector3 ambientColour)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(direction.ToString());
+            pack.Add(colour.ToString());
+            pack.Add(ambientColour.ToString());
+
+            SendGenericMessage("RexAmbientL", pack);
         }
 
-        internal void SendRexPlayFlashAnimation(UUID uUID, float left, float top, float right, float bottom, float timeToDeath)
+        /// <summary>
+        /// Lauch flash animation to play on client
+        /// </summary>
+        /// <param name="assetId">Id of the flash animation (swf) to play</param>
+        /// <param name="left">left border of the rectangle</param>
+        /// <param name="top">top border of the rectangle</param>
+        /// <param name="right">right border of the rectangle</param>
+        /// <param name="bottom">bottom border of the rectangle</param>
+        /// <param name="timeToDeath">time in seconds from start of animation playback until the flash control is destroyed</param>
+        public void SendRexPlayFlashAnimation(UUID assetId, float left, float top, float right, float bottom, float timeToDeath)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(assetId.ToString());
+            pack.Add(left.ToString());
+            pack.Add(top.ToString());
+            pack.Add(right.ToString());
+            pack.Add(bottom.ToString());
+            pack.Add(timeToDeath.ToString());
+
+            SendGenericMessage("RexFlashAnim", pack);
         }
 
         internal void SendRexPreloadAvatarAssets(List<string> vAssetsList)
