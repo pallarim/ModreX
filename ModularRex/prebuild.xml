@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Prebuild xmlns="http://dnpb.sourceforge.net/schemas/prebuild-1.7.xsd" version="1.7">
+  <Solution name="ModularRex" activeConfig="Debug" path="./" version="0.2.0-$Rev: 20 $">
+    <Configuration name="Debug">
+      <Options>
+        <CompilerDefines>TRACE;DEBUG</CompilerDefines>
+        <OptimizeCode>false</OptimizeCode>
+        <CheckUnderflowOverflow>false</CheckUnderflowOverflow>
+        <AllowUnsafe>false</AllowUnsafe>
+        <WarningLevel>4</WarningLevel>
+        <WarningsAsErrors>false</WarningsAsErrors>
+        <SuppressWarnings></SuppressWarnings>
+        <OutputPath>bin</OutputPath>
+        <DebugInformation>true</DebugInformation>
+        <IncrementalBuild>true</IncrementalBuild>
+        <NoStdLib>false</NoStdLib>
+      </Options>
+    </Configuration>
+    <Configuration name="Release">
+      <Options>
+        <CompilerDefines>TRACE</CompilerDefines>
+        <OptimizeCode>true</OptimizeCode>
+        <CheckUnderflowOverflow>false</CheckUnderflowOverflow>
+        <AllowUnsafe>false</AllowUnsafe>
+        <WarningLevel>4</WarningLevel>
+        <WarningsAsErrors>false</WarningsAsErrors>
+        <SuppressWarnings></SuppressWarnings>
+        <OutputPath>bin</OutputPath>
+        <DebugInformation>false</DebugInformation>
+        <IncrementalBuild>true</IncrementalBuild>
+        <NoStdLib>false</NoStdLib>
+      </Options>
+    </Configuration>
+
+    <Project name="ModularRex" path="./" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../bin</ReferencePath>
+	 <Reference name="IronMath.dll" />
+	 <Reference name="IronPython.dll" />
+	 <Reference name="log4net.dll"/>
+	 <Reference name="Nini.dll" />
+	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverseTypes.dll"/>
+	 <Reference name="OpenSim"/>
+	 <Reference name="OpenSim.Framework.dll"/>
+	 <Reference name="OpenSim.Framework.Communications.dll"/>
+	 <Reference name="OpenSim.Framework.Console.dll"/>
+	 <Reference name="OpenSim.Framework.Servers.dll"/>
+	 <Reference name="OpenSim.Region.ClientStack.dll"/>
+	 <Reference name="OpenSim.Region.ClientStack.LindenUDP.dll"/>
+	 <Reference name="OpenSim.Region.Communications.Local.dll"/>
+	 <Reference name="OpenSim.Region.Environment.dll"/>
+	 <Reference name="OpenSim.Region.Interfaces.dll"/>
+	 <Reference name="OpenSim.Region.Physics.Manager.dll"/>
+	 <Reference name="OpenSim.Region.ScriptEngine.Shared.dll"/>
+	 <Reference name="OpenSim.Region.ScriptEngine.Shared.Api.dll"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="XMLRPC.dll"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project> 
+  </Solution>
+</Prebuild>
+ 
