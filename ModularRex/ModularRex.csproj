@@ -31,8 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronMath, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="IronPython, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\bin\log4net.dll</HintPath>
@@ -58,10 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RexDBObjects\RexFriendListItem.cs" />
-    <Compile Include="RexDBObjects\RexUserAgentData.cs" />
-    <Compile Include="RexDBObjects\RexUserProfileData.cs" />
-    <Compile Include="RexNetwork\AuthenticationService.cs" />
+    <Compile Include="RexFramework\RexObjectProperties.cs" />
     <Compile Include="RexNetwork\IClientRexAppearance.cs" />
     <Compile Include="RexNetwork\IClientRexFaceExpression.cs" />
     <Compile Include="RexNetwork\RexLogin\RexLoginModule.cs" />
@@ -71,32 +66,16 @@
     <Compile Include="RexParts\ModrexFacialExpression.cs" />
     <Compile Include="RexNetwork\RexClientView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RexParts\ModRexVoice\VoiceChatServer.cs" />
-    <Compile Include="RexParts\ModRexVoice\VoiceClient.cs" />
-    <Compile Include="RexParts\ModRexVoice\VoicePacket.cs" />
-    <Compile Include="RexParts\ModRexVoice\VoicePacketHeader.cs" />
-    <Compile Include="RexParts\RexObjects\RexMaterialsDictionary.cs" />
-    <Compile Include="RexParts\RexObjects\RexObjectGroup.cs" />
-    <Compile Include="RexParts\RexObjects\RexObjectPart.cs" />
-    <Compile Include="RexParts\RexPython\IRexBot.cs" />
-    <Compile Include="RexParts\RexPython\RexEventManager.cs" />
-    <Compile Include="RexParts\RexPython\RexPythonScriptAccessImpl.cs" />
-    <Compile Include="RexParts\RexPython\RexScriptEngine.cs" />
-    <Compile Include="RexParts\RexPython\RexScriptInterface.cs" />
-    <Compile Include="RexParts\RexScriptAccess.cs" />
+    <Compile Include="RexParts\ModrexObjects.cs" />
+    <Compile Include="RexParts\ModrexVoice.cs" />
     <Compile Include="RexParts\RexScriptTestModule.cs" />
     <Compile Include="RexParts\RexTestModule.cs" />
-    <Compile Include="RexParts\Rex_BuiltIn_Commands.cs" />
-    <Compile Include="RexParts\Rex_BuiltIn_Commands_Interface.cs" />
+    <Compile Include="RexStore\RexXMLStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\OpenSim\Framework\Communications\OpenSim.Framework.Communications.csproj">
       <Project>{CB52B7E7-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Framework.Communications</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Framework\Console\OpenSim.Framework.Console.csproj">
-      <Project>{0ED8EBE8-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Framework.Console</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\OpenSim\Framework\OpenSim.Framework.csproj">
       <Project>{8ACA2445-0000-0000-0000-000000000000}</Project>
@@ -105,6 +84,10 @@
     <ProjectReference Include="..\..\OpenSim\Framework\Servers\OpenSim.Framework.Servers.csproj">
       <Project>{2CC71860-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Framework.Servers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\OpenSim\Framework\Statistics\OpenSim.Framework.Statistics.csproj">
+      <Project>{9E387B00-0000-0000-0000-000000000000}</Project>
+      <Name>OpenSim.Framework.Statistics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\OpenSim\Region\Application\OpenSim.csproj">
       <Project>{438A9556-0000-0000-0000-000000000000}</Project>
@@ -130,18 +113,9 @@
       <Project>{83169C4E-0000-0000-0000-000000000000}</Project>
       <Name>OpenSim.Region.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\Physics\Manager\OpenSim.Region.Physics.Manager.csproj">
-      <Project>{FDCF8D3D-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.Physics.Manager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\ScriptEngine\Shared\Api\Implementation\OpenSim.Region.ScriptEngine.Shared.Api.csproj">
-      <Project>{C18E3417-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.ScriptEngine.Shared.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\ScriptEngine\Shared\OpenSim.Region.ScriptEngine.Shared.csproj">
-      <Project>{F93F91AD-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.ScriptEngine.Shared</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="RexParts\RexPython\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

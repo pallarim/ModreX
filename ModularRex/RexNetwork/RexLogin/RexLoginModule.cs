@@ -49,7 +49,7 @@ namespace ModularRex.RexNetwork.RexLogin
             RexClientView rex;
             if(client.TryGet(out rex))
             {
-                rex.RexAuthURL = m_authUrl[rex.AgentId];
+                rex.RexAccount = m_authUrl[rex.AgentId];
             }
         }
 
@@ -69,8 +69,6 @@ namespace ModularRex.RexNetwork.RexLogin
                 m_udpserver.AddScene(scene);
             }
             m_udpserver.Start();
-
-
         }
 
         public void Close()

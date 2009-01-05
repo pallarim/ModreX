@@ -1,11 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 using log4net;
+using ModularRex.RexFramework;
 using Nwc.XmlRpc;
 using OpenMetaverse;
+using OpenMetaverse.Packets;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
 using OpenSim.Region.ClientStack;
@@ -18,6 +21,8 @@ namespace ModularRex.RexNetwork
     public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> parameters);
 
     public delegate void RexAvatarProperties(RexClientView sender, List<string> parameters);
+
+    public delegate void RexRecieveObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
 
     public delegate void ReceiveRexStartUp(RexClientView remoteClient, UUID agentID, string status);
 
@@ -52,6 +57,7 @@ namespace ModularRex.RexNetwork
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
         public event RexAvatarProperties OnRexAvatarProperties;
+        public event RexRecieveObjectPropertiesDelegate OnRexObjectProperties;
         public event ReceiveRexStartUp OnReceiveRexStartUp;
         public event ReceiveRexClientScriptCmd OnReceiveRexClientScriptCmd;
 
@@ -63,6 +69,15 @@ namespace ModularRex.RexNetwork
         {
             // Rex communication now occurs via GenericMessage
             // We have a special handler here below.
+
+
+            AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
+
+            OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
@@ -73,8 +88,15 @@ namespace ModularRex.RexNetwork
                    sessionId, circuitCode, proxyEP, userSettings)
         {
             // Rex communication now occurs via GenericMessage
-            // We have a special handler here below.
-            OnGenericMessage += RealXtendClientView_OnGenericMessage;
+            // We need to register GenericMessage handlers
+
+            AddGenericPacketHandler("RexAppearance",        RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexFaceExpression",    RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexAvatarProp",        RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexPrimData",          RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexData",              RealXtendClientView_OnGenericMessage);
+
+            OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
 
             RexAvatarURL = rexAvatarURL;
             RexAuthURL = rexAuthURL;
@@ -89,7 +111,10 @@ namespace ModularRex.RexNetwork
         {
             RegisterInterface<IClientRexAppearance>(this);
             RegisterInterface<IClientRexFaceExpression>(this);
-            RegisterInterface<RexClientView>(this);
+
+            // Register our own class 'as-is' so it can be
+            // used via IClientCore.Get<RexClientView>()...
+            RegisterInterface(this);
 
             base.RegisterInterfaces();
         }
@@ -169,6 +194,53 @@ namespace ModularRex.RexNetwork
             }
         }
 
+        void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
+        {
+            if(method == "RexPrimData".ToLower())
+            {
+                HandleRexPrimData(args);
+                return;
+            }
+        }
+
+        private void HandleRexPrimData(byte[][] args)
+        {
+            int rpdLen = 0;
+            int idx = 0;
+            bool first = false;
+            UUID id = UUID.Zero;
+
+            foreach (byte[] arg in args)
+            {
+                if(!first)
+                {
+                    id = new UUID(Util.FieldToString(arg));
+                    first = true;
+                    continue;
+                }
+
+                rpdLen += arg.Length;
+            }
+
+            first = false;
+            byte[] rpdArray = new byte[rpdLen];
+
+            foreach (byte[] arg in args)
+            {
+                if(!first)
+                {
+                    first = true;
+                    continue;
+                }
+
+                arg.CopyTo(rpdArray,idx);
+                idx += arg.Length;
+            }
+
+            if (OnRexObjectProperties != null)
+                OnRexObjectProperties(this, id, new RexObjectProperties(rpdArray));
+        }
+
         /// <summary>
         /// Special - used to convert GenericMessage packets
         /// to their appropriate Rex equivilents.
@@ -205,6 +277,11 @@ namespace ModularRex.RexNetwork
                 }
             }
 
+            if(method == "RexData")
+            {
+                
+            }
+
             if (method == "rexscr")
             {
                 if (OnReceiveRexClientScriptCmd != null)
@@ -227,6 +304,49 @@ namespace ModularRex.RexNetwork
                 m_log.Warn("\t" + s);
             }
             m_log.Warn("}");
+
+        }
+
+        public void SendRexObjectProperties(UUID id, RexObjectProperties x)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+            gmp.MethodData.Method = Utils.StringToBytes("RexPrimData");
+
+            byte[] temprexprimdata = x.GetRexPrimDataToBytes();
+            int numlines = 0;
+            int i = 0;
+
+            if (temprexprimdata != null)
+            {
+                while (i <= temprexprimdata.Length)
+                {
+                    numlines++;
+                    i += 200;
+                }
+            }
+
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[1 + numlines];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(id.ToString());
+
+            for (i = 0; i < numlines; i++)
+            {
+                gmp.ParamList[i + 1] = new GenericMessagePacket.ParamListBlock();
+
+                if ((temprexprimdata.Length - i * 200) < 200)
+                {
+                    gmp.ParamList[i + 1].Parameter = new byte[temprexprimdata.Length - i * 200];
+                    Buffer.BlockCopy(temprexprimdata, i * 200, gmp.ParamList[i + 1].Parameter, 0, temprexprimdata.Length - i * 200);
+                }
+                else
+                {
+                    gmp.ParamList[i + 1].Parameter = new byte[200];
+                    Buffer.BlockCopy(temprexprimdata, i * 200, gmp.ParamList[i + 1].Parameter, 0, 200);
+                }
+            }
+
+            // m_log.Warn("[REXDEBUG]: SendRexPrimData " + vPrimId.ToString());
+            OutPacket(gmp, ThrottleOutPacketType.Task);
 
         }
 
@@ -304,21 +424,23 @@ namespace ModularRex.RexNetwork
         {
             m_log.Info("[REXCLIENT] Resolving avatar...");
             Hashtable ReqVals = new Hashtable();
-            ReqVals["avatar_uuid"] = AgentId.ToString();
+            ReqVals["avatar_account"] = RexAccount;
             ReqVals["AuthenticationAddress"] = RexAuthURL;
 
             ArrayList SendParams = new ArrayList();
             SendParams.Add(ReqVals);
 
-            XmlRpcRequest req = new XmlRpcRequest("get_user_by_uuid", SendParams);
+            XmlRpcRequest req = new XmlRpcRequest("get_user_by_account", SendParams);
 
-            m_log.Info("[REXCLIENT] Sending XMLRPC Request to " + RexAuthURL);
-            XmlRpcResponse authreply = req.Send(RexAuthURL, 9000);
-            if (!((Hashtable)authreply.Value).ContainsKey("error_type"))
-            {
-                string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-                string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString();
-                UUID userID = new UUID(((Hashtable)authreply.Value)["uuid"].ToString());
+            m_log.Info("[REXCLIENT] Sending XMLRPC Request to http://" + RexAuthURL);
+
+            XmlRpcResponse authreply = req.Send("http://" + RexAuthURL, 9000);
+
+            m_log.Info(authreply.ToString());
+
+            string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
+/*            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); */
+            UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
 
                 // Sanity check
                 if (userID == AgentId)
@@ -329,8 +451,8 @@ namespace ModularRex.RexNetwork
             }
             else
             {
-                //Error has occurred
-                m_log.Warn("[REXCLIENT]: User not found");
+                RexAvatarURL = rexAsAddress;
+//                RexSkypeURL = rexSkypeURL;
             }
         }
 
