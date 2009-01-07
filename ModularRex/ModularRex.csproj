@@ -1,128 +1,268 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectType>Local</ProjectType>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4AC582D6-1168-450B-BDCF-431B6AD31F30}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ModularRex</RootNamespace>
+    <ProjectGuid>{19A31B5B-0000-0000-0000-000000000000}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon></ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
     <AssemblyName>ModularRex</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder></AppDesignerFolder>
+    <RootNamespace>ModularRex</RootNamespace>
+    <StartupObject></StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DocumentationFile></DocumentationFile>
+    <DebugSymbols>True</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <Optimize>False</Optimize>
     <OutputPath>..\..\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <RemoveIntegerChecks>False</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
     <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile></DocumentationFile>
+    <DebugSymbols>False</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <Optimize>True</Optimize>
+    <OutputPath>..\..\bin\</OutputPath>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <RemoveIntegerChecks>False</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="IronMath.dll" >
+      <HintPath>..\..\bin\IronMath.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IronPython.dll" >
+      <HintPath>..\..\bin\IronPython.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="log4net.dll" >
       <HintPath>..\..\bin\log4net.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="Nini, Version=1.1.0.0, Culture=neutral, PublicKeyToken=691faec150a7fa7b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Nini.dll" >
       <HintPath>..\..\bin\Nini.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="OpenMetaverse, Version=1.0.0.24732, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OpenMetaverse.dll" >
       <HintPath>..\..\bin\OpenMetaverse.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="OpenMetaverseTypes, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OpenMetaverseTypes.dll" >
       <HintPath>..\..\bin\OpenMetaverseTypes.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="XMLRPC, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OpenSim" >
+      <HintPath>OpenSim.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Framework.Communications.dll" >
+      <HintPath>..\..\bin\OpenSim.Framework.Communications.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Framework.Console.dll" >
+      <HintPath>..\..\bin\OpenSim.Framework.Console.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Framework.dll" >
+      <HintPath>..\..\bin\OpenSim.Framework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Framework.Servers.dll" >
+      <HintPath>..\..\bin\OpenSim.Framework.Servers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Framework.Statistics.dll" >
+      <HintPath>..\..\bin\OpenSim.Framework.Statistics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.ClientStack.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.ClientStack.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.ClientStack.LindenUDP.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.ClientStack.LindenUDP.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.Communications.Local.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.Communications.Local.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.Environment.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.Environment.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.Interfaces.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.Interfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.Physics.Manager.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.Physics.Manager.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.ScriptEngine.Shared.Api.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.ScriptEngine.Shared.Api.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenSim.Region.ScriptEngine.Shared.dll" >
+      <HintPath>..\..\bin\OpenSim.Region.ScriptEngine.Shared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" >
+      <HintPath>System.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data" >
+      <HintPath>System.Data.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml" >
+      <HintPath>System.Xml.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XMLRPC.dll" >
       <HintPath>..\..\bin\XMLRPC.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RexFramework\RexObjectProperties.cs" />
-    <Compile Include="RexNetwork\IClientRexAppearance.cs" />
-    <Compile Include="RexNetwork\IClientRexFaceExpression.cs" />
-    <Compile Include="RexNetwork\RexLogin\RexLoginModule.cs" />
-    <Compile Include="RexNetwork\RexPacketServer.cs" />
-    <Compile Include="RexNetwork\RexUDPServer.cs" />
-    <Compile Include="RexParts\ModrexAppearance.cs" />
-    <Compile Include="RexParts\ModrexFacialExpression.cs" />
-    <Compile Include="RexNetwork\RexClientView.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RexParts\ModrexObjects.cs" />
-    <Compile Include="RexParts\ModrexVoice.cs" />
-    <Compile Include="RexParts\RexScriptTestModule.cs" />
-    <Compile Include="RexParts\RexTestModule.cs" />
-    <Compile Include="RexStore\RexXMLStore.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\OpenSim\Framework\Communications\OpenSim.Framework.Communications.csproj">
-      <Project>{CB52B7E7-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Framework.Communications</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Framework\OpenSim.Framework.csproj">
-      <Project>{8ACA2445-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Framework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Framework\Servers\OpenSim.Framework.Servers.csproj">
-      <Project>{2CC71860-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Framework.Servers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Framework\Statistics\OpenSim.Framework.Statistics.csproj">
-      <Project>{9E387B00-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Framework.Statistics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\Application\OpenSim.csproj">
-      <Project>{438A9556-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\ClientStack\LindenUDP\OpenSim.Region.ClientStack.LindenUDP.csproj">
-      <Project>{CE1E9132-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.ClientStack.LindenUDP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\ClientStack\OpenSim.Region.ClientStack.csproj">
-      <Project>{DC3698B2-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.ClientStack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\Communications\Local\OpenSim.Region.Communications.Local.csproj">
-      <Project>{BFB5D807-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.Communications.Local</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\Environment\OpenSim.Region.Environment.csproj">
-      <Project>{DCBA491C-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.Environment</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OpenSim\Region\Interfaces\OpenSim.Region.Interfaces.csproj">
-      <Project>{83169C4E-0000-0000-0000-000000000000}</Project>
-      <Name>OpenSim.Region.Interfaces</Name>
-    </ProjectReference>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexFriendListItem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexUserAgentData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexUserProfileData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexFramework\RexObjectProperties.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\AuthenticationService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\IClientRexAppearance.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\IClientRexFaceExpression.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexClientView.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexPacketServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexUDPServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexAuthentication\RexAuthUtil.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexAuthentication\RexProfile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexNetwork\RexLogin\RexLoginModule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModrexAppearance.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModrexFacialExpression.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexScriptAccess.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexScriptTestModule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexTestModule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\Rex_BuiltIn_Commands.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\Rex_BuiltIn_Commands_Interface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModRexVoice\VoiceChatServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModRexVoice\VoiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModRexVoice\VoicePacket.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModRexVoice\VoicePacketHeader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexObjects\RexMaterialsDictionary.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexObjects\RexObjectGroup.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexObjects\RexObjectPart.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexPython\IRexBot.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexPython\RexEventManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexPython\RexPythonScriptAccessImpl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexPython\RexScriptEngine.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\RexPython\RexScriptInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RexParts\RexPython\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

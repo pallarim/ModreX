@@ -437,9 +437,10 @@ namespace ModularRex.RexNetwork
             XmlRpcResponse authreply = req.Send("http://" + RexAuthURL, 9000);
 
             m_log.Info(authreply.ToString());
-
+            if (!((Hashtable)authreply.Value).ContainsKey("error_type"))
+            {
             string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-/*            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); */
+            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); 
             UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
 
                 // Sanity check
@@ -451,8 +452,7 @@ namespace ModularRex.RexNetwork
             }
             else
             {
-                RexAvatarURL = rexAsAddress;
-//                RexSkypeURL = rexSkypeURL;
+                m_log.Warn("[REXCLIENT]: User not found");
             }
         }
 
