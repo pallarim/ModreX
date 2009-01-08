@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <project name="ModularRex" default="build">
   <target name="build">
-    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
+    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" workingdir="../" />
     <nant buildfile="../ModularRex.build" target="build" />
   </target>
   <target name="cibuild">
@@ -11,7 +11,7 @@
         <include name="**" />
       </fileset>
     </copy>
-    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
+    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" workingdir="../" />
     <nant buildfile="../ModularRex.build" target="build" />
   </target>
 </project>
