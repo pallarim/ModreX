@@ -6,7 +6,7 @@
   </target>
   <target name="cibuild">
     <property name="projectdir" value="ModularRex" />
-    <copy todir="../../../">
+    <copy todir="../../../bin/">
       <fileset basedir="../../../MRX-OS/bin/">
         <include name="**" />
       </fileset>
