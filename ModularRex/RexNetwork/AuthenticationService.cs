@@ -768,7 +768,7 @@ namespace ModularRex.RexNetwork
 
                 Hashtable requestData = new Hashtable();
                 requestData.Add("ownerID", ownerID);
-                foreach (var struid in uuids)
+                foreach (string struid in uuids)
                 {
                     requestData.Add(struid, struid);
                 }

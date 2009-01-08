@@ -57,7 +57,7 @@ namespace ModularRex.RexNetwork.RexLogin
         public void PostInitialise()
         {
             m_log.Info("[REX] Overloading Login_to_Simulator");
-            m_scenes[0].AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
+            m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
 
             m_primaryRegionInfo = m_scenes[0].RegionInfo;
 
@@ -213,7 +213,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.StartLocation = startLocationRequest;
 
-                string capsPath = Util.GetRandomCapsPath();
+                string capsPath = OpenSim.Framework.Communications.Capabilities.CapsUtil.GetRandomCapsObjectPath();// Util.GetRandomCapsPath();
                 string seedcap = "http://" + m_scenes[0].RegionInfo.ExternalEndPoint.Address + ":" +
                                  "9000" + "/CAPS/" + capsPath + "0000/";
 
@@ -248,7 +248,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 Hashtable val = (Hashtable) rep.Value;
                 val["rex"] = "running rex mode";
 
-                m_log.Debug(rep.ToString());
+                //m_log.Debug(rep.ToString());
 
                 return rep;
             }

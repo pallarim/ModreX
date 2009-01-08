@@ -205,7 +205,8 @@ namespace ModularRex.RexParts.RexPython
         // ******************************
         public void SendGeneralAlertAll(string vId, string vMessage)
         {
-            myScriptEngine.World.SendGeneralAlert(vMessage);
+            //TODO: Fix this. Broken in newest OpenSim
+            //myScriptEngine.World.SendGeneralAlert(vMessage);
         }
 
         public void SendAlertToAvatar(string vId,string vPresenceId, string vMessage, bool vbModal)
@@ -600,6 +601,8 @@ namespace ModularRex.RexParts.RexPython
                 Vector3 dest = new Vector3((float)vDest.x, (float)vDest.y, (float)vDest.z);
                 (temppre.ControllingClient as IRexBot).WalkTo(dest);
             }
+
+
         }
 
         public void BotFlyTo(string vPresenceId, LSL_Types.Vector3 vDest)
