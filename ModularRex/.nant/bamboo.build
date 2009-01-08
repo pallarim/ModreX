@@ -1,17 +1,17 @@
 <?xml version="1.0" ?>
 <project name="ModularRex" default="build">
   <target name="build">
-    <exec program="../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
+    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
     <nant buildfile="../ModularRex.build" target="build" />
   </target>
   <target name="cibuild">
     <property name="projectdir" value="ModularRex" />
     <copy todir="../../">
-      <fileset basedir="../../MRX-OS/bin/">
+      <fileset basedir="../../../MRX-OS/bin/">
         <include name="**" />
       </fileset>
     </copy>
-    <exec program="../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
+    <exec program="../../../MRX-OS/bin/Prebuild.exe" commandline="/target nant" />
     <nant buildfile="../ModularRex.build" target="build" />
   </target>
 </project>
