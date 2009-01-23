@@ -44,7 +44,7 @@
         </Options>
       </Configuration>
 
-	<ReferencePath>../../../bin</ReferencePath>
+	<ReferencePath>../../../bin/</ReferencePath>
 	 <Reference name="log4net"/>
 	 <Reference name="OpenMetaverse"/>
 	 <Reference name="OpenMetaverseTypes"/>
@@ -72,7 +72,8 @@
         </Options>
       </Configuration>
 
-	<ReferencePath>../../../bin</ReferencePath>
+	<ReferencePath>../../../bin/</ReferencePath>
+	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="log4net.dll"/>
 	 <Reference name="OpenMetaverse.dll"/>
 	 <Reference name="OpenMetaverseTypes.dll"/>
@@ -108,7 +109,7 @@
         </Options>
       </Configuration>
 
-	<ReferencePath>../../bin</ReferencePath>
+	<ReferencePath>../../bin/</ReferencePath>
 	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="ModularRex.NHibernate"/>
 	 <Reference name="IronMath.dll" />
