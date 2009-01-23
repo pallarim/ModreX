@@ -61,6 +61,8 @@ namespace ModularRex.RexNetwork
             rexuser.OnLogout += LogoutHandler;
             rexuser.OnConnectionClosed += CloseClient;
 
+            rexuser.Start();
+
             return true;
         }
     }

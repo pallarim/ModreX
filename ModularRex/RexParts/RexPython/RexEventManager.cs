@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse;
+using OpenSim;
 using OpenSim.Framework;
 using OpenSim.Region.Environment.Scenes;
 using log4net;

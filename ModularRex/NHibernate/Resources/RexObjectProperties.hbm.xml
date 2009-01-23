@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+    <class name="ModularRex.RexFramework.RexObjectProperties, ModularRex.RexFramework" table="RexObjectProperties" lazy="false">
+        <id name="ParentObjectID" column="ID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate"> 
+            <generator class="assigned" /> 
+        </id>
+      
+      <bag name="RexMaterialDictionaryItems" lazy="true">
+        <key column="RexObjectUUID"/>
+        <one-to-many class="ModularRex.RexFramework.RexMaterialsDictionaryItem, ModularRex.RexFramework"/>
+      </bag>
+      <!--
+		    <bag name="RexMaterialDictionaryItems" cascade="all">
+			    <key column="RexObjectUUID"/>
+			    <one-to-many class="ModularRex.RexFramework.RexMaterialsDictionaryItem, ModularRex.RexFramework"/>
+		    </bag>
+        -->
+        <property name="RexDrawType" type="byte" length="64" />
+        <property name="RexIsVisible" type="boolean" />
+        <property name="RexCastShadows" type="boolean" />
+        <property name="RexLightCreatesShadows" type="boolean" />
+        <property name="RexDescriptionTexture" type="boolean" />
+        <property name="RexScaleToPrim" type="boolean" />
+        <property name="RexDrawDistance" type="Single" />
+		    <property name="RexLOD" type="Single" />
+		    <property name="RexMeshUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+		    <property name="RexCollisionMeshUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+		    <property name="RexParticleScriptUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+		    <property name="RexAnimationPackageUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+        <property name="RexAnimationName" type="String" length="64" />
+        <property name="RexAnimationRate" type="Single" />
+		    <property name="RexClassName" type="String" length="64" />
+		    <property name="RexSoundUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+		    <property name="RexSoundVolume" type="Single" />
+		    <property name="RexSoundRadius" type="Single" />
+		    <property name="RexData" type="String" length="3000" />
+		    <property name="RexSelectPriority" type="Int32" />
+        
+    </class>
+</hibernate-mapping>

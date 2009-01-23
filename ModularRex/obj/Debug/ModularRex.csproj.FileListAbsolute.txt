@@ -86,3 +86,8 @@ D:\Work\OpenSim\trunk\ModRex\ModularRex\bin\Debug\OpenSim.Region.ClientStack.Lin
 D:\Work\OpenSim\trunk\ModRex\ModularRex\obj\Debug\ModularRex.pdb
 D:\Work\OpenSim\trunk\bin\ModularRex.dll
 D:\Work\OpenSim\trunk\bin\ModularRex.pdb
+C:\dev\opensim\trunk\ModularRex\obj\Debug\ResolveAssemblyReference.cache
+C:\dev\opensim\trunk\ModularRex\obj\Debug\ModularRex.dll
+C:\dev\opensim\trunk\ModularRex\obj\Debug\ModularRex.pdb
+C:\dev\opensim\bin\ModularRex.dll
+C:\dev\opensim\bin\ModularRex.pdb

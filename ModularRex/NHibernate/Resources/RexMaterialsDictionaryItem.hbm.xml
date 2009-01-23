@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+    <class name="ModularRex.RexFramework.RexMaterialsDictionaryItem, ModularRex.RexFramework" table="RexMaterialsDictionaryItems" lazy="false">
+      <id name="ID" column="ID" type="int" unsaved-value="0">
+        <generator class="identity" />
+      </id>
+      <property name="AssetID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+			<property name="Num" type="OpenSim.Data.NHibernate.UInt32Type, OpenSim.Data.NHibernate" />
+      <property name="RexObjectUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+	</class>
+</hibernate-mapping>

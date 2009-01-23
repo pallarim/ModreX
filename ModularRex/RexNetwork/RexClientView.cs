@@ -181,14 +181,8 @@ namespace ModularRex.RexNetwork
             get { return m_rexAuthURL; }
             set
             {
-                if (value.Contains("@"))
-                {
-                    m_rexAuthURL = "http://" + value.Split('@')[1];
-                }
-                else
-                {
-                    m_rexAuthURL = value;
-                }
+                m_rexAuthURL = value;
+                
                 // Request Agent Properties Asynchronously
                 ThreadPool.QueueUserWorkItem(RequestProperties);
             }
@@ -436,18 +430,18 @@ namespace ModularRex.RexNetwork
 
             XmlRpcResponse authreply = req.Send("http://" + RexAuthURL, 9000);
 
-            m_log.Info(authreply.ToString());
+            //m_log.Info(authreply.ToString());
             if (!((Hashtable)authreply.Value).ContainsKey("error_type"))
             {
             string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); 
+            //string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); 
             UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
 
                 // Sanity check
                 if (userID == AgentId)
                 {
                     RexAvatarURL = rexAsAddress;
-                    RexSkypeURL = rexSkypeURL;
+                    //RexSkypeURL = rexSkypeURL;
                 }
             }
             else

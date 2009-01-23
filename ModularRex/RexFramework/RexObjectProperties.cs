@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -19,97 +20,16 @@ namespace ModularRex.RexFramework
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        #region Material Dictionary
-        /// <summary>
-        /// Rex Material Dictionary
-        /// May get unfolded as a seperate class
-        /// </summary>
-        public class RexMaterialsDictionary : Dictionary<uint, UUID>, ICloneable, IXmlSerializable
-        {
-            private RexObjectProperties MyPart;
-
-            public void SetSceneObjectPart(RexObjectProperties vPart)
-            {
-                MyPart = vPart;
-            }
-
-            public void AddMaterial(uint vIndex, UUID vMaterialUUID)
-            {
-                lock (this)
-                {
-                    this[vIndex] = vMaterialUUID;
-                }
-                if (MyPart != null)
-                    MyPart.SchedulePropertiesUpdate(true);
-            }
-
-            public void DeleteMaterialByIndex(uint vIndex)
-            {
-                lock (this)
-                {
-                    if (ContainsKey(vIndex))
-                    {
-                        Remove(vIndex);
-                        if (MyPart != null)
-                            MyPart.SchedulePropertiesUpdate(true);
-                    }
-                }
-            }
-
-            public void ClearMaterials()
-            {
-                lock (this)
-                {
-                    Clear();
-                }
-                if (MyPart != null)
-                    MyPart.SchedulePropertiesUpdate(true);
-            }
-
-
-            public void ReadXml(XmlReader reader)
-            {
-
-            }
-
-            public void WriteXml(XmlWriter writer)
-            {
-
-            }
-
-            public XmlSchema GetSchema()
-            {
-                return null;
-            }
-
-            public Object Clone()
-            {
-                RexMaterialsDictionary clone = new RexMaterialsDictionary();
-                lock (this)
-                {
-                    foreach (uint matindex in Keys)
-                        clone.Add(matindex, this[matindex]);
-                }
-                return clone;
-            }
-
-            public override string ToString()
-            {
-                string s = String.Empty;
-
-                foreach (uint matindex in Keys)
-                    s = s + "idx:" + matindex + ",value:" + this[matindex] + "\n";
-
-                return s;
-            }
-        }
-        #endregion
-
         #region Properties
 
-        public UUID ParentObjectID;
+        private UUID parentObjectID = UUID.Zero;
+        public UUID ParentObjectID
+        {
+            get { return parentObjectID; }
+            set { parentObjectID = value; }
+        }
 
-        private byte m_RexDrawType;
+        private byte m_RexDrawType = 1;
         public byte RexDrawType
         {
             get { return m_RexDrawType; }
@@ -131,7 +51,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private bool m_RexCastShadows;
+        private bool m_RexCastShadows = false;
         public bool RexCastShadows
         {
             get { return m_RexCastShadows; }
@@ -142,7 +62,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private bool m_RexLightCreatesShadows;
+        private bool m_RexLightCreatesShadows = false;
         public bool RexLightCreatesShadows
         {
             get { return m_RexLightCreatesShadows; }
@@ -153,7 +73,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private bool m_RexDescriptionTexture;
+        private bool m_RexDescriptionTexture = false;
         public bool RexDescriptionTexture
         {
             get { return m_RexDescriptionTexture; }
@@ -164,7 +84,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private bool m_RexScaleToPrim;
+        private bool m_RexScaleToPrim = false;
         public bool RexScaleToPrim
         {
             get { return m_RexScaleToPrim; }
@@ -175,7 +95,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private float m_RexDrawDistance;
+        private float m_RexDrawDistance = 0;
         public float RexDrawDistance
         {
             get { return m_RexDrawDistance; }
@@ -263,11 +183,44 @@ namespace ModularRex.RexFramework
             }
         }
 
+
+        #region Material Stuff
+
         public RexMaterialsDictionary RexMaterials = new RexMaterialsDictionary();
         public RexMaterialsDictionary GetRexMaterials()
         {
             return (RexMaterialsDictionary)RexMaterials.Clone();
         }
+
+        /// <summary>
+        /// This is only to be used from NHibernate. Use RexMaterials instead in other cases.
+        /// </summary>
+        public IList<RexMaterialsDictionaryItem> RexMaterialDictionaryItems
+        {
+            get
+            {
+                IList<RexMaterialsDictionaryItem> tempRexMaterialDictionaryItems = new List<RexMaterialsDictionaryItem>();
+                foreach (KeyValuePair<uint, UUID> entry in RexMaterials)
+                {
+                    tempRexMaterialDictionaryItems.Add(new RexMaterialsDictionaryItem(entry));
+                }
+                return tempRexMaterialDictionaryItems;
+            }
+            set
+            {
+                //rexMaterialDictionary = new Dictionary<uint, UUID>();
+                if (value != null)
+                {
+                    foreach (RexMaterialsDictionaryItem e in value)
+                    {
+                        //rexMaterialDictionary.Add(e.Num, e.AssetID);
+                        RexMaterials.Add(e.Num, e.AssetID);
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         private string m_RexClassName = String.Empty;
         public string RexClassName
@@ -291,7 +244,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private float m_RexSoundVolume;
+        private float m_RexSoundVolume = 0;
         public float RexSoundVolume
         {
             get { return m_RexSoundVolume; }
@@ -302,7 +255,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private float m_RexSoundRadius;
+        private float m_RexSoundRadius = 0;
         public float RexSoundRadius
         {
             get { return m_RexSoundRadius; }
@@ -328,7 +281,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        private int m_RexSelectPriority;
+        private int m_RexSelectPriority = 0;
         public int RexSelectPriority
         {
             get { return m_RexSelectPriority; }
@@ -358,6 +311,8 @@ namespace ModularRex.RexFramework
         {
             SetRexPrimDataFromBytes(data);
         }
+
+        public RexObjectProperties() { }
 
         #region Old RexServer ToByte/FromByte methods
         public byte[] GetRexPrimDataToBytes()

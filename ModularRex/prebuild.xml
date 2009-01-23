@@ -32,6 +32,70 @@
       </Options>
     </Configuration>
 
+    <Project name="ModularRex.RexFramework" path="./RexFramework" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../bin</ReferencePath>
+	 <Reference name="log4net"/>
+	 <Reference name="OpenMetaverse"/>
+	 <Reference name="OpenMetaverseTypes"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Data.DataSetExtension"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project> 
+
+    <Project name="ModularRex.NHibernate" path="./NHibernate" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../bin</ReferencePath>
+	 <Reference name="log4net.dll"/>
+	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverseTypes.dll"/>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Data.DataSetExtension"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+	 <Reference name="OpenSim.Framework"/>
+	 <Reference name="OpenSim.Region.Environment"/>
+	 <Reference name="OpenSim.Data.NHibernate"/>
+	 <Reference name="NHibernate"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+        <Match pattern="*.addin.xml" path="Resources" buildAction="EmbeddedResource" recurse="true"/>
+        <!-- add more as you go -->
+        <Match path="Resources/MsSql2005Dialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+      </Files>
+    </Project> 
+
     <Project name="ModularRex" path="./" type="Library">
       <Configuration name="Debug">
         <Options>
@@ -45,6 +109,8 @@
       </Configuration>
 
 	<ReferencePath>../../bin</ReferencePath>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="ModularRex.NHibernate"/>
 	 <Reference name="IronMath.dll" />
 	 <Reference name="IronPython.dll" />
 	 <Reference name="log4net.dll"/>
@@ -70,7 +136,11 @@
 	 <Reference name="System.Xml"/>
 	 <Reference name="XMLRPC.dll"/>
       <Files>
-        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.cs" recurse="false"/>
+        <Match path="Properties" pattern="*.cs" recurse="false"/>
+        <Match path="RexNetwork" pattern="*.cs" recurse="true"/>
+        <Match path="RexParts" pattern="*.cs" recurse="true"/>
+        <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
       </Files>
     </Project> 
   </Solution>

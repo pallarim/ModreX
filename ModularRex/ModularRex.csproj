@@ -156,21 +156,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="NHibernate\ModularRex.NHibernate.csproj">
+      <Name>ModularRex.NHibernate</Name>
+      <Project>{678C3C41-0000-0000-0000-000000000000}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+			<Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="RexFramework\ModularRex.RexFramework.csproj">
+      <Name>ModularRex.RexFramework</Name>
+      <Project>{CE800DCE-0000-0000-0000-000000000000}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+			<Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="RexDBObjects\RexFriendListItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="RexDBObjects\RexUserAgentData.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="RexDBObjects\RexUserProfileData.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="RexFramework\RexObjectProperties.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RexNetwork\AuthenticationService.cs">
@@ -204,6 +204,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RexParts\ModrexFacialExpression.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModrexObjects.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModrexSuperobjects.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexParts\ModrexVoice.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RexParts\RexScriptAccess.cs">
@@ -255,6 +264,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RexParts\RexPython\RexScriptInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexFriendListItem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexUserAgentData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RexDBObjects\RexUserProfileData.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
