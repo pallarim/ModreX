@@ -24,6 +24,8 @@ namespace ModularRex.RexParts
         private NHibernateRexObjectData m_db;
         private string m_db_connectionstring;
 
+        public event OnChangePythonClassDelegate OnPythonClassChange;
+
         public void Initialise(Scene scene, IConfigSource source)
         {
             m_scenes.Add(scene);
@@ -111,9 +113,18 @@ namespace ModularRex.RexParts
                         if (p != null)
                         {
                             user.SendRexObjectProperties(e.UUID, p);
+                            p.OnPythonClassChange += PythonClassNameChanged;
                         }
                     }
                 }
+            }
+        }
+
+        private void PythonClassNameChanged(UUID id)
+        {
+            if (OnPythonClassChange != null)
+            {
+                OnPythonClassChange(id);
             }
         }
 
@@ -153,6 +164,22 @@ namespace ModularRex.RexParts
         public bool IsSharedModule
         {
             get { return true; }
+        }
+
+        public RexObjectProperties Load(UUID id)
+        {
+            RexObjectProperties robject = m_db.LoadObject(id);
+            if (robject == null)
+            {
+                robject = new RexObjectProperties();
+                robject.ParentObjectID = id;
+            }
+            return robject;
+        }
+
+        public void Save(RexObjectProperties obj)
+        {
+            m_db.StoreObject(obj);
         }
     }
 }

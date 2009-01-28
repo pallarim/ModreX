@@ -22,6 +22,7 @@ namespace ModularRex.RexParts.RexPython
         private IronPython.Hosting.PythonEngine mPython = null;
         private bool m_PythonEnabled;
         private bool m_EngineStarted;
+        private ModrexObjects m_rexObjects;
 
         public RexScriptEngine()
         {
@@ -63,6 +64,12 @@ namespace ModularRex.RexParts.RexPython
 
         public void PostInitialise()
         {
+            OpenSim.Region.Environment.Interfaces.IRegionModule module = World.Modules["RexObjectsModule"];
+            if (module != null && module is ModrexObjects)
+            {
+                m_rexObjects = (ModrexObjects)module;
+            }
+
             InitializeEngine(World);
         }
 
@@ -177,56 +184,84 @@ namespace ModularRex.RexParts.RexPython
                 string PyText = "";
                 int tagindex = 0;
 
-                List<EntityBase> EntityList = World.GetEntities();
-                foreach (EntityBase ent in EntityList)
+                foreach (EntityBase ent in World.GetEntities())
                 {
-                    if (ent is RexObjects.RexObjectGroup)
+                    if (ent is SceneObjectGroup)
                     {
+                        RexFramework.RexObjectProperties rexobj = m_rexObjects.Load(((SceneObjectGroup)ent).RootPart.UUID);
                         PythonClassName = "rxactor.Actor";
                         PythonTag = "";
 
-                        SceneObjectPart part = ((SceneObjectGroup)ent).GetChildPart(((SceneObjectGroup)ent).UUID);
-                        if (part is RexObjects.RexObjectPart)
+                        // First check m_RexClassName, then description of object
+                        if (rexobj.RexClassName.Length > 0)
                         {
-                            RexObjects.RexObjectPart rexpart = (RexObjects.RexObjectPart)part;
-                            if (rexpart != null)
+                            tagindex = rexobj.RexClassName.IndexOf("?", 0);
+                            if (tagindex > -1)
                             {
-                                // First check m_RexClassName, then description of object
-                                if (rexpart.RexClassName.Length > 0)
-                                {
-                                    tagindex = rexpart.RexClassName.IndexOf("?", 0);
-                                    if (tagindex > -1)
-                                    {
-                                        PythonClassName = rexpart.RexClassName.Substring(0, tagindex);
-                                        PythonTag = rexpart.RexClassName.Substring(tagindex + 1);
-                                    }
-                                    else
-                                        PythonClassName = rexpart.RexClassName;
-                                }
-                                else if (rexpart.Description.Length > 9 && rexpart.Description.Substring(0, 4).ToLower() == "<py>")
-                                {
-                                    tagindex = rexpart.Description.IndexOf("</py>", 4);
-                                    if (tagindex > -1)
-                                        PyText = rexpart.Description.Substring(4, tagindex - 4);
-                                    else
-                                        continue;
-
-                                    tagindex = PyText.IndexOf("?", 0);
-                                    if (tagindex > -1)
-                                    {
-                                        PythonClassName = PyText.Substring(0, tagindex);
-                                        PythonTag = PyText.Substring(tagindex + 1);
-                                    }
-                                    else
-                                        PythonClassName = PyText;
-                                }
+                                PythonClassName = rexobj.RexClassName.Substring(0, tagindex);
+                                PythonTag = rexobj.RexClassName.Substring(tagindex + 1);
                             }
+                            else
+                                PythonClassName = rexobj.RexClassName;
+
+                            ((SceneObjectGroup)ent).RootPart.SetScriptEvents(rexobj.ParentObjectID, (int)scriptEvents.touch_start);
                         }
-                        CreateActorToPython(ent.LocalId.ToString(), PythonClassName, PythonTag);
+                        //TODO: Get Py-classname and tag from prim description?
                     }
+                    CreateActorToPython(ent.LocalId.ToString(), PythonClassName, PythonTag);
                 }
-                
- 
+
+                #region old code for checking class name from RexObjectPart. not in use, only as reference
+                //List<EntityBase> EntityList = World.GetEntities();
+                //foreach (EntityBase ent in EntityList)
+                //{
+                //    if (ent is RexObjects.RexObjectGroup)
+                //    {
+                //        PythonClassName = "rxactor.Actor";
+                //        PythonTag = "";
+
+                //        SceneObjectPart part = ((SceneObjectGroup)ent).GetChildPart(((SceneObjectGroup)ent).UUID);
+                //        if (part is RexObjects.RexObjectPart)
+                //        {
+                //            RexObjects.RexObjectPart rexpart = (RexObjects.RexObjectPart)part;
+                //            if (rexpart != null)
+                //            {
+                //                // First check m_RexClassName, then description of object
+                //                if (rexpart.RexClassName.Length > 0)
+                //                {
+                //                    tagindex = rexpart.RexClassName.IndexOf("?", 0);
+                //                    if (tagindex > -1)
+                //                    {
+                //                        PythonClassName = rexpart.RexClassName.Substring(0, tagindex);
+                //                        PythonTag = rexpart.RexClassName.Substring(tagindex + 1);
+                //                    }
+                //                    else
+                //                        PythonClassName = rexpart.RexClassName;
+                //                }
+                //                else if (rexpart.Description.Length > 9 && rexpart.Description.Substring(0, 4).ToLower() == "<py>")
+                //                {
+                //                    tagindex = rexpart.Description.IndexOf("</py>", 4);
+                //                    if (tagindex > -1)
+                //                        PyText = rexpart.Description.Substring(4, tagindex - 4);
+                //                    else
+                //                        continue;
+
+                //                    tagindex = PyText.IndexOf("?", 0);
+                //                    if (tagindex > -1)
+                //                    {
+                //                        PythonClassName = PyText.Substring(0, tagindex);
+                //                        PythonTag = PyText.Substring(tagindex + 1);
+                //                    }
+                //                    else
+                //                        PythonClassName = PyText;
+                //                }
+                //            }
+                //        }
+                //        CreateActorToPython(ent.LocalId.ToString(), PythonClassName, PythonTag);
+                //    }
+                //}
+                #endregion
+
                 // Create avatars
                 string PParams = "";              
                 List<ScenePresence> ScenePresencesList = World.GetScenePresences();

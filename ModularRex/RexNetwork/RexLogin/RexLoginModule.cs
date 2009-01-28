@@ -68,19 +68,27 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void PostInitialise()
         {
-            m_log.Info("[REX] Overloading Login_to_Simulator");
-            m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
-
-            m_primaryRegionInfo = m_scenes[0].RegionInfo;
-
-            m_log.Info("[REX] Initialising");
-            m_udpserver.Initialise(m_primaryRegionInfo.InternalEndPoint.Address, ref m_rexPort, 0, false, m_config, m_scenes[0].AssetCache,
-                                   m_scenes[0].AuthenticateHandler);
-            foreach (Scene scene in m_scenes)
+            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
             {
-                m_udpserver.AddScene(scene);
+
+                m_log.Info("[REX] Overloading Login_to_Simulator");
+                m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
+
+                m_primaryRegionInfo = m_scenes[0].RegionInfo;
+
+                m_log.Info("[REX] Initialising");
+                m_udpserver.Initialise(m_primaryRegionInfo.InternalEndPoint.Address, ref m_rexPort, 0, false, m_config, m_scenes[0].AssetCache,
+                                       m_scenes[0].AuthenticateHandler);
+                foreach (Scene scene in m_scenes)
+                {
+                    m_udpserver.AddScene(scene);
+                }
+                m_udpserver.Start();
             }
-            m_udpserver.Start();
+            else
+            {
+                m_log.Info("[REX] Not overloading Login_to_Simulator and not starting UDP server");
+            }
         }
 
         public void Close()

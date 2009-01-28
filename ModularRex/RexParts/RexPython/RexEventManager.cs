@@ -15,7 +15,8 @@ namespace ModularRex.RexParts.RexPython
     {
         private RexScriptEngine m_scriptEngine;
         private static readonly ILog m_log
-            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);  
+            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private ModrexObjects m_rexObjects;
 
         // tuco fixme, is there a better way to do this search???
         private EntityBase GetEntityBase(uint vId)
@@ -31,12 +32,21 @@ namespace ModularRex.RexParts.RexPython
         {   
             m_scriptEngine = scriptEngine;
             m_log.InfoFormat("[RexScriptEngine]: Hooking up to server events");
+
+            OpenSim.Region.Environment.Interfaces.IRegionModule module = m_scriptEngine.World.Modules["RexObjectsModule"];
+            if (module != null && module is ModrexObjects)
+            {
+                m_rexObjects = (ModrexObjects)module;
+                m_rexObjects.OnPythonClassChange += onPythonClassChange;
+                //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange; //this was launched from SceneObjectPart
+            }
+
             m_scriptEngine.World.EventManager.OnObjectGrab += touch_start;
             // myScriptEngine.World.EventManager.OnRezScript += OnRezScript;
             // myScriptEngine.World.EventManager.OnRemoveScript += OnRemoveScript;
             // myScriptEngine.World.EventManager.OnFrame += OnFrame;
-            //myScriptEngine.World.EventManager.OnNewClient += OnNewClient; 
-            m_scriptEngine.World.EventManager.OnNewPresence += OnNewPresence;
+            m_scriptEngine.World.EventManager.OnNewClient += OnNewClient; 
+            //m_scriptEngine.World.EventManager.OnNewPresence += OnNewPresence; //this ain't triggered in OpenSim no more
             m_scriptEngine.World.EventManager.OnRemovePresence += OnRemovePresence;
             m_scriptEngine.World.EventManager.OnShutdown += OnShutDown;
 
@@ -45,12 +55,24 @@ namespace ModularRex.RexParts.RexPython
             ///other way, some need changes to core and some need changes to physics engine.
             //myScriptEngine.World.EventManager.OnAddEntity += OnAddEntity; //this was previously launched from Scene or InnerScene
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity; //this was previously launched from Scene
-            //myScriptEngine.World.EventManager.OnPythonClassChange += OnPythonClassChange; //this was launched from SceneObjectPart
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision; //this was launched from PhysicActor
             m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
             OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
+        }
+
+        private void onPythonClassChange(UUID id)
+        {
+            SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(id);
+            if (sop != null)
+            {
+                OnPythonClassChange(sop.LocalId);
+            }
+            else
+            {
+                m_log.Warn("[RexScriptEngine]: Scene Object Part not found. Could not initiate OnPythonClassChange");
+            }
         }
 
         private void PythonScriptCommand(string[] cmdparams)
@@ -101,13 +123,16 @@ namespace ModularRex.RexParts.RexPython
         {
 
         }
+        */
 
         public void OnNewClient(IClientAPI vClient)
         {
-            string EventParams = "\"new_client\"," + "\"" + vClient.AgentId.ToString() + "\"";
-            myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+            //string EventParams = "\"new_client\"," + "\"" + vClient.AgentId.ToString() + "\"";
+            //myScriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+            ScenePresence sp = m_scriptEngine.World.GetScenePresence(vClient.AgentId);
+            OnNewPresence(sp);
         }
-        */ 
+         
 
         public void OnNewPresence(ScenePresence vPresence)
         {
@@ -123,6 +148,7 @@ namespace ModularRex.RexParts.RexPython
                 {
                     string EventParams = "\"add_presence\"," + vPresence.LocalId.ToString() + "," + "\"" + vPresence.UUID.ToString() + "\"";
                     m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + EventParams + ")");
+                    m_log.Debug("[REXSCRIPT]: CreateEventWithName(" + EventParams + ")");
                 }
 
                 //Tie up some RexClientView events
@@ -155,28 +181,29 @@ namespace ModularRex.RexParts.RexPython
 
         public void OnShutDown()
         {
-            Console.WriteLine("REX OnShutDown");
+            m_log.Info("[RexScriptEngine]: REX OnShutDown");
         }
 
         public void OnAddEntity(uint localID)
         {
-            try
-            {
-                string PythonClassName = "rxactor.Actor";
-                string PythonTag = "";
+            throw new NotImplementedException("OnAddEntity not implemeted");
+            //try
+            //{
+            //    string PythonClassName = "rxactor.Actor";
+            //    string PythonTag = "";
 
-                RexObjects.RexObjectGroup tempobj = (RexObjects.RexObjectGroup)GetEntityBase(localID);
-                //SceneObjectGroup tempobj = (SceneObjectGroup)GetEntityBase(localID);
-                if (tempobj != null && tempobj.RootPart != null && tempobj.RootPart.RexClassName.Length > 0)
-                    PythonClassName = tempobj.RootPart.RexClassName;
+            //    RexObjects.RexObjectGroup tempobj = (RexObjects.RexObjectGroup)GetEntityBase(localID);
+            //    //SceneObjectGroup tempobj = (SceneObjectGroup)GetEntityBase(localID);
+            //    if (tempobj != null && tempobj.RootPart != null && tempobj.RootPart.RexClassName.Length > 0)
+            //        PythonClassName = tempobj.RootPart.RexClassName;
 
-                // Create the actor directly without using an event.
-                m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
-            }
-            catch (Exception e)
-            {
-                m_log.WarnFormat("[RexScriptEngine]: OnAddEntity: " + e.ToString());
-            }
+            //    // Create the actor directly without using an event.
+            //    m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
+            //}
+            //catch (Exception e)
+            //{
+            //    m_log.WarnFormat("[RexScriptEngine]: OnAddEntity: " + e.ToString());
+            //}
         }
 
         public void OnRemoveEntity(uint localID)
@@ -199,21 +226,28 @@ namespace ModularRex.RexParts.RexPython
                 string PythonClassName = "rxactor.Actor";
                 string PythonTag = "";
 
-                RexObjects.RexObjectGroup tempobj = (RexObjects.RexObjectGroup)GetEntityBase(localID);
-                //SceneObjectGroup tempobj = (SceneObjectGroup)GetEntityBase(localID);
-                if (tempobj != null && tempobj.RootPart != null && tempobj.RootPart.RexClassName.Length > 0)
+                SceneObjectPart tempobj = m_scriptEngine.World.GetSceneObjectPart(localID);
+                if (tempobj != null)
                 {
-                    int tagindex = tempobj.RootPart.RexClassName.IndexOf("?", 0);
-                    if (tagindex > -1)
+
+                    RexFramework.RexObjectProperties rexObj = m_rexObjects.Load(tempobj.UUID);
+                    if (rexObj != null)
                     {
-                        PythonClassName = tempobj.RootPart.RexClassName.Substring(0, tagindex);
-                        PythonTag = tempobj.RootPart.RexClassName.Substring(tagindex + 1);
+                        int tagindex = rexObj.RexClassName.IndexOf("?", 0);
+                        if (tagindex > -1)
+                        {
+                            PythonClassName = rexObj.RexClassName.Substring(0, tagindex);
+                            PythonTag = rexObj.RexClassName.Substring(tagindex + 1);
+                        }
+                        else
+                            PythonClassName = rexObj.RexClassName;
+
+                        if (rexObj.RexClassName.Length > 0)
+                            tempobj.SetScriptEvents(rexObj.ParentObjectID, (int)scriptEvents.touch_start);
                     }
-                    else
-                        PythonClassName = tempobj.RootPart.RexClassName;
+                    if (m_scriptEngine.IsEngineStarted)
+                        m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
                 }
-                if (m_scriptEngine.IsEngineStarted)
-                    m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
             }
             catch (Exception e)
             {

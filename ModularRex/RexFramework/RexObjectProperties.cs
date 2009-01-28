@@ -15,6 +15,8 @@ namespace ModularRex.RexFramework
 
     public delegate void OnRexObjectPropertiesDataUpdateDelegate(UUID id, string data, bool dbSave);
 
+    public delegate void OnChangePythonClassDelegate(UUID id);
+
     public class RexObjectProperties
     {
         private static readonly ILog m_log =
@@ -229,6 +231,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexClassName = value;
+                TriggerOnChangePythonClass(parentObjectID);
                 SchedulePropertiesUpdate(true);
             }
         }
@@ -297,6 +300,13 @@ namespace ModularRex.RexFramework
 
         public event OnRexObjectPropertiesDataUpdateDelegate OnDataUpdate;
         public event OnRexObjectPropertiesUpdateDelegate OnPropertiesUpdate;
+        public event OnChangePythonClassDelegate OnPythonClassChange;
+
+        public void TriggerOnChangePythonClass(UUID id)
+        {
+            if (OnPythonClassChange != null)
+                OnPythonClassChange(id);
+        }
 
         #endregion
 

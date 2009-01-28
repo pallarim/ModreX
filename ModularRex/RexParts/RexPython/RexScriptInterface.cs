@@ -125,18 +125,19 @@ namespace ModularRex.RexParts.RexPython
  
          
         public void SetMass(string vId, float vMass)
-        {   
-            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
-            if (tempobj != null)
-            {
-                if (tempobj is RexObjects.RexObjectPart)
-                {
-                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
-                    rexObj.SetMass(vMass);
-                }
-            }
-            else
-                myScriptEngine.Log.WarnFormat("[PythonScript]: SetMass for nonexisting object:" + vId); 
+        {
+            throw new NotImplementedException("SetMass not implemented");
+            //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            //if (tempobj != null)
+            //{
+            //    if (tempobj is RexObjects.RexObjectPart)
+            //    {
+            //        RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+            //        rexObj.SetMass(vMass);
+            //    }
+            //}
+            //else
+            //    myScriptEngine.Log.WarnFormat("[PythonScript]: SetMass for nonexisting object:" + vId); 
             
         }
 
@@ -152,31 +153,33 @@ namespace ModularRex.RexParts.RexPython
 
         public bool GetUsePrimVolumeCollision(string vId)
         {
-            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
-            if (tempobj != null)
-            {
-                if (tempobj is RexObjects.RexObjectPart)
-                {
-                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
-                    return rexObj.GetUsePrimVolumeCollision();
-                }
-            }
-            return false;
+            throw new NotImplementedException("GetUsePrimVolumeCollision not implemented");
+            //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            //if (tempobj != null)
+            //{
+            //    if (tempobj is RexObjects.RexObjectPart)
+            //    {
+            //        RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+            //        return rexObj.GetUsePrimVolumeCollision();
+            //    }
+            //}
+            //return false;
         }
 
         public void SetUsePrimVolumeCollision(string vId, bool vUseVolumeCollision)
         {
-            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
-            if (tempobj != null)
-            {
-                if (tempobj is RexObjects.RexObjectPart)
-                {
-                    RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
-                    rexObj.SetUsePrimVolumeCollision(vUseVolumeCollision);
-                }
-            }
-            else
-                myScriptEngine.Log.WarnFormat("[PythonScript]: SetPrimVolumeCollision for nonexisting object:" + vId);
+            throw new NotImplementedException("SetUsePrimVolumeCollision not implemented");
+            //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
+            //if (tempobj != null)
+            //{
+            //    if (tempobj is RexObjects.RexObjectPart)
+            //    {
+            //        RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
+            //        rexObj.SetUsePrimVolumeCollision(vUseVolumeCollision);
+            //    }
+            //}
+            //else
+            //    myScriptEngine.Log.WarnFormat("[PythonScript]: SetPrimVolumeCollision for nonexisting object:" + vId);
         }
 
         public int GetPrimLocalIdFromUUID(string vUUID)
@@ -205,6 +208,7 @@ namespace ModularRex.RexParts.RexPython
         // ******************************
         public void SendGeneralAlertAll(string vId, string vMessage)
         {
+            throw new NotImplementedException("SendGeneralAlertAll not implemented");
             //TODO: Fix this. Broken in newest OpenSim
             //myScriptEngine.World.SendGeneralAlert(vMessage);
         }
@@ -300,14 +304,14 @@ namespace ModularRex.RexParts.RexPython
 
         public bool DestroyActor(string vId)
         {
-           
-            EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
-            if (tempobj != null && tempobj is RexObjects.RexObjectGroup)
-            {
-                ((RexObjects.RexObjectGroup)tempobj).DeleteMe = true; // Do not call DeleteSceneObjectGroup for deleting directly
-                return true;
-            }
-            return false;
+            throw new NotImplementedException("DestroyActor not implemented");
+            //EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
+            //if (tempobj != null && tempobj is RexObjects.RexObjectGroup)
+            //{
+            //    ((RexObjects.RexObjectGroup)tempobj).DeleteMe = true; // Do not call DeleteSceneObjectGroup for deleting directly
+            //    return true;
+            //}
+            //return false;
         }
           
         private static PrimitiveBaseShape GetShape(int vShape)
