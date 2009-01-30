@@ -281,6 +281,7 @@ namespace ModularRex.RexNetwork
                 if (OnReceiveRexClientScriptCmd != null)
                 {
                     OnReceiveRexClientScriptCmd(this, AgentId, args);
+                    return;
                 }
             }
 
@@ -289,6 +290,7 @@ namespace ModularRex.RexNetwork
                 if (OnReceiveRexStartUp != null)
                 {
                     OnReceiveRexStartUp(this, AgentId, args[0]);
+                    return;
                 }
             }
 

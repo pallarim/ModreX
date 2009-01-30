@@ -40,7 +40,10 @@ namespace ModularRex.RexParts.RexPython
                 }
             }
             if (m_ScriptEngine == null)
+            {
+                m_log.Error("[REXSCRIPT]: Could not find DotNetEngine");
                 throw new Exception("Could not find DotNetEngine");
+            }
             //this was causing lots of errors. instead of creating a new instance of .Net script engine, check for an existing one and use that
             //this requires of using .NET scripting engine when using the python engine.
             //m_ScriptEngine = new OpenSim.Region.ScriptEngine.DotNetEngine.ScriptEngine();

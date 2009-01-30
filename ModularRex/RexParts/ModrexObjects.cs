@@ -113,7 +113,11 @@ namespace ModularRex.RexParts
                         if (p != null)
                         {
                             user.SendRexObjectProperties(e.UUID, p);
-                            p.OnPythonClassChange += PythonClassNameChanged;
+                            //p.OnPythonClassChange += PythonClassNameChanged;
+                            if (p.RexClassName.Length > 0)
+                            {
+                                s.GetSceneObjectPart(e.UUID).SetScriptEvents(e.UUID, (int)scriptEvents.touch_start);
+                            }
                         }
                     }
                 }
@@ -133,10 +137,17 @@ namespace ModularRex.RexParts
         {
             m_log.Info("[REXOBJS] Recieved RexObjData for " + id);
             if (props.ParentObjectID == UUID.Zero)
+            {
                 props.ParentObjectID = id;
+            }
             props.PrintRexPrimdata();
-
             m_db.StoreObject(props);
+            RexObjectProperties old = Load(props.ParentObjectID);
+            if (old.RexClassName != props.RexClassName)
+            {
+                PythonClassNameChanged(props.ParentObjectID);
+            }
+            
             SendPropertiesToAllUsers(id, props);
         }
 

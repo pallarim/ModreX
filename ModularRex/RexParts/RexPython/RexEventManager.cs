@@ -243,7 +243,10 @@ namespace ModularRex.RexParts.RexPython
                             PythonClassName = rexObj.RexClassName;
 
                         if (rexObj.RexClassName.Length > 0)
+                        {
                             tempobj.SetScriptEvents(rexObj.ParentObjectID, (int)scriptEvents.touch_start);
+                            tempobj.SendFullUpdateToAllClients();
+                        }
                     }
                     if (m_scriptEngine.IsEngineStarted)
                         m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
