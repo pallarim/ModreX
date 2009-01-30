@@ -81,7 +81,7 @@ namespace ModularRex.RexNetwork.RexLogin
                                        m_scenes[0].AuthenticateHandler);
                 foreach (Scene scene in m_scenes)
                 {
-                    m_udpserver.AddScene(scene);
+                    m_udpserver.AddScene(scene); //this doesn't add scene to existing UDP server, but instead replaces the old one
                 }
                 m_udpserver.Start();
             }

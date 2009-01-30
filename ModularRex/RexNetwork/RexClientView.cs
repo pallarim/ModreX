@@ -630,19 +630,59 @@ namespace ModularRex.RexNetwork
             throw new System.NotImplementedException();
         }
 
-        internal void SendRexForceFOV(float fov, bool enable)
+        /// <summary>
+        /// Force Field Of View
+        /// </summary>
+        /// <param name="fov">Field of View in degrees. This parameter is irrelevant when disabling FOV</param>
+        /// <param name="enable">True to enable, False to disable</param>
+        public void SendRexForceFOV(float fov, bool enable)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(fov.ToString());
+            pack.Add(enable.ToString());
+
+            SendGenericMessage("RexForceFOV", pack);
         }
 
-        internal void SendRexForceCamera(int forceMode, float minZoom, float maxZoom)
+        /// <summary>
+        /// Sends Forced Camera mode to client
+        /// </summary>
+        /// <param name="forceMode">1 = 1st person mode, 3 = 3rd person mode, 0 = no limits</param>
+        /// <param name="minZoom">Minimum zoom (0.0-1.0)</param>
+        /// <param name="maxZoom">Maximum zoom (0.0-1.0)</param>
+        public void SendRexForceCamera(int forceMode, float minZoom, float maxZoom)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(forceMode.ToString());
+            pack.Add(minZoom.ToString());
+            pack.Add(maxZoom.ToString());
+
+            SendGenericMessage("RexForceCamera", pack);
         }
 
-        internal void SendRexSky(int type, string images, float curvature, float tiling)
+        /// <summary>
+        /// Sends the sky to user
+        /// </summary>
+        /// <param name="type">Type of the sky: 0 = none, 1 = skybox, 2 = skydome</param>
+        /// <param name="images">List of image uuids - separated by space - to use for the sky.
+        ///  Skyboxes need 6 images, skydomes take one image.
+        ///  You can add suffix to the uuids to specify which side the texture should go to: 
+        ///  _fr front, _lf left, _rt right, _bk back, _up up, _dn down </param>
+        /// <param name="curvature">Curvature of the skydome. Values around 10.0 are good for
+        ///  open spaces and landscapes. Not used with skyboxes</param>
+        /// <param name="tiling">Skydome tiling. Not used with skyboxes.</param>
+        public void SendRexSky(int type, string images, float curvature, float tiling)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(type.ToString());
+            pack.Add(images);
+            pack.Add(curvature.ToString());
+            pack.Add(tiling.ToString());
+
+            SendGenericMessage("RexSky", pack);
         }
 
         internal void SendRexPreloadAssets(Dictionary<UUID, uint> tempassetlist)
@@ -650,24 +690,70 @@ namespace ModularRex.RexNetwork
             throw new System.NotImplementedException();
         }
 
-        internal void SendMediaURL(UUID assetId, string mediaURL, byte vRefreshRate)
+        /// <summary>
+        /// Sends MediaURL to client
+        /// </summary>
+        /// <param name="assetId">UUID of the asset which to replace with MediaURL content</param>
+        /// <param name="mediaURL">URL pointing to web-page or vnc server</param>
+        /// <param name="refreshRate">How many times per second to refresh the texture</param>
+        public void SendMediaURL(UUID assetId, string mediaURL, byte refreshRate)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(assetId.ToString());
+            pack.Add(mediaURL);
+            pack.Add(refreshRate.ToString());
+
+            SendGenericMessage("RexMediaUrl", pack);
         }
 
-        internal void RexIKSendLimbTarget(UUID vAgentID, int vLimbId, Vector3 vDest, float vTimeToTarget, float vStayTime, float vConstraintAngle, string vStartAnim, string vTargetAnim, string vEndAnim)
+        public void RexIKSendLimbTarget(UUID agentID, int limbId, Vector3 destination, float timeToTarget,
+            float stayTime, float constraintAngle, string startAnim, string targetAnim, string endAnim)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add("0");
+            pack.Add(agentID.ToString());
+            pack.Add(limbId.ToString());
+            string sDest = destination.X.ToString() + " " + destination.Y.ToString() + " " + destination.Z.ToString();
+            sDest = sDest.Replace(",", ".");
+            pack.Add(sDest);
+            pack.Add(timeToTarget.ToString());
+            pack.Add(stayTime.ToString());
+            pack.Add(constraintAngle.ToString());
+            pack.Add(startAnim);
+            pack.Add(targetAnim);
+            pack.Add(endAnim);
+
+            SendGenericMessage("RexIK", pack);
         }
 
-        public void SendRexAvatarAnimation(UUID agentID, string vAnimName, float vRate, float vFadeIn, float vFadeOut, int nRepeats, bool vbStopAnim) //rex
+        public void SendRexAvatarAnimation(UUID agentID, string animName, float rate, float fadeIn, 
+            float fadeOut, int repeats, bool stopAnim)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(agentID.ToString());
+            pack.Add(animName);
+            pack.Add(rate.ToString());
+            pack.Add(fadeIn.ToString().Replace(",","."));
+            pack.Add(fadeOut.ToString().Replace(",", "."));
+            pack.Add(repeats.ToString());
+            pack.Add(stopAnim.ToString());
+
+            SendGenericMessage("RexAnim", pack);
         }
 
-        internal void SendRexAvatarMorph(UUID uUID, string vMorphName, float vWeight, float vTime)
+        public void SendRexAvatarMorph(UUID agentID, string morphName, float weight, float time)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(agentID.ToString());
+            pack.Add(morphName);
+            pack.Add(weight.ToString());
+            pack.Add(time.ToString());
+
+            SendGenericMessage("RexMorph", pack);
         }
 
         internal void SendRexMeshAnimation(UUID uUID, string vAnimName, float vRate, bool vbLooped, bool vbStopAnim)
