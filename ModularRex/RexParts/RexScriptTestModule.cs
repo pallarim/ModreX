@@ -78,12 +78,14 @@ namespace ModularRex.RexParts
                         break;
                     default:
 
-                        e.Sender.SendAlertMessage("Hello there");
 
-                        if (e.Sender is RexClientView)
-                        {
-                            ((RexClientView)e.Sender).SendRexScriptCommand("hud", "ShowInventoryMessage(\"Test\")", "");
-                        }
+                        //Test code. Not to any relese.
+                        //e.Sender.SendAlertMessage("Hello there");
+
+                        //if (e.Sender is RexClientView)
+                        //{
+                        //    ((RexClientView)e.Sender).SendRexScriptCommand("hud", "ShowInventoryMessage(\"Test\")", "");
+                        //}
                         break;
                 }
             }
