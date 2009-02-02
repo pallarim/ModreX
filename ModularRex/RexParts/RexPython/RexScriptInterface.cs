@@ -22,6 +22,7 @@ namespace ModularRex.RexParts.RexPython
         private RexScriptEngine myScriptEngine;
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private ModrexObjects m_rexObjects;
 
         public RexScriptInterface(IScriptEngine ScriptEngine, SceneObjectPart host, uint localID, UUID itemID, RexScriptEngine vScriptEngine)
         {   
@@ -55,6 +56,12 @@ namespace ModularRex.RexParts.RexPython
             catch (Exception e)
             {
                 m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed: " + e.ToString());
+            }
+
+            OpenSim.Region.Environment.Interfaces.IRegionModule module = myScriptEngine.World.Modules["RexObjectsModule"];
+            if (module != null && module is ModrexObjects)
+            {
+                m_rexObjects = (ModrexObjects)module;
             }
         }
 
@@ -294,15 +301,23 @@ namespace ModularRex.RexParts.RexPython
 
 
 
-        public string SpawnActor(LSL_Types.Vector3 vLoc, int vShape, bool vbTemporary, string vPyClass)
+        public string SpawnActor(LSL_Types.Vector3 location, int shape, bool temporary, string pythonClass)
         {
-            throw new NotImplementedException("Could not spawn actor to scene");
-            //UUID TempID = myScriptEngine.World.RegionInfo.MasterAvatarAssignedUUID;
-            //Vector3 pos = new Vector3((float)vLoc.x, (float)vLoc.y, (float)vLoc.z);
-            //Quaternion rot = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+            //throw new NotImplementedException("Could not spawn actor to scene");
+            UUID TempID = myScriptEngine.World.RegionInfo.MasterAvatarAssignedUUID;
+            Vector3 pos = new Vector3((float)location.x, (float)location.y, (float)location.z);
+            Quaternion rot = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
-            //uint AddResult = myScriptEngine.World.AddNewPrimReturningId(TempID, pos, rot, GetShape(vShape),vbTemporary,vPyClass);
-            //return AddResult.ToString();
+            SceneObjectGroup sog = myScriptEngine.World.AddNewPrim(TempID, TempID, pos, rot, GetShape(shape));
+            uint AddResult = sog.RootPart.LocalId;
+
+            ModularRex.RexFramework.RexObjectProperties rop = m_rexObjects.Load(sog.RootPart.UUID);
+            rop.RexClassName = pythonClass;
+            m_rexObjects.Save(rop);
+
+            //TODO: vbTemporary
+            //uint AddResult = myScriptEngine.World.AddNewPrimReturningId(TempID, pos, rot, GetShape(vShape), vbTemporary, vPyClass);
+            return AddResult.ToString();
         }
 
         public bool DestroyActor(string vId)
