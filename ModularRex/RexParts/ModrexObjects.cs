@@ -10,6 +10,7 @@ using OpenMetaverse;
 using OpenSim.Region.Environment.Interfaces;
 using OpenSim.Region.Environment.Scenes;
 using OpenSim.Data.NHibernate;
+using OpenSim.Framework;
 
 namespace ModularRex.RexParts
 {
@@ -222,12 +223,10 @@ namespace ModularRex.RexParts
             {
                 if (sop.PhysActor != null)
                 {
-                    /* tucofixme, uncomment later
                     if (p.RexCollisionMeshUUID != UUID.Zero)
                         RexUpdateCollisionMesh(id);
                     else
                         sop.PhysActor.SetCollisionMesh(null, "", false);
-                     */ 
                 }
             }             
         }
@@ -256,10 +255,8 @@ namespace ModularRex.RexParts
             {
                 if (sop.PhysActor != null)
                 {
-                    /* tucofixme, uncomment later 
                     sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
                     sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
-                    */
                 }
             }
               
@@ -287,11 +284,9 @@ namespace ModularRex.RexParts
             
             if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor != null)
             {
-                /* tucofixme, uncomment later
                 AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID,false);
                 if (tempmodel != null)
                     sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
-                 */ 
             }
         }        
         

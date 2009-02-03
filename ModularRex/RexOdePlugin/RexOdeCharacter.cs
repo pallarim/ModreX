@@ -5,8 +5,6 @@ using Ode.NET;
 
 namespace ModularRex.RexOdePlugin
 {
-    /* tucofixme, uncomment later.
- 
     public class RexOdeCharacter : OdeCharacter
     {
         public RexOdeCharacter(String avName, OdeScene parent_scene, PhysicsVector pos, CollisionLocker dode, PhysicsVector size, float pid_d, float pid_p, float capsule_radius, float tensor, float density, float height_fudge_factor, float walk_divisor, float rundivisor):
@@ -48,11 +46,7 @@ namespace ModularRex.RexOdePlugin
                     _target_velocity.Z = 0.0f;
             }
             // endrex
-
             base.Move(timeStep);
-        }        
-           
+        }            
     }
-
-*/
 }

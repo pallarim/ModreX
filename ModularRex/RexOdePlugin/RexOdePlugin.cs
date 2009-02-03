@@ -12,7 +12,6 @@ using OpenSim.Framework;
 
 namespace ModularRex.RexOdePlugin
 {
-/* tucofixme, uncomment later
  
     public class RexOdePlugin : IPhysicsPlugin
     {
@@ -597,5 +596,4 @@ namespace ModularRex.RexOdePlugin
             m_flightCeilingHeight = maxheight;
         }
     }
-*/ 
 }

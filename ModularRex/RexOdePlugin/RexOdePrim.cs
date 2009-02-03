@@ -14,7 +14,6 @@ using OpenSim.Region.Physics.Meshing;
 
 namespace ModularRex.RexOdePlugin
 {
-/* tucofixme, uncomment later
     public class RexOdePrim : OdePrim
     {
         protected Mesh m_OriginalMesh = null;
@@ -114,7 +113,7 @@ namespace ModularRex.RexOdePlugin
 
 
         // This function should be called only outside of simulation loop -> OdeLock used.
-        public override void SetCollisionMesh(byte[] vData, string MeshName, bool vbScaleMesh)
+        public override void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
         {
             lock (_parent_scene.OdeLock)
             {
@@ -125,7 +124,7 @@ namespace ModularRex.RexOdePlugin
                     m_OriginalMesh = null;
                 }
 
-                if (vData != null && CreateOSMeshFromDotMesh(vData, MeshName, vbScaleMesh))
+                if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
                     m_DotMeshCollision = true;
                     
                 m_ReCreateCollision = true;         
@@ -329,5 +328,4 @@ namespace ModularRex.RexOdePlugin
         }        
         
     }
-*/ 
 }
