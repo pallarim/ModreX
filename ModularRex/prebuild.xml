@@ -51,7 +51,6 @@
 	 <Reference name="System" localCopy="false"/>
 	 <Reference name="System.Core" localCopy="false"/>
 	 <Reference name="System.Data"/>
-	 <Reference name="System.Data.DataSetExtension"/>
 	 <Reference name="System.Xml"/>
 	 <Reference name="System.Xml.Linq"/>
 
@@ -81,7 +80,6 @@
 	 <Reference name="System" localCopy="false"/>
 	 <Reference name="System.Core" localCopy="false"/>
 	 <Reference name="System.Data"/>
-	 <Reference name="System.Data.DataSetExtension"/>
 	 <Reference name="System.Xml"/>
 	 <Reference name="System.Xml.Linq"/>
 	 <Reference name="OpenSim.Framework"/>
@@ -94,6 +92,7 @@
         <Match pattern="*.addin.xml" path="Resources" buildAction="EmbeddedResource" recurse="true"/>
         <!-- add more as you go -->
         <Match path="Resources/MsSql2005Dialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match path="Resources/SQLiteDialect" pattern="*.sql" buildAction="EmbeddedResource"/>
       </Files>
     </Project> 
 
