@@ -17,16 +17,12 @@ using OpenSim.Region.ClientStack.LindenUDP;
 namespace ModularRex.RexNetwork
 {
     public delegate void RexAppearanceDelegate(RexClientView sender);
-
     public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> parameters);
+    public delegate void RexAvatarPropertiesDelegate(RexClientView sender, List<string> parameters);
+    public delegate void RexObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
+    public delegate void RexStartUpDelegate(RexClientView remoteClient, UUID agentID, string status);
+    public delegate void RexClientScriptCmdDelegate(RexClientView remoteClient, UUID agentID, List<string> parameters);
 
-    public delegate void RexAvatarProperties(RexClientView sender, List<string> parameters);
-
-    public delegate void RexRecieveObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
-
-    public delegate void ReceiveRexStartUp(RexClientView remoteClient, UUID agentID, string status);
-
-    public delegate void ReceiveRexClientScriptCmd(RexClientView remoteClient, UUID agentID, List<string> parameters);
 
     /// <summary>
     /// Inherits from LLClientView the majority of functionality
@@ -56,10 +52,10 @@ namespace ModularRex.RexNetwork
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexFaceExpressionDelegate OnRexFaceExpression;
-        public event RexAvatarProperties OnRexAvatarProperties;
-        public event RexRecieveObjectPropertiesDelegate OnRexObjectProperties;
-        public event ReceiveRexStartUp OnReceiveRexStartUp;
-        public event ReceiveRexClientScriptCmd OnReceiveRexClientScriptCmd;
+        public event RexAvatarPropertiesDelegate OnRexAvatarProperties;
+        public event RexObjectPropertiesDelegate OnRexObjectProperties;
+        public event RexStartUpDelegate OnRexStartUp;
+        public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
@@ -69,8 +65,6 @@ namespace ModularRex.RexNetwork
         {
             // Rex communication now occurs via GenericMessage
             // We have a special handler here below.
-
-
             AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
@@ -245,7 +239,6 @@ namespace ModularRex.RexNetwork
         void RealXtendClientView_OnGenericMessage(object sender, string method, List<string> args)
         {
             //TODO: Convert to Dictionary<Method, GenericMessageHandler>
-
             if (method == "RexAppearance")
                 if (OnRexAppearance != null)
                 {
@@ -278,18 +271,18 @@ namespace ModularRex.RexNetwork
 
             if (method == "rexscr")
             {
-                if (OnReceiveRexClientScriptCmd != null)
+                if (OnRexClientScriptCmd != null)
                 {
-                    OnReceiveRexClientScriptCmd(this, AgentId, args);
+                    OnRexClientScriptCmd(this, AgentId, args);
                     return;
                 }
             }
 
             if (method == "RexStartup")
             {
-                if (OnReceiveRexStartUp != null)
+                if (OnRexStartUp != null)
                 {
-                    OnReceiveRexStartUp(this, AgentId, args[0]);
+                    OnRexStartUp(this, AgentId, args[0]);
                     return;
                 }
             }
@@ -300,7 +293,6 @@ namespace ModularRex.RexNetwork
                 m_log.Warn("\t" + s);
             }
             m_log.Warn("}");
-
         }
 
         public void SendRexObjectProperties(UUID id, RexObjectProperties x)

@@ -23,7 +23,7 @@ namespace ModularRex.RexParts
             
             if(client is RexClientView)
             {
-                ((RexClientView)client).OnRexAvatarProperties += new RexAvatarProperties(RexScriptTestModule_OnRexAvatarProperties);
+                ((RexClientView)client).OnRexAvatarProperties += new RexAvatarPropertiesDelegate(RexScriptTestModule_OnRexAvatarProperties);
             }
         }
 

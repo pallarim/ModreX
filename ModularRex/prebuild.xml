@@ -109,7 +109,7 @@
         </Options>
       </Configuration>
 
-	<ReferencePath>../../bin/</ReferencePath>
+	 <ReferencePath>../../bin/</ReferencePath>
 	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="ModularRex.NHibernate"/>
 	 <Reference name="IronMath.dll" />
@@ -143,7 +143,43 @@
         <Match path="RexParts" pattern="*.cs" recurse="true"/>
         <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
       </Files>
-    </Project> 
+    </Project>
+
+    <Project name="ModularRex.RexOdePlugin" path="./RexOdePlugin" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/Physics</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="Nini.dll" />
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Region.Physics.Manager"/>
+      <Reference name="OpenSim.Region.Physics.Meshing"/>
+      <Reference name="OpenSim.Region.Physics.OdePlugin"/>
+      <Reference name="Ode.NET.dll"/>
+      <Reference name="nunit.framework.dll"/>
+      <Reference name="log4net.dll"/>
+      <Reference name="RexDotMeshLoader.dll" localCopy="true"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+
+
+
   </Solution>
 </Prebuild>
  

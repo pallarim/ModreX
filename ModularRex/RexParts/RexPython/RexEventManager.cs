@@ -155,8 +155,8 @@ namespace ModularRex.RexParts.RexPython
                 RexNetwork.RexClientView rex;
                 if (vPresence.ClientView.TryGet(out rex))
                 {
-                    rex.OnReceiveRexStartUp += OnRexClientStartUp;
-                    rex.OnReceiveRexClientScriptCmd += OnRexClientScriptCommand;
+                    rex.OnRexStartUp += OnRexClientStartUp;
+                    rex.OnRexClientScriptCmd += OnRexClientScriptCommand;
                 }
             }
             catch (Exception e)
