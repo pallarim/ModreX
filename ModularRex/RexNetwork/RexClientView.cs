@@ -22,7 +22,7 @@ namespace ModularRex.RexNetwork
     public delegate void RexObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
     public delegate void RexStartUpDelegate(RexClientView remoteClient, UUID agentID, string status);
     public delegate void RexClientScriptCmdDelegate(RexClientView remoteClient, UUID agentID, List<string> parameters);
-
+    public delegate void ReceiveRexMediaURL(IClientAPI remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate);
 
     /// <summary>
     /// Inherits from LLClientView the majority of functionality
@@ -56,6 +56,7 @@ namespace ModularRex.RexNetwork
         public event RexObjectPropertiesDelegate OnRexObjectProperties;
         public event RexStartUpDelegate OnRexStartUp;
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
+        public event ReceiveRexMediaURL OnReceiveRexMediaURL;
 
         public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
@@ -65,11 +66,7 @@ namespace ModularRex.RexNetwork
         {
             // Rex communication now occurs via GenericMessage
             // We have a special handler here below.
-            AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandlers();
 
             OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
@@ -84,16 +81,22 @@ namespace ModularRex.RexNetwork
             // Rex communication now occurs via GenericMessage
             // We need to register GenericMessage handlers
 
-            AddGenericPacketHandler("RexAppearance",        RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexFaceExpression",    RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexAvatarProp",        RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexPrimData",          RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexData",              RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandlers();
 
             OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
 
             RexAvatarURL = rexAvatarURL;
             RexAuthURL = rexAuthURL;
+        }
+
+        private void AddGenericPacketHandlers()
+        {
+            AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexMediaUrl", RealXtendClientView_OnGenericMessage);
         }
 
         /// <summary>
@@ -229,6 +232,8 @@ namespace ModularRex.RexNetwork
                 OnRexObjectProperties(this, id, new RexObjectProperties(rpdArray));
         }
 
+        private Dictionary<string, RexAvatarPropertiesDelegate> m_genericMessageHandlers;
+
         /// <summary>
         /// Special - used to convert GenericMessage packets
         /// to their appropriate Rex equivilents.
@@ -239,6 +244,13 @@ namespace ModularRex.RexNetwork
         void RealXtendClientView_OnGenericMessage(object sender, string method, List<string> args)
         {
             //TODO: Convert to Dictionary<Method, GenericMessageHandler>
+            //RexAvatarPropertiesDelegate method;
+            //if (m_genericMessageHandlers.TryGetValue(method, out method))
+            //{
+            //    method(this, args);
+            //    return;
+            //}
+
             if (method == "RexAppearance")
                 if (OnRexAppearance != null)
                 {
@@ -287,12 +299,35 @@ namespace ModularRex.RexNetwork
                 }
             }
 
+            if (method == "rexmediaurl")
+            {
+                TriggerOnReceivedRexMediaURL(this, args);
+                return;
+            }
+
             m_log.Warn("[REXCLIENTVIEW] Unhandled GenericMessage (" + method + ") {");
             foreach (string s in args)
             {
                 m_log.Warn("\t" + s);
             }
             m_log.Warn("}");
+        }
+
+        private void TriggerOnReceivedRexMediaURL(IClientAPI sender, List<string> args)
+        {
+            foreach (string s in args)
+            {
+                m_log.Debug("[rexclient] MediaURL: "+ s);
+            }
+
+            UUID assetID = new UUID(args[0]);
+            string mediaUrl = args[1];
+            byte refreshRate = Convert.ToByte(args[2]);
+
+            if (OnReceiveRexMediaURL != null)
+            {
+                OnReceiveRexMediaURL(this, AgentId, assetID, mediaUrl, refreshRate);
+            }
         }
 
         public void SendRexObjectProperties(UUID id, RexObjectProperties x)
@@ -690,6 +725,8 @@ namespace ModularRex.RexNetwork
         /// <param name="refreshRate">How many times per second to refresh the texture</param>
         public void SendMediaURL(UUID assetId, string mediaURL, byte refreshRate)
         {
+            if (mediaURL == null | mediaURL == string.Empty)
+                return;
             List<string> pack = new List<string>();
 
             pack.Add(assetId.ToString());
