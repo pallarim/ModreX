@@ -502,7 +502,7 @@ namespace ModularRex.RexParts
                         tempasset = World.AssetCache.GetAsset(new UUID(vAssetsList[i]), false);
                         //tempasset = World.AssetCache.FetchAsset(new UUID(vAssetsList[i]));
                         if (tempasset != null)
-                            tempassetlist.Add(tempasset.FullID, (uint)tempasset.Type);
+                            tempassetlist.Add(tempasset.Metadata.FullID, (uint)tempasset.Metadata.Type);
                     }
                     if (tempassetlist.Count > 0)
                     {

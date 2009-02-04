@@ -286,7 +286,7 @@ namespace ModularRex.RexParts
             {
                 AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID,false);
                 if (tempmodel != null)
-                    sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
+                    sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
             }
         }        
         

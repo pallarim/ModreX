@@ -44,7 +44,7 @@ using ModularRex.RexFramework;
 namespace OpenSim.Data.NHibernate
 {
     /// <summary>
-    /// A RegionData Interface to the NHibernate database
+    /// A RexObjectData Interface to the NHibernate database
     /// </summary>
     public class NHibernateRexObjectData
     {
@@ -58,7 +58,6 @@ namespace OpenSim.Data.NHibernate
             m_log.InfoFormat("[NHIBERNATE] Initializing NHibernateRexObjectData");
             Assembly assembly = GetType().Assembly;
             manager = new NHibernateManager(connect, "RexObjectData", assembly);
-            //manager.configuration.AddAssembly("ModularRex.NHibernate");
             Inizialized = true;
         }
 
