@@ -33,6 +33,7 @@ namespace ModularRex.RexParts
             m_scenes.Add(scene);
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
+            scene.m_sceneGraph.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
 
 
             if (m_db == null)
@@ -70,6 +71,14 @@ namespace ModularRex.RexParts
                 // Send them the current Scene.
                 SendAllPropertiesToUser(rcv);
             }
+        }
+
+        void SceneGraph_OnObjectDuplicate(EntityBase original, EntityBase clone)
+        {
+            RexObjectProperties origprops = GetObject(original.UUID);
+            RexObjectProperties cloneprops = GetObject(clone.UUID);
+
+            cloneprops.SetRexPrimDataFromObject(origprops);
         }
 
         //void rcv_OnChatFromClient(object sender, OpenSim.Framework.OSChatMessage e)
