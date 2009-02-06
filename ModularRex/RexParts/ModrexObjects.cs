@@ -14,17 +14,18 @@ using OpenSim.Framework;
 
 namespace ModularRex.RexParts
 {
-    public class ModrexObjects : IRegionModule 
+    public class ModrexObjects : IRegionModule, IRexObjectPropertiesEventManager 
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //private Dictionary<UUID,RexObjectProperties> m_objs = new Dictionary<UUID, RexObjectProperties>();
+        private RexObjectPropertiesManager RexObjectPropertiesCache = new RexObjectPropertiesManager();
         private List<Scene> m_scenes = new List<Scene>();
 
         private NHibernateRexObjectData m_db;
         private string m_db_connectionstring;
 
+        public delegate void OnChangePythonClassDelegate(UUID id);
         public event OnChangePythonClassDelegate OnPythonClassChange;
 
         public void Initialise(Scene scene, IConfigSource source)
@@ -104,32 +105,9 @@ namespace ModularRex.RexParts
 
         void SendAllPropertiesToUser(RexClientView user)
         {
-            if (m_db.Inizialized)
+            foreach (RexObjectProperties p in GetObjects())
             {
-                foreach (Scene s in m_scenes)
-                {
-                    foreach (EntityBase e in s.Entities)
-                    {
-                        RexObjectProperties p = m_db.LoadObject(e.UUID);
-                        if (p != null)
-                        {
-                            user.SendRexObjectProperties(e.UUID, p);
-                            //p.OnPythonClassChange += PythonClassNameChanged;
-                            if (p.RexClassName.Length > 0)
-                            {
-                                s.GetSceneObjectPart(e.UUID).SetScriptEvents(e.UUID, (int)scriptEvents.touch_start);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void PythonClassNameChanged(UUID id)
-        {
-            if (OnPythonClassChange != null)
-            {
-                OnPythonClassChange(id);
+                user.SendRexObjectProperties(p.ParentObjectID, p);
             }
         }
 
@@ -139,22 +117,10 @@ namespace ModularRex.RexParts
             if (props.ParentObjectID == UUID.Zero)
                 props.ParentObjectID = id;
             
-            props.PrintRexPrimdata(); // fixme, debugdata
-
-            // Before saving to db, check if values have changed from the previous values.
-            RexObjectProperties oldprops = Load(id);
- 
-            m_db.StoreObject(props);
-            
-            // Compare values
-            if (oldprops.RexClassName != props.RexClassName)
-                PythonClassNameChanged(props.ParentObjectID);
-            if (oldprops.RexScaleToPrim != props.RexScaleToPrim)
-                ScaleToPrimChanged(id);
-            if (oldprops.RexCollisionMeshUUID != props.RexCollisionMeshUUID)
-                CollisionMeshChanged(id);  
-
-            SendPropertiesToAllUsers(id, props);
+            // debugdata props.PrintRexPrimdata();          
+       
+            RexObjectProperties currentprops = GetObject(id);
+            currentprops.SetRexPrimDataFromObject(props);
         }
 
         public void PostInitialise()
@@ -166,6 +132,7 @@ namespace ModularRex.RexParts
                     m_db.Initialise(m_db_connectionstring);
                 }
             }
+            LoadRexObjectPropertiesToCache();  
         }
 
         public void Close()
@@ -183,7 +150,135 @@ namespace ModularRex.RexParts
             get { return true; }
         }
 
-        public RexObjectProperties Load(UUID id)
+
+
+        #region Trigger/handle rexobjectproperties events     
+        public void TriggerOnChangePythonClass(UUID id)
+        {
+            if (OnPythonClassChange != null)
+                OnPythonClassChange(id);
+        }
+
+        public void TriggerOnChangeCollisionMesh(UUID id)
+        {
+            // tucofixme, add
+            //if (!GlobalSettings.Instance.m_3d_collision_models)
+            //    return;
+
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] TriggerOnChangeCollisionMesh, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+
+            if (sop.ParentGroup != null && sop.PhysActor != null)
+            {
+                if (p.RexCollisionMeshUUID != UUID.Zero)
+                    RexUpdateCollisionMesh(id);
+                else
+                    sop.PhysActor.SetCollisionMesh(null, "", false);
+            }       
+        }
+
+        public void TriggerOnChangeScaleToPrim(UUID id)
+        {
+            // tucofixme, add
+            //if (!GlobalSettings.Instance.m_3d_collision_models)
+            //    return;        
+
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] TriggerOnChangeScaleToPrim, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+
+            if (sop.ParentGroup != null && sop.PhysActor != null)
+            {
+                sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
+                sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
+            }
+        }
+
+        public void TriggerOnChangeRexObjectProperties(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);
+
+            m_db.StoreObject(props);
+            SendPropertiesToAllUsers(id,props);
+        }
+        
+        public void TriggerOnChangeRexObjectMetaData(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);        
+        
+            m_db.StoreObject(props);
+            // tucofixme, send metadata to all users
+        }
+
+
+
+        public void RexUpdateCollisionMesh(UUID id)
+        {
+            // tucofixme, add
+            //if (!GlobalSettings.Instance.m_3d_collision_models)
+            //    return;
+
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] RexUpdateCollisionMesh, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+
+            if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor != null)
+            {
+                AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID, false);
+                if (tempmodel != null)
+                    sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
+            }
+        }
+        #endregion
+
+
+        #region RexObjectProperties Cache
+
+        private void LoadRexObjectPropertiesToCache()
+        {
+            if (!m_db.Inizialized)
+            {
+                m_log.ErrorFormat("LoadRexObjectPropertiesToCache failed, db not initialized");
+                return;
+            }
+            
+            foreach (Scene s in m_scenes)
+            {
+                foreach (EntityBase e in s.Entities)
+                {
+                    RexObjectProperties p = LoadObject(e.UUID);
+                    p.ParentObjectID = e.UUID;
+                    p.SetRexEventManager(this);
+                    RexObjectPropertiesCache.Add(e.UUID,p);
+                    
+                    // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
+                    if(p.RexCollisionMeshUUID != UUID.Zero)
+                        TriggerOnChangeCollisionMesh(e.UUID);
+
+                    if (p.RexClassName.Length > 0)
+                    {
+                        SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(p.ParentObjectID);
+                        if (sop != null)
+                            sop.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
+                    }      
+                }
+            }
+        }
+
+        private RexObjectProperties LoadObject(UUID id)
         {
             RexObjectProperties robject = m_db.LoadObject(id);
             if (robject == null)
@@ -192,104 +287,36 @@ namespace ModularRex.RexParts
                 robject.ParentObjectID = id;
             }
             return robject;
-        }
-
-        public void Save(RexObjectProperties obj)
-        {
-            m_db.StoreObject(obj);
-        }
-        
-        private void CollisionMeshChanged(UUID id)
-        {
-            // tucofixme, add
-            //if (!GlobalSettings.Instance.m_3d_collision_models)
-            //    return;
-
-            RexObjectProperties p = m_db.LoadObject(id);
-            if (p == null)
-            {
-                m_log.Error("[REXOBJS] CollisionMeshChanged, no RexObjectProperties for id:" + id.ToString());
-                return;
-            }
-
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
-            if (sop == null)
-            {
-                m_log.Error("[REXOBJS] CollisionMeshChanged, no SceneObjectPart for id:" + id.ToString());
-                return;
-            }
-            
-            if (sop.ParentGroup != null)
-            {
-                if (sop.PhysActor != null)
-                {
-                    if (p.RexCollisionMeshUUID != UUID.Zero)
-                        RexUpdateCollisionMesh(id);
-                    else
-                        sop.PhysActor.SetCollisionMesh(null, "", false);
-                }
-            }             
-        }
-
-        private void ScaleToPrimChanged(UUID id)
-        {
-            // tucofixme, add
-            //if (!GlobalSettings.Instance.m_3d_collision_models)
-            //    return;        
-        
-            RexObjectProperties p = m_db.LoadObject(id);
-            if(p == null)
-            {
-                m_log.Error("[REXOBJS] ScaleToPrimChanged, no RexObjectProperties for id:" + id.ToString());
-                return;
-            }
-            
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
-            if (sop == null)
-            {
-                m_log.Error("[REXOBJS] ScaleToPrimChanged, no SceneObjectPart for id:" + id.ToString());
-                return;            
-            }
-
-            if (sop.ParentGroup != null)
-            {
-                if (sop.PhysActor != null)
-                {
-                    sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
-                    sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
-                }
-            }
-              
-        }
-
-        public void RexUpdateCollisionMesh(UUID id)
-        {
-            // tucofixme
-            //if (!GlobalSettings.Instance.m_3d_collision_models)
-            //    return;
-
-            RexObjectProperties p = m_db.LoadObject(id);
-            if (p == null)
-            {
-                m_log.Error("[REXOBJS] RexUpdateCollisionMesh, no RexObjectProperties for id:" + id.ToString());
-                return;
-            }
-
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
-            if (sop == null)
-            {
-                m_log.Error("[REXOBJS] RexUpdateCollisionMesh, no SceneObjectPart for id:" + id.ToString());
-                return;
-            }            
-            
-            if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor != null)
-            {
-                AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID,false);
-                if (tempmodel != null)
-                    sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
-            }
         }        
         
-                
+        public RexObjectProperties GetObject(UUID id)
+        {
+            RexObjectProperties props = RexObjectPropertiesCache[id];
+            if (props == null)
+            {
+                props = new RexObjectProperties(id, this);
+                RexObjectPropertiesCache.Add(id, props);
+            }
+            return props;
+        }
+
+        public List<RexObjectProperties> GetObjects()
+        {
+            return RexObjectPropertiesCache.GetAllRexObjectProperties();
+        }
+
+        public bool DeleteObject(UUID id)
+        {
+            if (RexObjectPropertiesCache.ContainsKey(id))
+            {
+                RexObjectPropertiesCache.Remove(id);
+                return true;
+            }
+            return false;
+        }
+
+
+        #endregion
+
     }
 }

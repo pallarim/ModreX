@@ -230,7 +230,7 @@ namespace ModularRex.RexParts.RexPython
                 if (tempobj != null)
                 {
 
-                    RexFramework.RexObjectProperties rexObj = m_rexObjects.Load(tempobj.UUID);
+                    RexFramework.RexObjectProperties rexObj = m_rexObjects.GetObject(tempobj.UUID);
                     if (rexObj != null)
                     {
                         int tagindex = rexObj.RexClassName.IndexOf("?", 0);

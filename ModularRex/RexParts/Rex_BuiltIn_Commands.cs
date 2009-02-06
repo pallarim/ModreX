@@ -604,7 +604,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexData;
             }
             else
@@ -616,9 +616,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexData = vData;
-                m_rexObjects.Save(rop);
                 //RexObjects.RexObjectPart rexobject = (RexObjects.RexObjectPart)target;
                 //rexobject.RexData = vData;
             }
@@ -689,7 +688,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return (int)rop.RexDrawType;
             }
             else
@@ -701,9 +700,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexDrawType = (byte)vDrawType;
-                m_rexObjects.Save(rop);
             }
             else
             {
@@ -716,7 +714,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexIsVisible;
             }
             else
@@ -728,9 +726,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexIsVisible = vbIsVisible;
-                m_rexObjects.Save(rop);
             }
             else
             {
@@ -743,7 +740,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexCastShadows;
             }
             else
@@ -755,9 +752,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexCastShadows = vbCastShadows;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexCastShadows, target prim not found:" + vPrimLocalId);
@@ -768,7 +764,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexLightCreatesShadows;
             }
             else
@@ -780,9 +776,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexLightCreatesShadows = vbLightCreates;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexLightCreatesShadows, target prim not found:" + vPrimLocalId);
@@ -793,7 +788,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexDescriptionTexture;
             }
             else
@@ -805,9 +800,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexDescriptionTexture = vbDescTex;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexDescriptionTexture, target prim not found:" + vPrimLocalId);
@@ -818,7 +812,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexScaleToPrim;
             }
             else
@@ -830,9 +824,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexScaleToPrim = vbScale;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexScaleToPrim, target prim not found:" + vPrimLocalId);
@@ -843,7 +836,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexDrawDistance;
             }
             else
@@ -855,9 +848,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexDrawDistance = vDist;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexDrawDistance, target prim not found:" + vPrimLocalId);
@@ -868,7 +860,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexLOD;
             }
             else
@@ -880,9 +872,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexLOD = vLod;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexLOD, target prim not found:" + vPrimLocalId);
@@ -893,7 +884,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexMeshUUID.ToString();
             }
             else
@@ -905,9 +896,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexMeshUUID = new UUID(vsUUID);
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexMeshUUID, target prim not found:" + vPrimLocalId);
@@ -924,7 +914,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexCollisionMeshUUID.ToString();
             }
             else
@@ -936,9 +926,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexCollisionMeshUUID = new UUID(vsUUID);
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexCollisionMeshUUID, target prim not found:" + vPrimLocalId);
@@ -955,7 +944,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexParticleScriptUUID.ToString();
             }
             else
@@ -967,9 +956,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexParticleScriptUUID = new UUID(vsUUID);
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexParticleScriptUUID, target prim not found:" + vPrimLocalId);
@@ -986,7 +974,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexAnimationPackageUUID.ToString();
             }
             else
@@ -998,9 +986,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexAnimationPackageUUID = new UUID(vsUUID);
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexAnimationPackageUUID, target prim not found:" + vPrimLocalId);
@@ -1017,7 +1004,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexAnimationName;
             }
             else
@@ -1029,9 +1016,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexAnimationName = vName;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexAnimationName, target prim not found:" + vPrimLocalId);
@@ -1042,7 +1028,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexAnimationRate;
             }
             else
@@ -1054,9 +1040,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexAnimationRate = vAnimRate;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexAnimationRate, target prim not found:" + vPrimLocalId);
@@ -1067,7 +1052,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 if (rop.RexMaterials.ContainsKey((uint)vIndex))
                     return rop.RexMaterials[(uint)vIndex].ToString();
             }
@@ -1079,7 +1064,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexMaterials.Count;
             }
             else
@@ -1091,9 +1076,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexMaterials.AddMaterial((uint)vIndex, new UUID(vsMatUUID));
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: RexSetMaterialUUID, target prim not found:" + vPrimLocalId);
@@ -1124,7 +1108,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexClassName;
             }
             else
@@ -1136,9 +1120,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexClassName = vsClassName;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexClassName, target prim not found:" + vPrimLocalId);
@@ -1149,7 +1132,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexSoundUUID.ToString();
 
             }
@@ -1161,10 +1144,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexSoundUUID = new UUID(vsUUID);
-                m_rexObjects.Save(rop);
-
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexSoundUUID, target prim not found:" + vPrimLocalId);
@@ -1182,7 +1163,7 @@ namespace ModularRex.RexParts
             if (target != null)
             {
 
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexSoundVolume;
 
             }
@@ -1195,10 +1176,8 @@ namespace ModularRex.RexParts
             if (target != null)
             {
 
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexSoundVolume = vVolume;
-                m_rexObjects.Save(rop);
-
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexSoundVolume, target prim not found:" + vPrimLocalId);
@@ -1209,7 +1188,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexSoundRadius;
 
             }
@@ -1221,9 +1200,8 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexSoundRadius = vRadius;
-                m_rexObjects.Save(rop);
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexSoundRadius, target prim not found:" + vPrimLocalId);
@@ -1234,7 +1212,7 @@ namespace ModularRex.RexParts
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 return rop.RexSelectPriority;
 
             }
@@ -1247,10 +1225,8 @@ namespace ModularRex.RexParts
             if (target != null)
             {
 
-                RexObjectProperties rop = m_rexObjects.Load(target.UUID);
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 rop.RexSelectPriority = vValue;
-                m_rexObjects.Save(rop);
-
             }
             else
                 m_log.Warn("[REXSCRIPT]: SetRexSelectPriority, target prim not found:" + vPrimLocalId);

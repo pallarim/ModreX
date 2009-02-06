@@ -311,9 +311,8 @@ namespace ModularRex.RexParts.RexPython
             SceneObjectGroup sog = myScriptEngine.World.AddNewPrim(TempID, TempID, pos, rot, GetShape(shape));
             uint AddResult = sog.RootPart.LocalId;
 
-            ModularRex.RexFramework.RexObjectProperties rop = m_rexObjects.Load(sog.RootPart.UUID);
+            ModularRex.RexFramework.RexObjectProperties rop = m_rexObjects.GetObject(sog.RootPart.UUID);
             rop.RexClassName = pythonClass;
-            m_rexObjects.Save(rop);
 
             //TODO: vbTemporary
             //uint AddResult = myScriptEngine.World.AddNewPrimReturningId(TempID, pos, rot, GetShape(vShape), vbTemporary, vPyClass);

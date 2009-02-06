@@ -32,7 +32,7 @@ namespace ModularRex.RexFramework
                 this[vIndex] = vMaterialUUID;
             }
             if (MyPart != null)
-                MyPart.SchedulePropertiesUpdate(true);
+                MyPart.TriggerChangedRexObjectProperties();
         }
 
         public void DeleteMaterialByIndex(uint vIndex)
@@ -43,7 +43,7 @@ namespace ModularRex.RexFramework
                 {
                     Remove(vIndex);
                     if (MyPart != null)
-                        MyPart.SchedulePropertiesUpdate(true);
+                        MyPart.TriggerChangedRexObjectProperties();
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace ModularRex.RexFramework
                 Clear();
             }
             if (MyPart != null)
-                MyPart.SchedulePropertiesUpdate(true);
+                MyPart.TriggerChangedRexObjectProperties();
         }
 
 

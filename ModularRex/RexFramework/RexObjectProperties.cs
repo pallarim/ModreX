@@ -11,14 +11,11 @@ using OpenMetaverse;
 
 namespace ModularRex.RexFramework
 {
-    public delegate void OnRexObjectPropertiesUpdateDelegate(UUID id, RexObjectProperties prop, bool dbSave);
-
-    public delegate void OnRexObjectPropertiesDataUpdateDelegate(UUID id, string data, bool dbSave);
-
-    public delegate void OnChangePythonClassDelegate(UUID id);
-
     public class RexObjectProperties
     {
+        private IRexObjectPropertiesEventManager RexEventManager = null;
+        private bool mProcessingPacketData = false;    
+    
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -31,14 +28,14 @@ namespace ModularRex.RexFramework
             set { parentObjectID = value; }
         }
 
-        private byte m_RexDrawType = 1;
+        private byte m_RexDrawType = 0;
         public byte RexDrawType
         {
             get { return m_RexDrawType; }
             set
             {
                 m_RexDrawType = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -49,7 +46,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexIsVisible = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -60,7 +57,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexCastShadows = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -71,7 +68,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexLightCreatesShadows = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -82,7 +79,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexDescriptionTexture = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -92,8 +89,13 @@ namespace ModularRex.RexFramework
             get { return m_RexScaleToPrim; }
             set
             {
+                bool oldscale = m_RexScaleToPrim;
                 m_RexScaleToPrim = value;
-                SchedulePropertiesUpdate(true);
+
+                if (oldscale != m_RexScaleToPrim && RexEventManager != null)
+                    RexEventManager.TriggerOnChangeScaleToPrim(parentObjectID);                
+                    
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -104,7 +106,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexDrawDistance = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -115,7 +117,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexLOD = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -126,7 +128,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexMeshUUID = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -136,8 +138,13 @@ namespace ModularRex.RexFramework
             get { return m_RexCollisionMeshUUID; }
             set
             {
+                UUID oldcollision = m_RexCollisionMeshUUID; 
                 m_RexCollisionMeshUUID = value;
-                SchedulePropertiesUpdate(true);
+
+                if (oldcollision != m_RexCollisionMeshUUID && RexEventManager != null)
+                    RexEventManager.TriggerOnChangeCollisionMesh(parentObjectID);
+
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -148,7 +155,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexParticleScriptUUID = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -159,7 +166,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexAnimationPackageUUID = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -170,7 +177,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexAnimationName = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -181,7 +188,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexAnimationRate = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -230,9 +237,13 @@ namespace ModularRex.RexFramework
             get { return m_RexClassName; }
             set
             {
+                string oldclass = m_RexClassName;
                 m_RexClassName = value;
-                TriggerOnChangePythonClass(parentObjectID);
-                SchedulePropertiesUpdate(true);
+
+                if (m_RexClassName != oldclass && RexEventManager != null)
+                    RexEventManager.TriggerOnChangePythonClass(parentObjectID);
+
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -243,7 +254,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexSoundUUID = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -254,7 +265,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexSoundVolume = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -265,7 +276,7 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexSoundRadius = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -279,8 +290,11 @@ namespace ModularRex.RexFramework
                     m_rexData = value.Substring(0, 3000);
                 else
                     m_rexData = value;
+                    
+                if (RexEventManager != null)
+                    RexEventManager.TriggerOnChangeRexObjectMetaData(parentObjectID);
 
-                ScheduleDataUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
 
@@ -291,25 +305,12 @@ namespace ModularRex.RexFramework
             set
             {
                 m_RexSelectPriority = value;
-                SchedulePropertiesUpdate(true);
+                TriggerChangedRexObjectProperties();
             }
         }
         #endregion
 
-        #region Events
-
-        public event OnRexObjectPropertiesDataUpdateDelegate OnDataUpdate;
-        public event OnRexObjectPropertiesUpdateDelegate OnPropertiesUpdate;
-        public event OnChangePythonClassDelegate OnPythonClassChange;
-
-        public void TriggerOnChangePythonClass(UUID id)
-        {
-            if (OnPythonClassChange != null)
-                OnPythonClassChange(id);
-        }
-
-        #endregion
-
+        #region Constructors
         /// <summary>
         /// Initialises a new RexObjectProperties class from
         /// the specified binary array. Unpacks the array
@@ -324,6 +325,57 @@ namespace ModularRex.RexFramework
 
         public RexObjectProperties() { }
 
+        public RexObjectProperties(UUID parentid,IRexObjectPropertiesEventManager newrexeventmanager) 
+        {
+            ParentObjectID = parentid;
+            RexEventManager = newrexeventmanager;
+        }
+
+        #endregion
+
+
+        public void SetRexEventManager(IRexObjectPropertiesEventManager newrexeventmanager)
+        {
+            RexEventManager = newrexeventmanager;
+        }
+
+        public void SetRexPrimDataFromObject(RexObjectProperties source)
+        {
+            try
+            {
+                mProcessingPacketData = true;
+                RexDrawType = source.RexDrawType;  
+                RexIsVisible = source.RexIsVisible;
+                RexCastShadows = source.RexCastShadows;
+                RexLightCreatesShadows = source.RexLightCreatesShadows;
+                RexDescriptionTexture = source.RexDescriptionTexture;
+                RexScaleToPrim = source.RexScaleToPrim;
+                RexDrawDistance = source.RexDrawDistance;
+                RexLOD = source.RexLOD;
+                RexMeshUUID = source.RexMeshUUID;
+                RexCollisionMeshUUID = source.RexCollisionMeshUUID;
+                RexParticleScriptUUID = source.RexParticleScriptUUID;
+                RexAnimationPackageUUID = source.RexAnimationPackageUUID;
+                RexAnimationName = source.RexAnimationName;
+                RexAnimationRate = source.RexAnimationRate;
+                RexMaterials.ClearMaterials();
+                RexMaterials = (RexMaterialsDictionary)source.RexMaterials.Clone();
+                RexClassName = source.RexClassName;
+                RexSoundUUID = source.RexSoundUUID;
+                RexSoundVolume = source.RexSoundVolume;
+                RexSoundRadius = source.RexSoundRadius;
+                RexSelectPriority = source.RexSelectPriority;
+                mProcessingPacketData = false;
+                
+                TriggerChangedRexObjectProperties();
+            }
+            catch (Exception e)
+            {
+                mProcessingPacketData = false;
+                m_log.Error(e.ToString());
+            }
+        }
+        
         #region Old RexServer ToByte/FromByte methods
         public byte[] GetRexPrimDataToBytes()
         {
@@ -437,6 +489,8 @@ namespace ModularRex.RexFramework
 
         public void SetRexPrimDataFromBytes(byte[] bytes)
         {
+            mProcessingPacketData = true;
+        
             try
             {
                 int idx = 0;
@@ -516,10 +570,12 @@ namespace ModularRex.RexFramework
 // ReSharper restore RedundantAssignment
                 }
 
-                SchedulePropertiesUpdate(true);
+                mProcessingPacketData = false;
+                TriggerChangedRexObjectProperties();
             }
             catch (Exception e)
             {
+                mProcessingPacketData = false;
                 m_log.Error(e.ToString());
             }
         }
@@ -558,30 +614,12 @@ namespace ModularRex.RexFramework
         }
         #endregion
 
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="saveToDB"></param>
-        public void SchedulePropertiesUpdate(bool saveToDB)
+        public void TriggerChangedRexObjectProperties()
         {
-            if(OnPropertiesUpdate != null)
-            {
-                OnPropertiesUpdate(ParentObjectID, this, saveToDB);
-            }
+            if (mProcessingPacketData)
+                return;
+            if (RexEventManager != null)
+                RexEventManager.TriggerOnChangeRexObjectProperties(parentObjectID);       
         }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="saveToDB"></param>
-        public void ScheduleDataUpdate(bool saveToDB)
-        {
-            if(OnDataUpdate != null)
-            {
-                OnDataUpdate(ParentObjectID, RexData, saveToDB);
-            }
-        }
-
-
     }
 }

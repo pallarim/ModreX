@@ -188,7 +188,7 @@ namespace ModularRex.RexParts.RexPython
                 {
                     if (ent is SceneObjectGroup)
                     {
-                        RexFramework.RexObjectProperties rexobj = m_rexObjects.Load(((SceneObjectGroup)ent).RootPart.UUID);
+                        RexFramework.RexObjectProperties rexobj = m_rexObjects.GetObject(((SceneObjectGroup)ent).RootPart.UUID);
                         PythonClassName = "rxactor.Actor";
                         PythonTag = "";
 
