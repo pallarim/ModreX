@@ -73,11 +73,22 @@ namespace ModularRex.RexParts
 
         public void PostInitialise()
         {
+            //Initialize the DB connection
             lock (m_db)
             {
                 if (!m_db.Inizialized)
                 {
                     m_db.Initialise(m_db_connectionstring);
+                }
+            }
+
+            //Fetch all assets to "cache" on startup
+            if (m_assets.Count == 0)
+            {
+                List<RexAssetData> objects = m_db.LoadAllObjects();
+                foreach (RexAssetData rad in objects)
+                {
+                    m_assets.Add(rad.AssetID, rad);
                 }
             }
         }
@@ -88,21 +99,21 @@ namespace ModularRex.RexParts
 
         private void OnNewClient(IClientAPI client)
         {
-            if (client is RexNetwork.RexClientView)
+            if (client is RexNetwork.IClientMediaURL)
             {
-                RexNetwork.RexClientView rcv = (RexNetwork.RexClientView)client;
+                ((RexNetwork.IClientMediaURL)client).OnReceiveRexMediaURL += OnReceiveRexMediaURL;
+                client.OnLogout += OnRexClientLogout;
 
-                rcv.OnReceiveRexMediaURL += OnReceiveRexMediaURL;
-                rcv.OnLogout += OnRexClientLogout;
-
-                //TODO: send all mediaurls to client
+                foreach (KeyValuePair<UUID, RexAssetData> asset in m_assets)
+                {
+                    SendMediaURLtoUser(((RexNetwork.IClientMediaURL)client), asset.Key);
+                }
             }
         }
 
         private void OnRexClientLogout(IClientAPI obj)
         {
-            RexNetwork.RexClientView rcv = (RexNetwork.RexClientView)obj;
-            rcv.OnReceiveRexMediaURL -= OnReceiveRexMediaURL;
+            ((RexNetwork.IClientMediaURL)obj).OnReceiveRexMediaURL -= OnReceiveRexMediaURL;
         }
 
         private void OnReceiveRexMediaURL(IClientAPI remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate)
@@ -172,7 +183,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        public void SendMediaURLtoUser(RexNetwork.RexClientView user, UUID assetID)
+        public void SendMediaURLtoUser(RexNetwork.IClientMediaURL user, UUID assetID)
         {
             if (m_assets[assetID] != null)
             {

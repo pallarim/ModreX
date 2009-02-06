@@ -32,6 +32,10 @@ namespace ModularRex.NHibernate
 
         public void Dispose() { }
 
+        /// <summary>
+        /// Save or update object to database
+        /// </summary>
+        /// <param name="obj">Object to save or update</param>
         public void StoreObject(RexAssetData obj)
         {
             try
@@ -54,6 +58,11 @@ namespace ModularRex.NHibernate
             }
         }
 
+        /// <summary>
+        /// Loads object from the database
+        /// </summary>
+        /// <param name="uuid">UUID of the object</param>
+        /// <returns>Returns RexAssetData if the object is found with ID, returns null if not found.</returns>
         public RexAssetData LoadObject(UUID uuid)
         {
             try
@@ -80,6 +89,31 @@ namespace ModularRex.NHibernate
             }
         }
 
+        /// <summary>
+        /// Retrives all objects from the RexAssetData table
+        /// </summary>
+        /// <returns>All objects as a list, if none found or error while processing returns null</returns>
+        public List<RexAssetData> LoadAllObjects()
+        {
+            try
+            {
+                RexAssetData obj = new RexAssetData();
+                ICriteria criteria = manager.GetSession().CreateCriteria(typeof(RexAssetData));
+
+                List<RexAssetData> assets = (List<RexAssetData>)criteria.List<RexAssetData>();
+                return assets;
+            }
+            catch (Exception e)
+            {
+                m_log.WarnFormat("[NHIBERNATE]: Failed loading RexAssetData. Exception {0} ", e);
+                return new List<RexAssetData>();
+            }
+        }
+
+        /// <summary>
+        /// Removes object from the database
+        /// </summary>
+        /// <param name="obj">UUID of the object to remove</param>
         public void RemoveObject(UUID obj)
         {
             RexAssetData g = LoadObject(obj);

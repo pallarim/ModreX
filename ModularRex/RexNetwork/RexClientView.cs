@@ -32,7 +32,7 @@ namespace ModularRex.RexNetwork
     /// between Rex and LL, you can use a override on those specific functions
     /// to overload the request.
     /// </summary>
-    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance
+    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance, IClientMediaURL
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -315,18 +315,25 @@ namespace ModularRex.RexNetwork
 
         private void TriggerOnReceivedRexMediaURL(IClientAPI sender, List<string> args)
         {
-            foreach (string s in args)
+            try
             {
-                m_log.Debug("[rexclient] MediaURL: "+ s);
+                foreach (string s in args)
+                {
+                    m_log.Debug("[REXCLIENTVIEW] MediaURL: " + s);
+                }
+
+                UUID assetID = new UUID(args[0]);
+                string mediaUrl = args[1];
+                byte refreshRate = Convert.ToByte(args[2]);
+
+                if (OnReceiveRexMediaURL != null)
+                {
+                    OnReceiveRexMediaURL(this, AgentId, assetID, mediaUrl, refreshRate);
+                }
             }
-
-            UUID assetID = new UUID(args[0]);
-            string mediaUrl = args[1];
-            byte refreshRate = Convert.ToByte(args[2]);
-
-            if (OnReceiveRexMediaURL != null)
+            catch (Exception e)
             {
-                OnReceiveRexMediaURL(this, AgentId, assetID, mediaUrl, refreshRate);
+                m_log.ErrorFormat("[REXCLIENTVIEW] Error parseing incoming media url. Exception: ", e);
             }
         }
 
@@ -725,8 +732,11 @@ namespace ModularRex.RexNetwork
         /// <param name="refreshRate">How many times per second to refresh the texture</param>
         public void SendMediaURL(UUID assetId, string mediaURL, byte refreshRate)
         {
-            if (mediaURL == null | mediaURL == string.Empty)
+            if (mediaURL == null)
+            {
+                m_log.Warn("[REXCLIENTVIEW]: Did not send media url to user, because it was null");
                 return;
+            }
             List<string> pack = new List<string>();
 
             pack.Add(assetId.ToString());
