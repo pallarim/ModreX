@@ -34,6 +34,7 @@ namespace ModularRex.RexParts
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.m_sceneGraph.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
+            scene.m_sceneGraph.OnObjectRemove += SceneGraph_OnObjectRemove;
 
 
             if (m_db == null)
@@ -80,6 +81,12 @@ namespace ModularRex.RexParts
 
             cloneprops.SetRexPrimDataFromObject(origprops);
         }
+
+        void SceneGraph_OnObjectRemove(EntityBase obj)
+        {
+            DeleteObject(obj.UUID);
+        }
+
 
         //void rcv_OnChatFromClient(object sender, OpenSim.Framework.OSChatMessage e)
         //{
@@ -319,6 +326,7 @@ namespace ModularRex.RexParts
             if (RexObjectPropertiesCache.ContainsKey(id))
             {
                 RexObjectPropertiesCache.Remove(id);
+                m_db.RemoveObject(id);
                 return true;
             }
             return false;
