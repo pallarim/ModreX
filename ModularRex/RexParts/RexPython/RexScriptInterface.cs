@@ -6,9 +6,9 @@ using System.Reflection;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
 
-using OpenSim.Region.Environment.Scenes;
-using OpenSim.Region.Environment.Scenes.Scripting;
-using OpenSim.Region.Environment.Interfaces;
+using OpenSim.Region.Framework.Scenes;
+using OpenSim.Region.Framework.Scenes.Scripting;
+using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared;
 using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
@@ -58,7 +58,7 @@ namespace ModularRex.RexParts.RexPython
                 m_log.Error("[REXSCRIPT]: Initializting rex scriptengine failed: " + e.ToString());
             }
 
-            OpenSim.Region.Environment.Interfaces.IRegionModule module = myScriptEngine.World.Modules["RexObjectsModule"];
+            OpenSim.Region.Framework.Interfaces.IRegionModule module = myScriptEngine.World.Modules["RexObjectsModule"];
             if (module != null && module is ModrexObjects)
             {
                 m_rexObjects = (ModrexObjects)module;

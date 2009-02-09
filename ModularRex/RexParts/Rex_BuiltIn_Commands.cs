@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using OpenMetaverse;
-using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
-using OpenSim.Region.Interfaces;
+using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared;
 using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.Api;
@@ -43,7 +43,7 @@ namespace ModularRex.RexParts
                     m_ScriptEngine.World.RequestModuleInterface<IMessageTransferModule>();
             AsyncCommands = new AsyncCommandManager(ScriptEngine);
 
-            OpenSim.Region.Environment.Interfaces.IRegionModule module = World.Modules["RexObjectsModule"];
+            OpenSim.Region.Framework.Interfaces.IRegionModule module = World.Modules["RexObjectsModule"];
             if (module != null && module is ModrexObjects)
             {
                 m_rexObjects = (ModrexObjects)module;

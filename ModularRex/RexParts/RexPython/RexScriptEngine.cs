@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using OpenSim.Framework;
-using OpenSim.Region.Environment.Scenes;
-using OpenSim.Region.Environment.Scenes.Scripting;
-using OpenSim.Region.Environment.Interfaces;
+using OpenSim.Region.Framework;
+using OpenSim.Region.Framework.Interfaces;
+using OpenSim.Region.Framework.Scenes;
+using OpenSim.Region.Framework.Scenes.Scripting;
 using OpenMetaverse;
 using Nini.Config;
 
@@ -64,7 +65,7 @@ namespace ModularRex.RexParts.RexPython
 
         public void PostInitialise()
         {
-            OpenSim.Region.Environment.Interfaces.IRegionModule module = World.Modules["RexObjectsModule"];
+            OpenSim.Region.Framework.Interfaces.IRegionModule module = World.Modules["RexObjectsModule"];
             if (module != null && module is ModrexObjects)
             {
                 m_rexObjects = (ModrexObjects)module;

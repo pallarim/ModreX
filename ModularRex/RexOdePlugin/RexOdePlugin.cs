@@ -3270,41 +3270,41 @@ namespace ModularRex.RexOdePlugin
         }
 #endif
 
-        // rex, new function
-        public override uint Raycast(PhysicsVector pos, PhysicsVector dir, float rayLength, uint ignoreId)
-        {
-            try
-            {
-                mCollisionRayObjId = 0;
-                mCollisionRayIgnoreId = ignoreId;
+        //Commented out for now since does not exist in current OpenSim
+        //public override uint Raycast(PhysicsVector pos, PhysicsVector dir, float rayLength, uint ignoreId)
+        //{
+        //    try
+        //    {
+        //        mCollisionRayObjId = 0;
+        //        mCollisionRayIgnoreId = ignoreId;
 
-                lock (OdeLock)
-                {
-                    d.GeomRaySet(mCollisionRay, pos.X, pos.Y, pos.Z, dir.X, dir.Y, dir.Z);
-                    d.GeomRaySetLength(mCollisionRay, rayLength);
-                    try
-                    {
-                        d.SpaceCollide2(space, mCollisionRay, IntPtr.Zero, nearCallback);
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Warn("[PHYSICS]: Unable to Raycast:" + e.ToString());
-                    }
-                    d.GeomRaySetLength(mCollisionRay, 0);
-                }
-            }
-            catch (Exception e)
-            {
-                m_log.Warn("[PHYSICS]: RexRaycast error:" + e.ToString());
-            }
-            return mCollisionRayObjId;
-        }
+        //        lock (OdeLock)
+        //        {
+        //            d.GeomRaySet(mCollisionRay, pos.X, pos.Y, pos.Z, dir.X, dir.Y, dir.Z);
+        //            d.GeomRaySetLength(mCollisionRay, rayLength);
+        //            try
+        //            {
+        //                d.SpaceCollide2(space, mCollisionRay, IntPtr.Zero, nearCallback);
+        //            }
+        //            catch (Exception e)
+        //            {
+        //                m_log.Warn("[PHYSICS]: Unable to Raycast:" + e.ToString());
+        //            }
+        //            d.GeomRaySetLength(mCollisionRay, 0);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        m_log.Warn("[PHYSICS]: RexRaycast error:" + e.ToString());
+        //    }
+        //    return mCollisionRayObjId;
+        //}
 
-        // rex, new function
-        public override void SetMaxFlightHeight(float maxheight)
-        {
-            m_flightCeilingHeight = maxheight;
-        }
+        //Commented out for now since does not exist in current OpenSim
+        //public override void SetMaxFlightHeight(float maxheight)
+        //{
+        //    m_flightCeilingHeight = maxheight;
+        //}
 
 
 

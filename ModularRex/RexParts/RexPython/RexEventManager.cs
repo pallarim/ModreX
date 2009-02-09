@@ -5,7 +5,7 @@ using System.Text;
 using OpenMetaverse;
 using OpenSim;
 using OpenSim.Framework;
-using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Framework.Scenes;
 using log4net;
 
 namespace ModularRex.RexParts.RexPython
@@ -33,7 +33,7 @@ namespace ModularRex.RexParts.RexPython
             m_scriptEngine = scriptEngine;
             m_log.InfoFormat("[RexScriptEngine]: Hooking up to server events");
 
-            OpenSim.Region.Environment.Interfaces.IRegionModule module = m_scriptEngine.World.Modules["RexObjectsModule"];
+            OpenSim.Region.Framework.Interfaces.IRegionModule module = m_scriptEngine.World.Modules["RexObjectsModule"];
             if (module != null && module is ModrexObjects)
             {
                 m_rexObjects = (ModrexObjects)module;
@@ -59,7 +59,7 @@ namespace ModularRex.RexParts.RexPython
             m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
-            OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
+            //OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
         }
 
         private void onPythonClassChange(UUID id)

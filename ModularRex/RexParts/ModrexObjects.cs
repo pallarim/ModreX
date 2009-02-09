@@ -7,8 +7,8 @@ using ModularRex.RexFramework;
 using ModularRex.RexNetwork;
 using Nini.Config;
 using OpenMetaverse;
-using OpenSim.Region.Environment.Interfaces;
-using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Framework.Interfaces;
+using OpenSim.Region.Framework.Scenes;
 using OpenSim.Data.NHibernate;
 using OpenSim.Framework;
 
@@ -194,7 +194,10 @@ namespace ModularRex.RexParts
                 if (p.RexCollisionMeshUUID != UUID.Zero)
                     RexUpdateCollisionMesh(id);
                 else
-                    sop.PhysActor.SetCollisionMesh(null, "", false);
+                {
+                    //Commented out for now since does not exist in current OpenSim
+                    //sop.PhysActor.SetCollisionMesh(null, "", false);
+                }
             }       
         }
 
@@ -214,7 +217,8 @@ namespace ModularRex.RexParts
 
             if (sop.ParentGroup != null && sop.PhysActor != null)
             {
-                sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
+                //Commented out for now since does not exist in current OpenSim
+                //sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
                 sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
             }
         }
@@ -255,7 +259,10 @@ namespace ModularRex.RexParts
             {
                 AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID, false);
                 if (tempmodel != null)
-                    sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
+                {
+                    //Commented out for now since does not exist in current OpenSim
+                    //sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
+                }
             }
         }
         #endregion

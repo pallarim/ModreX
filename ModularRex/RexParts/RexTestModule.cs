@@ -2,8 +2,8 @@
 using log4net;
 using ModularRex.RexNetwork;
 using Nini.Config;
-using OpenSim.Region.Environment.Interfaces;
-using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Framework.Interfaces;
+using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexParts
 {

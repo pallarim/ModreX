@@ -2756,37 +2756,37 @@ namespace ModularRex.RexOdePlugin
         }
 
 
-        // rex, new function
+        //Commented out for now since does not exist in current OpenSim
         // This function should be called only outside of simulation loop -> OdeLock used.
-        public override void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
-        {
-            lock (_parent_scene.OdeLock)
-            {
-                m_DotMeshCollision = false;
-                if (m_OriginalMesh != null)
-                {
-                    // Never pinned so skip m_OriginalMesh.releasePinned();
-                    m_OriginalMesh = null;
-                }
+        //public override void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
+        //{
+        //    lock (_parent_scene.OdeLock)
+        //    {
+        //        m_DotMeshCollision = false;
+        //        if (m_OriginalMesh != null)
+        //        {
+        //            // Never pinned so skip m_OriginalMesh.releasePinned();
+        //            m_OriginalMesh = null;
+        //        }
 
-                if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
-                    m_DotMeshCollision = true;
+        //        if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
+        //            m_DotMeshCollision = true;
 
-                m_ReCreateCollision = true;
-            }
+        //        m_ReCreateCollision = true;
+        //    }
 
-            _parent_scene.AddPhysicsActorTaint(this);
-        }
+        //    _parent_scene.AddPhysicsActorTaint(this);
+        //}
 
-        // rex, new function
-        public override void SetBoundsScaling(bool vbScaleMesh)
-        {
-            if (m_DotMeshCollision)
-            {
-                m_BoundsScaling = vbScaleMesh;
-                m_ReCreateCollision = true;
-            }
-        }
+        //Commented out for now since does not exist in current OpenSim
+        //public override void SetBoundsScaling(bool vbScaleMesh)
+        //{
+        //    if (m_DotMeshCollision)
+        //    {
+        //        m_BoundsScaling = vbScaleMesh;
+        //        m_ReCreateCollision = true;
+        //    }
+        //}
 
         // rex, new function
         private bool CreateOSMeshFromDotMesh(byte[] vData, string vMeshName, bool vbScaleMesh)

@@ -36,8 +36,6 @@ using log4net;
 using NHibernate;
 using NHibernate.Criterion;
 using OpenSim.Framework;
-using OpenSim.Region.Environment.Interfaces;
-using OpenSim.Region.Environment.Scenes;
 using Environment = NHibernate.Cfg.Environment;
 using ModularRex.RexFramework;
 
