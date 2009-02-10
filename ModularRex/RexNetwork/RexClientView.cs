@@ -58,7 +58,7 @@ namespace ModularRex.RexNetwork
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
         public event ReceiveRexMediaURL OnReceiveRexMediaURL;
 
-        public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
+        public RexClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,

@@ -265,6 +265,18 @@ namespace ModularRex.RexParts
                 }
             }
         }
+        
+        public byte GetAssetType(UUID assetid)
+        {
+            AssetBase tempmodel = m_scenes[0].AssetCache.GetAsset(assetid, true);
+            if (tempmodel == null)
+                m_scenes[0].AssetCache.GetAsset(assetid, false);
+
+            if (tempmodel != null)
+                return(byte)(tempmodel.Metadata.Type);
+            else
+                return 0;
+        }
         #endregion
 
 

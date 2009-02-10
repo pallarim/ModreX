@@ -14,7 +14,7 @@ namespace ModularRex.RexFramework
     public class RexObjectProperties
     {
         private IRexObjectPropertiesEventManager RexEventManager = null;
-        private bool mProcessingPacketData = false;    
+        private bool mProcessingPacketData = false;
     
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -398,7 +398,7 @@ namespace ModularRex.RexFramework
 
                 // Misc
                 size = size + m_RexClassName.Length + 1 + // classname & endbyte
-                    16 + sizeof(float) + sizeof(float); // sounduuid,sndvolume,sndradius 
+                    16 + sizeof(float) + sizeof(float); // sounduuid,sndvolume,sndradius
 
                 // Build byte array
                 byte[] buffer = new byte[size];
@@ -439,22 +439,12 @@ namespace ModularRex.RexFramework
                 buffer[idx++] = (byte)materials.Values.Count;
                 foreach (KeyValuePair<uint, UUID> kvp in materials)
                 {
-                    // Removed - do we really need to know this?
-                    // Adds a dependency for a single scene method
-                    // which may break in future. Dont see why
-                    // the client needs it either.
-
-                    /*      
-                    AssetBase tempmodel = m_parentGroup.Scene.AssetCache.FetchAsset(kvp.Value); // materialassettype
-                    if (tempmodel != null)
-                    {
-                        byte temptype = (byte)(tempmodel.Type);
-                        buffer[idx++] = temptype;
-                    }
-                    else
-                    */
-                    buffer[idx++] = 0;
-
+                    // Client needs assettype so that it knows if this is texture or material script
+                    byte assettype = 0;
+                    if(RexEventManager != null)
+                        assettype = RexEventManager.GetAssetType(kvp.Value);
+                                            
+                    buffer[idx++] = assettype;
                     kvp.Value.GetBytes().CopyTo(buffer, idx); // matuuid 
                     idx += 16;
 

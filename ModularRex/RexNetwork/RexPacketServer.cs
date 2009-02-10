@@ -27,7 +27,7 @@ namespace ModularRex.RexNetwork
         }
 
         protected override IClientAPI CreateNewCircuit(EndPoint remoteEP, 
-            IScene scene, AssetCache assetCache, LLPacketServer packServer, 
+            IScene scene, IAssetCache assetCache, LLPacketServer packServer, 
             AuthenticateResponse sessionInfo, OpenMetaverse.UUID agentId, 
             OpenMetaverse.UUID sessionId, uint circuitCode, EndPoint proxyEP)
         {
@@ -37,8 +37,8 @@ namespace ModularRex.RexNetwork
                                   circuitCode, proxyEP, new ClientStackUserSettings());
         }
 
-        public override bool AddNewClient(EndPoint epSender, UseCircuitCodePacket useCircuit, 
-            AssetCache assetCache, AuthenticateResponse circuitManager, EndPoint proxyEP)
+        public override bool AddNewClient(EndPoint epSender, UseCircuitCodePacket useCircuit,
+            IAssetCache assetCache, AuthenticateResponse circuitManager, EndPoint proxyEP)
         {
             IClientAPI newuser;
 

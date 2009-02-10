@@ -11,6 +11,8 @@ namespace ModularRex.RexFramework
         void TriggerOnChangeCollisionMesh(UUID id);
         void TriggerOnChangeScaleToPrim(UUID id);
         void TriggerOnChangeRexObjectProperties(UUID id);
-        void TriggerOnChangeRexObjectMetaData(UUID id);  
+        void TriggerOnChangeRexObjectMetaData(UUID id);
+        
+        byte GetAssetType(UUID assetid);
     }
 }
