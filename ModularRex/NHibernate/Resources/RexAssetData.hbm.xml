@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+  <class name="ModularRex.RexFramework.RexAssetData, ModularRex.RexFramework" table="RexAssetData" lazy="false">
+    <id name="AssetID" column="ID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate">
+      <generator class="assigned" />
+    </id>
+
+    <property name="MediaURL" type="String" length="64" />
+    <property name="RefreshRate" type="byte" length="64" />
+  </class>
+</hibernate-mapping>
