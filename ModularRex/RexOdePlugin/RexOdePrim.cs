@@ -35,6 +35,7 @@ using Ode.NET;
 using OpenSim.Framework;
 using OpenSim.Region.Physics.Manager;
 using OpenSim.Region.Physics.Meshing;
+using ModularRex.RexParts;
 
 namespace ModularRex.RexOdePlugin
 {
@@ -42,7 +43,7 @@ namespace ModularRex.RexOdePlugin
     /// Various properties that ODE uses for AMotors but isn't exposed in ODE.NET so we must define them ourselves.
     /// </summary>
 
-    public class OdePrim : PhysicsActor
+    public class OdePrim : PhysicsActor, IRexPhysicsActor
     {
         private Mesh m_OriginalMesh = null; // rex
 
@@ -2756,37 +2757,36 @@ namespace ModularRex.RexOdePlugin
         }
 
 
-        //Commented out for now since does not exist in current OpenSim
+
         // This function should be called only outside of simulation loop -> OdeLock used.
-        //public override void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
-        //{
-        //    lock (_parent_scene.OdeLock)
-        //    {
-        //        m_DotMeshCollision = false;
-        //        if (m_OriginalMesh != null)
-        //        {
-        //            // Never pinned so skip m_OriginalMesh.releasePinned();
-        //            m_OriginalMesh = null;
-        //        }
+        public void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
+        {
+            lock (_parent_scene.OdeLock)
+            {
+                m_DotMeshCollision = false;
+                if (m_OriginalMesh != null)
+                {
+                    // Never pinned so skip m_OriginalMesh.releasePinned();
+                    m_OriginalMesh = null;
+                }
 
-        //        if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
-        //            m_DotMeshCollision = true;
+                if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
+                    m_DotMeshCollision = true;
 
-        //        m_ReCreateCollision = true;
-        //    }
+                m_ReCreateCollision = true;
+            }
 
-        //    _parent_scene.AddPhysicsActorTaint(this);
-        //}
+            _parent_scene.AddPhysicsActorTaint(this);
+        }
 
-        //Commented out for now since does not exist in current OpenSim
-        //public override void SetBoundsScaling(bool vbScaleMesh)
-        //{
-        //    if (m_DotMeshCollision)
-        //    {
-        //        m_BoundsScaling = vbScaleMesh;
-        //        m_ReCreateCollision = true;
-        //    }
-        //}
+        public void SetBoundsScaling(bool vbScaleMesh)
+        {
+            if (m_DotMeshCollision)
+            {
+                m_BoundsScaling = vbScaleMesh;
+                m_ReCreateCollision = true;
+            }
+        }
 
         // rex, new function
         private bool CreateOSMeshFromDotMesh(byte[] vData, string vMeshName, bool vbScaleMesh)

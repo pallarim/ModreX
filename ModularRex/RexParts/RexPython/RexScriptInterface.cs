@@ -799,8 +799,8 @@ namespace ModularRex.RexParts.RexPython
             {
                 myScriptEngine.World.RegionInfo.EstateSettings.SunPosition = value;
                 IEstateModule estate = myScriptEngine.World.RequestModuleInterface<IEstateModule>();
-                if (estate is OpenSim.Region.Environment.Modules.World.Estate.EstateManagementModule)
-                    ((OpenSim.Region.Environment.Modules.World.Estate.EstateManagementModule)estate).sendRegionInfoPacketToAll();
+                if (estate is OpenSim.Region.CoreModules.World.Estate.EstateManagementModule)
+                    ((OpenSim.Region.CoreModules.World.Estate.EstateManagementModule)estate).sendRegionInfoPacketToAll();
             }
         }
     }

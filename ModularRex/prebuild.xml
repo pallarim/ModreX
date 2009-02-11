@@ -76,7 +76,6 @@
 	 <Reference name="log4net.dll"/>
 	 <Reference name="OpenMetaverse.dll"/>
 	 <Reference name="OpenMetaverseTypes.dll"/>
-	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="System" localCopy="false"/>
 	 <Reference name="System.Core" localCopy="false"/>
 	 <Reference name="System.Data"/>
@@ -132,6 +131,7 @@
 	 <Reference name="OpenSim.Region.Physics.Manager.dll"/>
 	 <Reference name="OpenSim.Region.ScriptEngine.Shared.dll"/>
 	 <Reference name="OpenSim.Region.ScriptEngine.Shared.Api.dll"/>
+	 <Reference name="OpenSim.Region.CoreModules.dll"/>
 	 <Reference name="System" localCopy="false"/>
 	 <Reference name="System.Data"/>
 	 <Reference name="System.Xml"/>
@@ -167,7 +167,7 @@
       <Reference name="OpenSim.Framework.Console"/>
       <Reference name="OpenSim.Region.Physics.Manager"/>
       <Reference name="OpenSim.Region.Physics.Meshing"/>
-      <Reference name="OpenSim.Region.Physics.OdePlugin"/>
+      <Reference name="ModularRex"/>
       <Reference name="Ode.NET.dll"/>
       <Reference name="nunit.framework.dll"/>
       <Reference name="log4net.dll"/>

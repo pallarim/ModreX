@@ -189,15 +189,12 @@ namespace ModularRex.RexParts
                 return;
             }
 
-            if (sop.ParentGroup != null && sop.PhysActor != null)
+            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
             {
                 if (p.RexCollisionMeshUUID != UUID.Zero)
                     RexUpdateCollisionMesh(id);
                 else
-                {
-                    //Commented out for now since does not exist in current OpenSim
-                    //sop.PhysActor.SetCollisionMesh(null, "", false);
-                }
+                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(null, "", false);
             }       
         }
 
@@ -215,10 +212,9 @@ namespace ModularRex.RexParts
                 return;
             }
 
-            if (sop.ParentGroup != null && sop.PhysActor != null)
+            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
             {
-                //Commented out for now since does not exist in current OpenSim
-                //sop.PhysActor.SetBoundsScaling(p.RexScaleToPrim);
+                ((IRexPhysicsActor)sop.PhysActor).SetBoundsScaling(p.RexScaleToPrim);
                 sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
             }
         }
@@ -255,14 +251,11 @@ namespace ModularRex.RexParts
                 return;
             }
 
-            if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor != null)
+            if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor is IRexPhysicsActor)
             {
                 AssetBase tempmodel = sop.ParentGroup.Scene.AssetCache.GetAsset(p.RexCollisionMeshUUID, false);
                 if (tempmodel != null)
-                {
-                    //Commented out for now since does not exist in current OpenSim
-                    //sop.PhysActor.SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
-                }
+                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(tempmodel.Data, tempmodel.Metadata.Name, p.RexScaleToPrim);
             }
         }
         
