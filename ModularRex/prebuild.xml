@@ -82,7 +82,6 @@
 	 <Reference name="System.Xml"/>
 	 <Reference name="System.Xml.Linq"/>
 	 <Reference name="OpenSim.Framework"/>
-	 <Reference name="OpenSim.Region.Environment"/>
 	 <Reference name="OpenSim.Data.NHibernate"/>
 	 <Reference name="NHibernate"/>
       <Files>

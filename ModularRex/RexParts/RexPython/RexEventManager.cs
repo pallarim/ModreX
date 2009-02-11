@@ -60,7 +60,7 @@ namespace ModularRex.RexParts.RexPython
             m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
 
-            m_scriptEngine.World.AddCommand("PythonScriptEngine", "python", "python help",
+            m_scriptEngine.World.AddCommand(scriptEngine, "python", "python help",
                 "Gives more help on python commands", PythonScriptCommand);
             //OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
         }
