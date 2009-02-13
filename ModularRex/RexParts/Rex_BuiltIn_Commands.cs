@@ -571,32 +571,50 @@ namespace ModularRex.RexParts
             catch { }
         }
 
-        public void rexAddInitialPreloadAssets(List<String> vAssetsList)
+        public void rexAddInitialPreloadAssets(List<String> assetList)
         {
-            throw new NotImplementedException("Asset preload not implemented");
-            //try
-            //{
-            //    for (int i = 0; i < vAssetsList.Count; i++)
-            //        World.RexAddPreloadAsset(new UUID(vAssetsList[i]));
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine("[ScriptEngine]: rexAddInitialPreloadAssets:" + e.ToString());
-            //}
+            try
+            {
+                if (World.Modules.ContainsKey("RexAssetPreload"))
+                {
+                    RexAssetPreload module = (RexAssetPreload)World.Modules["RexAssetPreload"];
+                    for (int i = 0; i < assetList.Count; i++)
+                    {
+                        module.AddPreloadAsset(new UUID(assetList[i]));
+                    }
+                }
+                else
+                {
+                    m_log.Warn("[REXSCRIPT]: scene did not contain RexAssetPreload module. Ignoring rexAddInitialPreloadAssets");
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[REXSCRIPT]: rexAddInitialPreloadAssets threw an excption ", e);
+            }
         }
 
-        public void rexRemoveInitialPreloadAssets(List<String> vAssetsList)
+        public void rexRemoveInitialPreloadAssets(List<String> assetList)
         {
-            throw new NotImplementedException("Asset preload not implemented");
-            //try
-            //{
-            //    for (int i = 0; i < vAssetsList.Count; i++)
-            //        World.RexRemovePreloadAsset(new UUID(vAssetsList[i]));
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine("[ScriptEngine]: rexRemoveInitialPreloadAssets:" + e.ToString());
-            //}
+            try
+            {
+                if (World.Modules.ContainsKey("RexAssetPreload"))
+                {
+                    RexAssetPreload module = (RexAssetPreload)World.Modules["RexAssetPreload"];
+                    for (int i = 0; i < assetList.Count; i++)
+                    {
+                        module.RemovePreloadAsset(new UUID(assetList[i]));
+                    }
+                }
+                else
+                {
+                    m_log.Warn("[REXSCRIPT]: scene did not contain RexAssetPreload module. Ignoring rexRemoveInitialPreloadAssets");
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[REXSCRIPT]: rexRemoveInitialPreloadAssets threw an excption ", e);
+            }
         }
 
         public string rexGetPrimFreeData(string vPrimLocalId)

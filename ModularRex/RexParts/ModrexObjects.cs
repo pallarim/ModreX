@@ -119,8 +119,39 @@ namespace ModularRex.RexParts
             }
         }
 
+        private void SendPreloadAssetsToUser(RexClientView user)
+        {
+            try
+            {
+                Scene ourScene = null;
+                foreach (Scene s in m_scenes)
+                {
+                    if (user.Scene.RegionInfo.RegionHandle == s.RegionInfo.RegionHandle)
+                        ourScene = s;
+                }
+
+                if (ourScene != null)
+                {
+                    if (ourScene.Modules.ContainsKey("RexAssetPreload"))
+                    {
+                        RexAssetPreload module = (RexAssetPreload)ourScene.Modules["RexAssetPreload"];
+                        if (module.PreloadAssetDictionary.Count > 0)
+                        {
+                            user.SendRexPreloadAssets(module.PreloadAssetDictionary);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.Error("[MODREXOBJECTS]: Sending preload assets failed.", e);
+            }
+        }
+
         void SendAllPropertiesToUser(RexClientView user)
         {
+            SendPreloadAssetsToUser(user);
+
             foreach (RexObjectProperties p in GetObjects())
             {
                 user.SendRexObjectProperties(p.ParentObjectID, p);

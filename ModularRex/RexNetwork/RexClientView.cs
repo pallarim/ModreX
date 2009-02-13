@@ -305,7 +305,7 @@ namespace ModularRex.RexNetwork
                 return;
             }
 
-            m_log.Warn("[REXCLIENTVIEW] Unhandled GenericMessage (" + method + ") {");
+            m_log.Warn("[REXCLIENT] Unhandled GenericMessage (" + method + ") {");
             foreach (string s in args)
             {
                 m_log.Warn("\t" + s);
@@ -319,7 +319,7 @@ namespace ModularRex.RexNetwork
             {
                 foreach (string s in args)
                 {
-                    m_log.Debug("[REXCLIENTVIEW] MediaURL: " + s);
+                    m_log.Debug("[REXCLIENT] MediaURL: " + s);
                 }
 
                 UUID assetID = new UUID(args[0]);
@@ -333,7 +333,7 @@ namespace ModularRex.RexNetwork
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat("[REXCLIENTVIEW] Error parseing incoming media url. Exception: ", e);
+                m_log.ErrorFormat("[REXCLIENT] Error parseing incoming media url. Exception: ", e);
             }
         }
 
@@ -659,9 +659,27 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexFlashAnim", pack);
         }
 
-        internal void SendRexPreloadAvatarAssets(List<string> vAssetsList)
+        /// <summary>
+        /// Sends preload avatar assets
+        /// </summary>
+        /// <param name="assetList">List of avatar assets</param>
+        public void SendRexPreloadAvatarAssets(List<string> assetList)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                List<string> pack = new List<string>();
+
+                foreach (string avatarUrl in assetList)
+                {
+                    pack.Add(avatarUrl);
+                }
+
+                SendGenericMessage("RexPreloadAppearance", pack);
+            }
+            catch (Exception exep)
+            {
+                m_log.Error("[REXCLIENT]: SendRexPreloadAvatarAssets fail:" + exep.ToString());
+            }
         }
 
         /// <summary>
@@ -719,9 +737,29 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexSky", pack);
         }
 
-        internal void SendRexPreloadAssets(Dictionary<UUID, uint> tempassetlist)
+        /// <summary>
+        /// Sends list of preloaded assets to user
+        /// </summary>
+        /// <param name="assetList"></param>
+        public void SendRexPreloadAssets(Dictionary<UUID, uint> assetList)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                List<string> pack = new List<string>();
+
+                string assetline = String.Empty;
+                foreach (UUID materialUUID in assetList.Keys)
+                {
+                    assetline = assetList[materialUUID] + " " + materialUUID.ToString();
+                    pack.Add(assetline);
+                }
+
+                SendGenericMessage("RexPreloadAssets", pack);
+            }
+            catch (Exception exep)
+            {
+                m_log.Error("[REXCLIENT]: SendRexPreloadAssets fail:" + exep.ToString());
+            }
         }
 
         /// <summary>
@@ -734,7 +772,7 @@ namespace ModularRex.RexNetwork
         {
             if (mediaURL == null)
             {
-                m_log.Warn("[REXCLIENTVIEW]: Did not send media url to user, because it was null");
+                m_log.Warn("[REXCLIENT]: Did not send media url to user, because it was null");
                 return;
             }
             List<string> pack = new List<string>();
@@ -795,14 +833,65 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexMorph", pack);
         }
 
-        internal void SendRexMeshAnimation(UUID uUID, string vAnimName, float vRate, bool vbLooped, bool vbStopAnim)
+        /// <summary>
+        /// Send Mesh Animation command to client
+        /// </summary>
+        /// <param name="primId">id of the primitive</param>
+        /// <param name="animationName">Name of the animation to launch</param>
+        /// <param name="rate">Speed of the animation, where 1.0 is default speed</param>
+        /// <param name="loop">True to make the animation looped, false to play it only once</param>
+        /// <param name="stopAnimation">True to stop the animation, false to launch the animation</param>
+        public void SendRexMeshAnimation(UUID primId, string animationName, float rate, bool loop, bool stopAnimation)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(primId.ToString());
+            pack.Add(animationName);
+            pack.Add(rate.ToString());
+            pack.Add(loop.ToString());
+            pack.Add(stopAnimation.ToString());
+
+            SendGenericMessage("RexPrimAnim", pack);
         }
 
-        internal void SendRexClientSideEffect(string assetId, float vTimeUntilLaunch, float vTimeUntilDeath, Vector3 pos, Quaternion rot, float vSpeed)
+        /// <summary>
+        /// Send Client side effect to client
+        /// </summary>
+        /// <param name="assetId">Id of the asset</param>
+        /// <param name="timeUntilLaunch">Time in seconds until the effect is launched on the client.
+        ///  Set to zero to launch immediatelly</param>
+        /// <param name="timeUntilDeath">The duration of the effect. The particle system gets completely 
+        ///  destroyed after this duration. The duration is counted after the effect is launched. </param>
+        /// <param name="pos">Position of the effect in the world</param>
+        /// <param name="rot">Rotation of the particle system. Affects it's movement if speed > 0</param>
+        /// <param name="speed">Speed at which the particle system moves. The system moves at the direction
+        ///  specified by rot. Set to zero to make it stationary.</param>
+        public void SendRexClientSideEffect(string assetId, float timeUntilLaunch, float timeUntilDeath, Vector3 pos, Quaternion rot, float speed)
         {
-            throw new System.NotImplementedException();
+            List<string> pack = new List<string>();
+
+            pack.Add(assetId.ToString());
+            pack.Add(timeUntilLaunch.ToString().Replace(",", "."));
+            pack.Add(timeUntilDeath.ToString().Replace(",", "."));
+
+            string sPos = pos.X.ToString() + " " + pos.Y.ToString() + " " + pos.Z.ToString();
+            sPos = sPos.Replace(",", ".");
+            pack.Add(sPos);
+
+            string sRot = rot.X.ToString() + " " + rot.Y.ToString() + " " + rot.Z.ToString() + " " + rot.W.ToString();
+            sRot = sRot.Replace(",", ".");
+            pack.Add(sRot);
+
+            pack.Add(speed.ToString().Replace(",", "."));
+
+            SendGenericMessage("RexCSEffect", pack);
         }
+
+        //public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
+        //{
+        //    m_log.Debug("[REXCLIENT]: Informing Client About Neighbour");
+        //    neighbourExternalEndPoint.Port = neighbourExternalEndPoint.Port - 2000;
+        //    base.InformClientOfNeighbour(neighbourHandle, neighbourExternalEndPoint);
+        //}
     }
 }
