@@ -20,11 +20,13 @@ namespace ModularRex.RexNetwork.RexLogin
         private readonly List<Scene> m_scenes = new List<Scene>();
         private readonly Dictionary<UUID, string> m_authUrl = new Dictionary<UUID, string>();
 
-        private RexUDPServer m_udpserver;
+        private List<RexUDPServer> m_udpservers = new List<RexUDPServer>();
         private IConfigSource m_config;
 
         private RegionInfo m_primaryRegionInfo;
         private uint m_rexPort = 7000;
+
+        private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
 
         public void Configure(IConfigSource config)
         {
@@ -40,8 +42,8 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void Initialise(Scene scene, IConfigSource source)
         {
-            if (m_udpserver == null)
-                m_udpserver = new RexUDPServer();
+            //if (m_udpserver == null)
+            //    m_udpserver = new RexUDPServer();
 
             m_config = source;
 
@@ -72,18 +74,28 @@ namespace ModularRex.RexNetwork.RexLogin
             {
 
                 m_log.Info("[REX] Overloading Login_to_Simulator");
+                default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
                 m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
 
                 m_primaryRegionInfo = m_scenes[0].RegionInfo;
 
                 m_log.Info("[REX] Initialising");
-                m_udpserver.Initialise(m_primaryRegionInfo.InternalEndPoint.Address, ref m_rexPort, 0, false, m_config, m_scenes[0].AssetCache,
-                                       m_scenes[0].AuthenticateHandler);
+                //m_udpserver.Initialise(m_primaryRegionInfo.InternalEndPoint.Address, ref m_rexPort, 0, false, m_config, m_scenes[0].AssetCache,
+                //                       m_scenes[0].AuthenticateHandler);
                 foreach (Scene scene in m_scenes)
                 {
-                    m_udpserver.AddScene(scene); //this doesn't add scene to existing UDP server, but instead replaces the old one
+                    RexUDPServer udpserver = new RexUDPServer();
+                    m_log.Debug("[REX] RegionInfo: " + scene.RegionInfo.InternalEndPoint.Port);
+                    uint udp_port = Convert.ToUInt32(scene.RegionInfo.InternalEndPoint.Port - 2000);
+                    //uses 2000 smaller port num than spesified for LLClient in Regions/ xml-file
+                    udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref udp_port, 0, false, m_config,
+                        scene.AssetCache, scene.AuthenticateHandler);
+                    udpserver.AddScene(scene);
+                    //m_udpserver.AddScene(scene); //this doesn't add scene to existing UDP server, but instead replaces the old one
+                    m_udpservers.Add(udpserver);
+                    udpserver.Start();
                 }
-                m_udpserver.Start();
+                //m_udpserver.Start();
             }
             else
             {
@@ -245,10 +257,18 @@ namespace ModularRex.RexNetwork.RexLogin
             }
             else
             {
-                m_log.Info(
-                    "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data");
-
-                return logResponse.CreateGridErrorResponse();
+                if (default_login_to_simulator != null)
+                {
+                    m_log.Info(
+                        "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data. Trying default method.");
+                    return default_login_to_simulator(request);
+                }
+                else
+                {
+                    m_log.Info(
+                        "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data.");
+                    return logResponse.CreateGridErrorResponse();
+                }
             }
 
             if (!GoodLogin)
