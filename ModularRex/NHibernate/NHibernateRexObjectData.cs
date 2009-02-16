@@ -113,7 +113,7 @@ namespace OpenSim.Data.NHibernate
                                     if (list.Count == 0)
                                     {
                                         item.RexObjectUUID = p.ParentObjectID;
-                                        manager.Save(item);
+                                        manager.Insert(item);
                                     }
                                     else
                                     {
@@ -136,7 +136,7 @@ namespace OpenSim.Data.NHibernate
                 {
                     m_log.InfoFormat("[NHIBERNATE] saving RexObjectProperties {0}", p.ParentObjectID);
                     p.RexMaterialDictionaryItems = new List<RexMaterialsDictionaryItem>();
-                    manager.Save(p);
+                    manager.Insert(p);
                 }
             }
             catch (Exception e)

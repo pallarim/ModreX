@@ -47,7 +47,7 @@ namespace ModularRex.NHibernate
                 else
                 {
                     m_log.InfoFormat("[NHIBERNATE] saving RexAssetData {0}", obj.AssetID);
-                    manager.Save(obj);
+                    manager.Insert(obj);
                 }
             }
             catch (Exception e)
