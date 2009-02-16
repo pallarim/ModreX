@@ -548,13 +548,18 @@ namespace ModularRex.RexNetwork
         /// <param name="height">Height of the texture</param>
         public void SendRexRttCamera(int command, string name, UUID assetId, Vector3 pos, Vector3 lookat, int width, int height)
         {
+            string sPos = pos.X.ToString() + " " + pos.Y.ToString() + " " + pos.Z.ToString();
+            sPos = sPos.Replace(",", ".");
+            string sLookAt = lookat.X.ToString() + " " + lookat.Y.ToString() + " " + lookat.Z.ToString();
+            sLookAt = sLookAt.Replace(",", ".");
+
             List<string> pack = new List<string>();
 
             pack.Add(command.ToString());
             pack.Add(name);
             pack.Add(assetId.ToString());
-            pack.Add(pos.ToString());
-            pack.Add(lookat.ToString());
+            pack.Add(sPos);
+            pack.Add(sLookAt);
             pack.Add(width.ToString());
             pack.Add(height.ToString());
 
