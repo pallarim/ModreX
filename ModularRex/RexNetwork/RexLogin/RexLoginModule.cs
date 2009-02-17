@@ -10,6 +10,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Communications;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+using OpenSim.Framework.Communications.Cache;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
@@ -28,6 +29,11 @@ namespace ModularRex.RexNetwork.RexLogin
 
         private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
 
+        /// <summary>
+        /// Used during login to send the skeleton of the OpenSim Library to the client.
+        /// </summary>
+        protected LibraryRootFolder m_libraryRootFolder;
+
         public void Configure(IConfigSource config)
         {
             if (config.Configs.Contains("ModRex"))
@@ -36,9 +42,6 @@ namespace ModularRex.RexNetwork.RexLogin
             }
 
         }
-
-
-
 
         public void Initialise(Scene scene, IConfigSource source)
         {
@@ -72,6 +75,9 @@ namespace ModularRex.RexNetwork.RexLogin
         {
             if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
             {
+                //Load OpenSim Library folder config
+                string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
+                m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
 
                 m_log.Info("[REX] Overloading Login_to_Simulator");
                 default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
@@ -342,7 +348,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 logResponse.InventoryLibraryOwner = GetLibraryOwner();
                 logResponse.InventoryRoot = InventoryRoot;
                 logResponse.InventorySkeleton = AgentInventoryArray;
-                //logResponse.InventoryLibrary = GetInventoryLibrary();
+                logResponse.InventoryLibrary = GetInventoryLibrary();
 
                 foreach (Scene scene in m_scenes)
                 {
@@ -405,6 +411,30 @@ namespace ModularRex.RexNetwork.RexLogin
         {
             UUID agentID = new UUID(Util.Md5Hash(account + "secure"));
             return agentID;
+        }
+
+        /// <summary>
+        /// Converts the inventory library skeleton into the form required by the rpc request.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual ArrayList GetInventoryLibrary()
+        {
+            Dictionary<UUID, InventoryFolderImpl> rootFolders
+                = m_libraryRootFolder.RequestSelfAndDescendentFolders();
+            ArrayList folderHashes = new ArrayList();
+
+            foreach (InventoryFolderBase folder in rootFolders.Values)
+            {
+                Hashtable TempHash = new Hashtable();
+                TempHash["name"] = folder.Name;
+                TempHash["parent_id"] = folder.ParentID.ToString();
+                TempHash["version"] = (Int32)folder.Version;
+                TempHash["type_default"] = (Int32)folder.Type;
+                TempHash["folder_id"] = folder.ID.ToString();
+                folderHashes.Add(TempHash);
+            }
+
+            return folderHashes;
         }
 
         #endregion
