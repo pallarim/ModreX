@@ -89,7 +89,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     uint udp_port = Convert.ToUInt32(scene.RegionInfo.InternalEndPoint.Port - 2000);
                     //uses 2000 smaller port num than spesified for LLClient in Regions/ xml-file
                     udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref udp_port, 0, false, m_config,
-                        scene.AssetCache, scene.AuthenticateHandler);
+                        scene.CommsManager.AssetCache, scene.AuthenticateHandler);
                     udpserver.AddScene(scene);
                     //m_udpserver.AddScene(scene); //this doesn't add scene to existing UDP server, but instead replaces the old one
                     m_udpservers.Add(udpserver);

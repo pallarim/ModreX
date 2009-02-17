@@ -99,7 +99,7 @@ namespace ModularRex.RexParts
         {
             AssetBase texasset;
 
-            texasset = World.AssetCache.GetAsset(texface.TextureID, true);
+            texasset = World.CommsManager.AssetCache.GetAsset(texface.TextureID, true);
             if (texasset != null)
             {
                 World.ForEachScenePresence(delegate(ScenePresence controller)
@@ -499,10 +499,10 @@ namespace ModularRex.RexParts
 
                     for (int i = 0; i < vAssetsList.Count; i++)
                     {
-                        tempasset = World.AssetCache.GetAsset(new UUID(vAssetsList[i]), false);
+                        tempasset = World.CommsManager.AssetCache.GetAsset(new UUID(vAssetsList[i]), false);
                         //tempasset = World.AssetCache.FetchAsset(new UUID(vAssetsList[i]));
                         if (tempasset != null)
-                            tempassetlist.Add(tempasset.Metadata.FullID, (uint)tempasset.Metadata.Type);
+                            tempassetlist.Add(tempasset.FullID, (uint)tempasset.Type);
                     }
                     if (tempassetlist.Count > 0)
                     {

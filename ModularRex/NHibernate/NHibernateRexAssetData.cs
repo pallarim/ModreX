@@ -38,7 +38,7 @@ namespace ModularRex.NHibernate
         {
             try
             {
-                RexAssetData old = (RexAssetData)manager.Load(typeof(RexAssetData), obj.AssetID);
+                RexAssetData old = (RexAssetData)manager.Get(typeof(RexAssetData), obj.AssetID);
                 if (old != null)
                 {
                     m_log.InfoFormat("[NHIBERNATE] updating RexAssetData {0}", obj.AssetID);
