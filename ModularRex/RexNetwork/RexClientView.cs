@@ -16,9 +16,8 @@ using OpenSim.Region.ClientStack.LindenUDP;
 
 namespace ModularRex.RexNetwork
 {
+    public delegate void RexGenericMessageDelegate(RexClientView sender, List<string> parameters);
     public delegate void RexAppearanceDelegate(RexClientView sender);
-    public delegate void RexFaceExpressionDelegate(RexClientView sender, List<string> parameters);
-    public delegate void RexAvatarPropertiesDelegate(RexClientView sender, List<string> parameters);
     public delegate void RexObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
     public delegate void RexStartUpDelegate(RexClientView remoteClient, UUID agentID, string status);
     public delegate void RexClientScriptCmdDelegate(RexClientView remoteClient, UUID agentID, List<string> parameters);
@@ -37,6 +36,8 @@ namespace ModularRex.RexNetwork
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        protected Dictionary<string, RexGenericMessageDelegate> m_genericMessageHandlers = new Dictionary<string, RexGenericMessageDelegate>();
+
         private string m_rexAccountID;
         private string m_rexAvatarURL;
         private string m_rexAuthURL;
@@ -51,8 +52,8 @@ namespace ModularRex.RexNetwork
         public bool RexSitDisabled = false;
 
         public event RexAppearanceDelegate OnRexAppearance;
-        public event RexFaceExpressionDelegate OnRexFaceExpression;
-        public event RexAvatarPropertiesDelegate OnRexAvatarProperties;
+        public event RexGenericMessageDelegate OnRexFaceExpression;
+        public event RexGenericMessageDelegate OnRexAvatarProperties;
         public event RexObjectPropertiesDelegate OnRexObjectProperties;
         public event RexStartUpDelegate OnRexStartUp;
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
@@ -97,6 +98,11 @@ namespace ModularRex.RexNetwork
             AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexMediaUrl", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("rexstartup", RealXtendClientView_OnGenericMessage);
+
+            m_genericMessageHandlers.Add("rexfaceexpression", OnRexFaceExpression);
+            m_genericMessageHandlers.Add("rexavatarprop", OnRexAvatarProperties);
+            m_genericMessageHandlers.Add("rexmediaurl", TriggerOnReceivedRexMediaURL);
         }
 
         /// <summary>
@@ -185,7 +191,7 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
+        private void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
         {
             if(method == "RexPrimData".ToLower())
             {
@@ -232,8 +238,6 @@ namespace ModularRex.RexNetwork
                 OnRexObjectProperties(this, id, new RexObjectProperties(rpdArray));
         }
 
-        private Dictionary<string, RexAvatarPropertiesDelegate> m_genericMessageHandlers;
-
         /// <summary>
         /// Special - used to convert GenericMessage packets
         /// to their appropriate Rex equivilents.
@@ -241,44 +245,26 @@ namespace ModularRex.RexNetwork
         /// Eg: GenericMessage(RexAppearance) ->
         ///     OnRexAppearance(...)
         /// </summary>
-        void RealXtendClientView_OnGenericMessage(object sender, string method, List<string> args)
+        private void RealXtendClientView_OnGenericMessage(object sender, string method, List<string> args)
         {
-            //TODO: Convert to Dictionary<Method, GenericMessageHandler>
-            //RexAvatarPropertiesDelegate method;
-            //if (m_genericMessageHandlers.TryGetValue(method, out method))
-            //{
-            //    method(this, args);
-            //    return;
-            //}
+            RexGenericMessageDelegate handler;
+            if (m_genericMessageHandlers.ContainsKey(method.ToLower()))
+            {
+                handler = m_genericMessageHandlers[method.ToLower()];
+                if (handler != null)
+                {
+                    handler(this, args);
+                }
+                return;
+            }
 
             if (method == "RexAppearance")
+            {
                 if (OnRexAppearance != null)
                 {
                     OnRexAppearance(this);
                     return;
                 }
-
-            if (method == "RexFaceExpression")
-            {
-                if (OnRexFaceExpression != null)
-                {
-                    OnRexFaceExpression(this, args);
-                    return;
-                }
-            }
-
-            if (method == "RexAvatarProp")
-            {
-                if(OnRexAvatarProperties != null)
-                {
-                    OnRexAvatarProperties(this, args);
-                    return;
-                }
-            }
-
-            if(method == "RexData")
-            {
-                
             }
 
             if (method == "rexscr")
@@ -290,19 +276,13 @@ namespace ModularRex.RexNetwork
                 }
             }
 
-            if (method == "RexStartup")
+            if (method == "rexstartup")
             {
                 if (OnRexStartUp != null)
                 {
                     OnRexStartUp(this, AgentId, args[0]);
                     return;
                 }
-            }
-
-            if (method == "rexmediaurl")
-            {
-                TriggerOnReceivedRexMediaURL(this, args);
-                return;
             }
 
             m_log.Warn("[REXCLIENT] Unhandled GenericMessage (" + method + ") {");

@@ -7,7 +7,7 @@ namespace ModularRex.RexNetwork
     /// </summary>
     public interface IClientRexFaceExpression
     {
-        event RexFaceExpressionDelegate OnRexFaceExpression;
+        event RexGenericMessageDelegate OnRexFaceExpression;
         void SendRexFaceExpression(List<string> expressionData);
     }
 }
