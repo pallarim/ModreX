@@ -33,8 +33,8 @@ namespace ModularRex.RexParts
             m_scenes.Add(scene);
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
-            scene.m_sceneGraph.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
-            scene.m_sceneGraph.OnObjectRemove += SceneGraph_OnObjectRemove;
+            scene.SceneContents.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
+            scene.SceneContents.OnObjectRemove += SceneGraph_OnObjectRemove;
 
 
             if (m_db == null)
