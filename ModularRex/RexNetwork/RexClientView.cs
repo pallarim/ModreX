@@ -872,11 +872,27 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexCSEffect", pack);
         }
 
-        //public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
-        //{
-        //    m_log.Debug("[REXCLIENT]: Informing Client About Neighbour");
-        //    neighbourExternalEndPoint.Port = neighbourExternalEndPoint.Port - 2000;
-        //    base.InformClientOfNeighbour(neighbourHandle, neighbourExternalEndPoint);
-        //}
+        public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
+        {
+            m_log.Debug("[REXCLIENT]: Informing Client About Neighbour");
+            neighbourExternalEndPoint.Port = neighbourExternalEndPoint.Port - 2000;
+            base.InformClientOfNeighbour(neighbourHandle, neighbourExternalEndPoint);
+        }
+
+        public override void CrossRegion(ulong newRegionHandle, Vector3 pos, Vector3 lookAt, IPEndPoint externalIPEndPoint,
+                                string capsURL)
+        {
+            m_log.Debug("[REXCLIENT]: Crossing client to region");
+            externalIPEndPoint.Port = externalIPEndPoint.Port - 2000;
+            base.CrossRegion(newRegionHandle, pos, lookAt, externalIPEndPoint, capsURL);
+        }
+
+        public override void SendRegionTeleport(ulong regionHandle, byte simAccess, IPEndPoint newRegionEndPoint, uint locationID,
+                                       uint flags, string capsURL)
+        {
+            m_log.Debug("[REXCLIENT]: Sending region teleport to client");
+            newRegionEndPoint.Port = newRegionEndPoint.Port - 2000;
+            base.SendRegionTeleport(regionHandle, simAccess, newRegionEndPoint, locationID, flags, capsURL);
+        }
     }
 }
