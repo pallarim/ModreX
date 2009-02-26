@@ -97,8 +97,8 @@ class Actor(rxlslobject.LSLObject):
         else:
             return self.MyWorld.AllActors[objid]
 
-    def rexPlayMeshAnimation(self,vAnimName,vRate,vbLooped, vbStopAnim):
-        return self.MyWorld.CS.rexPlayMeshAnim(self.Id,vAnimName,vRate,vbLooped,vbStopAnim)
+    def rexPlayMeshAnimation(self,vId,vAnimName,vRate,vbLooped, vbStopAnim):
+        return self.MyWorld.CS.rexPlayMeshAnim(vId,vAnimName,vRate,vbLooped,vbStopAnim)
 
     def rexSetClientSideEffectByUUID(self,assetId,vTimeUntilLaunch,vTimeUntilDeath,vPos,vRot,vSpeed):
         self.MyWorld.CS.rexSetClientSideEffect(assetId,vTimeUntilLaunch,vTimeUntilDeath,vPos,vRot,vSpeed)
