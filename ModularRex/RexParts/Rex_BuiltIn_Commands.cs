@@ -1,4 +1,3 @@
-// rex
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +11,7 @@ using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.Api;
 using log4net;
 using ModularRex.RexFramework;
+using OpenSim.Region.Physics.Manager;
 
 namespace ModularRex.RexParts
 {
@@ -409,13 +409,16 @@ namespace ModularRex.RexParts
 
         public string rexRaycast(LSL_Types.Vector3 vPos, LSL_Types.Vector3 vDir, float vLength, string vIgnoreId)
         {
-            throw new NotImplementedException("RexRaycast not implemented");
-            //uint tempignoreid = 0;
+            uint tempignoreid = 0;
+            uint collid = 0;
 
-            //if (vIgnoreId.Length > 0)
-            //    tempignoreid = System.Convert.ToUInt32(vIgnoreId, 10);
+            if (vIgnoreId.Length > 0)
+                tempignoreid = System.Convert.ToUInt32(vIgnoreId, 10);
 
-            //return World.RexRaycast(new Vector3((float)vPos.x, (float)vPos.y, (float)vPos.z), new Vector3((float)vDir.x, (float)vDir.y, (float)vDir.z), vLength, tempignoreid);
+            if(World.PhysicsScene is IRexPhysicsScene)
+                collid = ((IRexPhysicsScene)World.PhysicsScene).Raycast(new PhysicsVector((float)vPos.x, (float)vPos.y, (float)vPos.z), new PhysicsVector((float)vDir.x, (float)vDir.y, (float)vDir.z), vLength, tempignoreid);
+
+            return collid.ToString(); 
         }
 
         public void rexSetAmbientLight(string avatar, LSL_Types.Vector3 lightDirection, LSL_Types.Vector3 lightColour, LSL_Types.Vector3 ambientColour)

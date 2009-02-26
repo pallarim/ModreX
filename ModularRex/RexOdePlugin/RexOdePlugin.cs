@@ -627,15 +627,6 @@ namespace ModularRex.RexOdePlugin
                 p2 = PANull;
             }
 
-            float max_collision_depth = 0f;
-            if (p1.CollisionScore + count >= float.MaxValue)
-                p1.CollisionScore = 0;
-            p1.CollisionScore += count;
-
-            if (p2.CollisionScore + count >= float.MaxValue)
-                p2.CollisionScore = 0;
-            p2.CollisionScore += count;
-
             // rex, rayclass collision
             if (d.GeomGetClass(g1) == d.GeomClassID.RayClass || d.GeomGetClass(g2) == d.GeomClassID.RayClass)
             {
@@ -673,6 +664,15 @@ namespace ModularRex.RexOdePlugin
                     return;
                 }
             } // endrex
+
+            float max_collision_depth = 0f;
+            if (p1.CollisionScore + count >= float.MaxValue)
+                p1.CollisionScore = 0;
+            p1.CollisionScore += count;
+
+            if (p2.CollisionScore + count >= float.MaxValue)
+                p2.CollisionScore = 0;
+            p2.CollisionScore += count;
 
             for (int i = 0; i < count; i++)
             {

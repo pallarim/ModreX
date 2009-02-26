@@ -82,7 +82,7 @@ class LSLObject(object):
 
     def llDetectedName(self,number):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llDetectedName(number)
+        return self.MyWorld.CS.llDetectedName(number).m_string
     def llDetectedKey(self,number):
         self.MyWorld.CS.SetScriptRunner(self.Id)
         return self.MyWorld.CS.llDetectedKey(number)
@@ -178,7 +178,7 @@ class LSLObject(object):
         
     def llGetTexture(self,face):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetTexture(face)
+        return self.MyWorld.CS.llGetTexture(face).m_string
 
 
     def llSetPos(self,pos):
@@ -331,19 +331,19 @@ class LSLObject(object):
 
 
     def llGetSubString(self,src,start,end):
-        return self.MyWorld.CS.llGetSubString(src,start,end)
+        return self.MyWorld.CS.llGetSubString(src,start,end).m_string
 
     def llDeleteSubString(self,src,start,end):
-        return self.MyWorld.CS.llDeleteSubString(src,start,end)
+        return self.MyWorld.CS.llDeleteSubString(src,start,end).m_string
 
     def llInsertString(self,dst,position,src):
-        return self.MyWorld.CS.llInsertString(dst,position,src)
+        return self.MyWorld.CS.llInsertString(dst,position,src).m_string
 
     def llToUpper(self,src):
-        return self.MyWorld.CS.llToUpper(src)
+        return self.MyWorld.CS.llToUpper(src).m_string
 
     def llToLower(self,src):
-        return self.MyWorld.CS.llToLower(src)
+        return self.MyWorld.CS.llToLower(src).m_string
 
     def llGiveMoney(self,destination,amount):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -536,7 +536,7 @@ class LSLObject(object):
 
     def llGetLinkName(self,linknum):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetLinkName(linknum)
+        return self.MyWorld.CS.llGetLinkName(linknum).m_string
 
     def llGetInventoryNumber(self,type):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -544,7 +544,7 @@ class LSLObject(object):
 
     def llGetInventoryName(self,type,number):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetInventoryName(type,number)
+        return self.MyWorld.CS.llGetInventoryName(type,number).m_string
 
     def llSetScriptState(self,name,run):
         print "llSetScriptState not implemented, not in use in Python"
@@ -606,7 +606,7 @@ class LSLObject(object):
 
     def llGetAnimation(self,id):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetAnimation(id)
+        return self.MyWorld.CS.llGetAnimation(id).m_string
 
 
     def llResetScript(self):
@@ -629,7 +629,7 @@ class LSLObject(object):
 
     def llGetScriptName(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetScriptName()
+        return self.MyWorld.CS.llGetScriptName().m_string
 
     def llGetNumberOfSides(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -718,7 +718,7 @@ class LSLObject(object):
 
     def llList2String(self,src,index):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llList2String(src,index)
+        return self.MyWorld.CS.llList2String(src,index).m_string
 
     def llList2Key(self,src,index):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -779,14 +779,14 @@ class LSLObject(object):
 
     def llGetObjectName(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetObjectName()
+        return self.MyWorld.CS.llGetObjectName().m_string
 
     def llSetObjectName(self,name):
         self.MyWorld.CS.SetScriptRunner(self.Id)
         self.MyWorld.CS.llSetObjectName(name)
 
     def llGetDate(self):
-        return self.MyWorld.CS.llGetDate()
+        return self.MyWorld.CS.llGetDate().m_string
 
     def llEdgeOfWorld(self,pos,dir):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -813,7 +813,7 @@ class LSLObject(object):
 
     def llKey2Name(self,id):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llKey2Name(id)
+        return self.MyWorld.CS.llKey2Name(id).m_string
 
     def llSetTextureAnim(self, mode,face,sizex,sizey,start,length,rate):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -845,7 +845,7 @@ class LSLObject(object):
 
     def llGetNotecardLine(self,name,line):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetNotecardLine(name,line)
+        return self.MyWorld.CS.llGetNotecardLine(name,line).m_string
 
     def llGetAgentSize(self,id):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -883,7 +883,7 @@ class LSLObject(object):
 
     def llGetRegionName(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetRegionName()
+        return self.MyWorld.CS.llGetRegionName().m_string
 
     def llGetRegionTimeDilation(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -965,7 +965,7 @@ class LSLObject(object):
 
     def llDumpList2String(self,src,separator):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llDumpList2String(src,separator)
+        return self.MyWorld.CS.llDumpList2String(src,separator).m_string
 
     def llScriptDanger(self,pos):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -1009,20 +1009,20 @@ class LSLObject(object):
 
     def llMD5String(self,src,nonce):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llMD5String(src,nonce)
+        return self.MyWorld.CS.llMD5String(src,nonce).m_string
 
     def llSetPrimitiveParams(self,rules):
         self.MyWorld.CS.SetScriptRunner(self.Id)
         self.MyWorld.CS.llSetPrimitiveParams(rules)
 
     def llStringToBase64(self,str):
-        return self.MyWorld.CS.llStringToBase64(str)
+        return self.MyWorld.CS.llStringToBase64(str).m_string
 
     def llBase64ToString(self,str):
-        return self.MyWorld.CS.llBase64ToString(str)
+        return self.MyWorld.CS.llBase64ToString(str).m_string
 
     def llXorBase64Strings(self,str):
-        self.MyWorld.CS.llXorBase64Strings()
+        self.MyWorld.CS.llXorBase64Strings().m_string
 
 
 
@@ -1053,7 +1053,7 @@ class LSLObject(object):
 
     def llGetObjectDesc(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetObjectDesc()
+        return self.MyWorld.CS.llGetObjectDesc().m_string
     
     def llSetObjectDesc(self,desc):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -1061,11 +1061,11 @@ class LSLObject(object):
 
     def llGetCreator(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetCreator()
+        return self.MyWorld.CS.llGetCreator().m_string
  
     def llGetTimestamp(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetTimestamp()
+        return self.MyWorld.CS.llGetTimestamp().m_string
 
     def llSetLinkAlpha(self,linknumber,alpha,face):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -1093,7 +1093,7 @@ class LSLObject(object):
 
     def llIntegerToBase64(self,number):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llIntegerToBase64(number)
+        return self.MyWorld.CS.llIntegerToBase64(number).m_string
 
     def llBase64ToInteger(self,str):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -1105,7 +1105,7 @@ class LSLObject(object):
 
     def llGetSimulatorHostname(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llGetSimulatorHostname()
+        return self.MyWorld.CS.llGetSimulatorHostname().m_string
 
     def llSetLocalRot(self,rot):
         self.MyWorld.CS.SetScriptRunner(self.Id)
@@ -1206,11 +1206,11 @@ class LSLObject(object):
 
     def llEscapeURL(self,url):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llEscapeURL(url)
+        return self.MyWorld.CS.llEscapeURL(url).m_string
 
     def llUnescapeURL(self,url):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llUnescapeURL(url)
+        return self.MyWorld.CS.llUnescapeURL(url).m_string
     
     
     
@@ -1256,11 +1256,11 @@ class LSLObject(object):
 
     def llXorBase64StringsCorrect(self,str1,str2):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llXorBase64StringsCorrect(str1,str2)
+        return self.MyWorld.CS.llXorBase64StringsCorrect(str1,str2).m_string
     
     def llHTTPRequest(self,url,parameters,body):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llHTTPRequest(url,parameters,body)
+        return self.MyWorld.CS.llHTTPRequest(url,parameters,body).m_string
 
     def llResetLandBanList(self):
         self.MyWorld.CS.SetScriptRunner(self.Id)

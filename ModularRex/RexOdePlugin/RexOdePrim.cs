@@ -2962,6 +2962,7 @@ namespace ModularRex.RexOdePlugin
             }
 
             _parent_scene.geom_name_map[prim_geom] = oldname;
+            _parent_scene.actor_name_map[prim_geom] = (PhysicsActor)this;
 
             changeSelectedStatus(timestamp);
             if (childPrim)
