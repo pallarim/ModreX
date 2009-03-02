@@ -1313,11 +1313,7 @@ class LSLObject(object):
     def osSetDynamicTextureURL(self,dynamicID,contentType,url,extraParams,timer):
         self.MyWorld.CS.SetScriptRunner(self.Id)
         return self.MyWorld.CS.osSetDynamicTextureURL(dynamicID,contentType,url,extraParams,timer)
-        
-    #Rex specific functions that are in the normal opensim scriptengine
-    def rexSetTextureMediaURL(self, url):
-        self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.rexSetTextureMediaURL(url)
+
     
 
 

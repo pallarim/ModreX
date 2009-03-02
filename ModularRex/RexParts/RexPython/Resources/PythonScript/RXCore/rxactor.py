@@ -106,6 +106,12 @@ class Actor(rxlslobject.LSLObject):
     def rexSetClientSideEffect(self,assetName,assetType,vTimeUntilLaunch,vTimeUntilDeath,vPos,vRot,vSpeed):
         self.MyWorld.CS.rexSetClientSideEffect(assetName,assetType,vTimeUntilLaunch,vTimeUntilDeath,vPos,vRot,vSpeed)
 
+    def rexSetTextureMediaURL(self, url):
+        return self.MyWorld.CS.rexSetTextureMediaURL(url)
+
+    def rexSetTextureMediaURL(self, url, refreshRate):
+        return self.MyWorld.CS.rexSetTextureMediaURL(url, refreshRate)
+
     def rexAddInitialPreloadAssets(self,vAssetList):
         self.MyWorld.CS.rexAddInitialPreloadAssets(vAssetList)
     def rexRemoveInitialPreloadAssets(self,vAssetList):
