@@ -317,7 +317,7 @@ namespace ModularRex.RexParts
                     if (target.ControllingClient is RexNetwork.RexClientView)
                     {
                         RexNetwork.RexClientView rexClient = (RexNetwork.RexClientView)target.ControllingClient;
-                        rexClient.RexAvatarURL = vAvatarAddress;
+                        rexClient.RexAvatarURLOverride = vAvatarAddress;
                         //No need to send appearance to others manually. RexClientView handles that.
                     }
                 }

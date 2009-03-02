@@ -60,12 +60,12 @@ namespace ModularRex.RexParts
                                 if (!sent.Contains(rex.AgentId) &&
                                     rex != target &&
                                     !string.IsNullOrEmpty(
-                                         rex.RexAvatarURL))
+                                         rex.RexAvatarURLVisible))
                                 {
                                     target.SendRexAppearance(
                                         avatar.ControllingClient.AgentId,
                                         ((RexClientView) avatar.ControllingClient)
-                                            .RexAvatarURL);
+                                            .RexAvatarURLVisible);
                                     sent.Add(avatar.ControllingClient.AgentId);
                                 }
                             }
@@ -128,7 +128,7 @@ namespace ModularRex.RexParts
                 rex.OnRexAppearance += mcv_OnRexAppearance;
 
                 // Send initial appearance to others
-                SendAppearanceToAllUsers(rex.AgentId, rex.RexAvatarURL);
+                SendAppearanceToAllUsers(rex.AgentId, rex.RexAvatarURLVisible);
                 // Send others appearance to us
                 SendAllAppearancesToUser((RexClientView) client);
             }
@@ -140,7 +140,7 @@ namespace ModularRex.RexParts
         /// <param name="sender">IClientApi of the sender</param>
         void mcv_OnRexAppearance(RexClientView sender)
         {
-            SendAppearanceToAllUsers(sender.AgentId, sender.RexAvatarURL);
+            SendAppearanceToAllUsers(sender.AgentId, sender.RexAvatarURLVisible);
         }
 
         public void PostInitialise()

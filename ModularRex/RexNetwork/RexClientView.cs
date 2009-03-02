@@ -40,6 +40,7 @@ namespace ModularRex.RexNetwork
 
         private string m_rexAccountID;
         private string m_rexAvatarURL;
+        private string m_rexAvatarURLOverride;
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
         public string AvatarStorageOverride;
@@ -139,6 +140,41 @@ namespace ModularRex.RexNetwork
                 }
             }
         }
+
+        /// <summary>
+        /// The avatar URL override for this avatar
+        /// Eg: http://avatar.com:10000/uuid/
+        /// </summary>
+        public string RexAvatarURLOverride
+        {
+            get { return m_rexAvatarURLOverride; }
+            set
+            {
+                m_rexAvatarURLOverride = value;
+                if (OnRexAppearance != null)
+                {
+                    OnRexAppearance(this);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The URL to avatar appearance which this view currently uses.
+        /// If override is used, return it. Otherwise return normal avatar url.
+        /// Eg: http://avatar.com:10000/uuid/
+        /// </summary>
+        public string RexAvatarURLVisible
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(RexAvatarURLOverride))
+                    return RexAvatarURLOverride;
+                else
+                    return RexAvatarURL;         
+            }
+        }
+
 
         /// <summary>
         /// Skype username of the avatar
