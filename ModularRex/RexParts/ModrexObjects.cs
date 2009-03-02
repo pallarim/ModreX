@@ -36,6 +36,7 @@ namespace ModularRex.RexParts
             scene.SceneContents.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
             scene.SceneContents.OnObjectRemove += SceneGraph_OnObjectRemove;
 
+            scene.AddCommand(this, "modreximport", "load 0.4 rex database <connstring>", "conn string example: SQLiteDialect;SQLite20Driver;Data Source=beneath_the_waves.db;Version=3", HandleLoadRexLegacyData);
 
             if (m_db == null)
             {
@@ -377,6 +378,37 @@ namespace ModularRex.RexParts
 
 
         #endregion
+
+
+        public void HandleLoadRexLegacyData(string module, string[] args)
+        {
+            NHibernateRexLegacyData legacydata = new NHibernateRexLegacyData();
+
+            legacydata.Initialise(args[1]);
+            if(!legacydata.Inizialized)
+            {
+                m_log.Info("[MODREXOBJECTS]: Legacy database failed to initialize.");
+                return;            
+            }
+
+            List<RexLegacyPrimData> rexprimdata = legacydata.LoadAllRexPrimData();
+            m_log.Info("[MODREXOBJECTS]: Legacy rexprimdata objects loaded:" + rexprimdata.Count.ToString());
+
+            List<RexLegacyPrimMaterialData> rexprimmaterialdata = legacydata.LoadAllRexPrimMaterialData();
+            m_log.Info("[MODREXOBJECTS]: Legacy rexprimmaterialdata objects loaded:" + rexprimmaterialdata.Count.ToString());
+
+            foreach (RexLegacyPrimData prim in rexprimdata)
+            {
+                RexObjectProperties p = GetObject(prim.UUID);
+                p.SetRexPrimDataFromLegacyData(prim);
+            }
+
+            foreach (RexLegacyPrimMaterialData primmat in rexprimmaterialdata)
+            {
+                RexObjectProperties p = GetObject(primmat.UUID);
+                p.RexMaterials.AddMaterial((uint)primmat.MaterialIndex,primmat.MaterialUUID);
+            }
+        }
 
     }
 }

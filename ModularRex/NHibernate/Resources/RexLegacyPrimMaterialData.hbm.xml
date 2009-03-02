@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+    <class name="ModularRex.RexFramework.RexLegacyPrimMaterialData, ModularRex.RexFramework" table="rexprimmaterialdata" lazy="false">
+        <composite-id>
+            <key-property name="UUID" column="UUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+            <key-property name="MaterialIndex" type="Int32" />
+        </composite-id>
+        <property name="MaterialUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+    </class>
+</hibernate-mapping>

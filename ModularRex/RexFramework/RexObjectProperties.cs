@@ -321,14 +321,19 @@ namespace ModularRex.RexFramework
         public RexObjectProperties(byte[] data)
         {
             SetRexPrimDataFromBytes(data);
+            RexMaterials.SetSceneObjectPart(this);
         }
 
-        public RexObjectProperties() { }
+        public RexObjectProperties() 
+        {
+            RexMaterials.SetSceneObjectPart(this);
+        }
 
         public RexObjectProperties(UUID parentid,IRexObjectPropertiesEventManager newrexeventmanager) 
         {
             ParentObjectID = parentid;
             RexEventManager = newrexeventmanager;
+            RexMaterials.SetSceneObjectPart(this);
         }
 
         #endregion
@@ -375,6 +380,57 @@ namespace ModularRex.RexFramework
                 m_log.Error(e.ToString());
             }
         }
+
+        public void SetRexPrimDataFromLegacyData(RexLegacyPrimData source)
+        {
+            try
+            {
+                mProcessingPacketData = true;
+                ParentObjectID = source.UUID;
+                RexDrawType = Convert.ToByte(source.DrawType);
+                RexIsVisible = ConvertStringToBoolean(source.IsVisible);
+                RexCastShadows = ConvertStringToBoolean(source.CastShadows);
+                RexLightCreatesShadows = ConvertStringToBoolean(source.LightCreatesShadows);
+                RexDescriptionTexture = ConvertStringToBoolean(source.DescriptionTexture);
+                RexScaleToPrim = ConvertStringToBoolean(source.ScaleToPrim);
+                RexDrawDistance = source.DrawDistance;
+                RexLOD = source.LODBias;
+                RexMeshUUID = source.Mesh;
+                RexCollisionMeshUUID = source.CollisionMesh;
+                RexParticleScriptUUID = source.ParticleScript;
+                RexAnimationPackageUUID = source.AnimationPackage;
+                RexAnimationName = source.AnimationName;
+                RexAnimationRate = source.AnimationRate;
+                RexMaterials.ClearMaterials();                
+                RexClassName = source.ClassName;
+                RexSoundUUID = source.Sound;
+                RexSoundVolume = source.SoundVolume;
+                RexSoundRadius = source.SoundRadius;
+
+                if(source.RexExtraPrimData != null && source.RexExtraPrimData.Length > 0)
+                    RexData = Encoding.UTF8.GetString(source.RexExtraPrimData);
+                
+                RexSelectPriority = source.SelectPriority;
+                mProcessingPacketData = false;
+
+                TriggerChangedRexObjectProperties();
+            }
+            catch (Exception e)
+            {
+                mProcessingPacketData = false;
+                m_log.Error(e.ToString());
+            }
+        }        
+        
+        private bool ConvertStringToBoolean(string vValue)
+        {        
+            if(vValue.Length == 0 || vValue == "0")
+                return false;
+            else
+                return true;
+        }
+        
+        
         
         #region Old RexServer ToByte/FromByte methods
         public byte[] GetRexPrimDataToBytes()
