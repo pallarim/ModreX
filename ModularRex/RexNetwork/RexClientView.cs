@@ -294,7 +294,7 @@ namespace ModularRex.RexNetwork
                 return;
             }
 
-            if (method == "RexAppearance")
+            if (method.ToLower() == "rexappearance")
             {
                 if (OnRexAppearance != null)
                 {
