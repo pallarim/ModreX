@@ -361,7 +361,7 @@ namespace ModularRex.RexParts
 
         public void rexSetClientSideEffect(string assetName, int assetType, float vTimeUntilLaunch, float vTimeUntilDeath, LSL_Types.Vector3 vPos, LSL_Types.Quaternion vRot, float vSpeed)  // rex
         {
-            throw new NotImplementedException("Could not get asset by name. Use method with uuid instead");
+            m_log.Warn("[REXSCRIPT]: rexSetCameraClientSideEffect, could not get asset by name. Use method with uuid instead");
             //try
             //{
             //   UUID tempid = World.AssetCache.ExistsAsset((sbyte)assetType, assetName);
@@ -394,7 +394,7 @@ namespace ModularRex.RexParts
 
         public void rexSetCameraClientSideEffect(string avatar, bool enable, string assetName, int assetType, LSL_Types.Vector3 vPos, LSL_Types.Quaternion vRot)  // rex
         {
-            throw new NotImplementedException("Could not set camera client side effets. Asset search by name disabled");
+            m_log.Warn("[REXSCRIPT]: rexSetCameraClientSideEffect, could not set camera client side effets. Asset search by name disabled");
             //try
             //{
             //    UUID tempid = World.AssetCache.ExistsAsset((sbyte)assetType, assetName);
@@ -478,7 +478,7 @@ namespace ModularRex.RexParts
 
         public void rexPlayFlashAnimation(string avatar, string assetName, int assetType, float left, float top, float right, float bottom, float timeToDeath)
         {
-            throw new NotImplementedException("Could not play flash animation. Asset search by name disabled");
+            m_log.Warn("[REXSCRIPT]: Could not play flash animation. Asset search by name disabled");
             //try
             //{
             //   UUID tempid = World.AssetCache.ExistsAsset((sbyte)assetType, assetName);
@@ -650,7 +650,8 @@ namespace ModularRex.RexParts
 
         public bool rexGetTemporaryPrim(string vPrimLocalId)
         {
-            throw new NotImplementedException("rexGetTemporaryPrim not implemented");
+            m_log.Warn("[REXSCRIPT]: rexGetTemporaryPrim not implemented");
+            return false;
             //SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             //if (target != null && target.ParentGroup != null)
             //{
@@ -663,7 +664,7 @@ namespace ModularRex.RexParts
 
         public void rexSetTemporaryPrim(string vPrimLocalId, bool vbData)
         {
-            throw new NotImplementedException("rexSetTemporaryPrim not implemented");
+            m_log.Warn("[REXSCRIPT]: rexSetTemporaryPrim not implemented");
             //SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             //if (target != null && target.ParentGroup != null)
             //{
@@ -926,7 +927,7 @@ namespace ModularRex.RexParts
 
         public void SetRexMeshByName(string vPrimLocalId, string vsName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: SetRexMeshByName asset search by name disabled");
             //SetRexMeshUUID(vPrimLocalId, World.AssetCache.ExistsAsset(43, vsName).ToString());
         }
 
@@ -956,7 +957,7 @@ namespace ModularRex.RexParts
 
         public void SetRexCollisionMeshByName(string vPrimLocalId, string vsName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: SetRexCollisionMeshByName asset search by name disabled");
             //SetRexCollisionMeshUUID(vPrimLocalId, World.AssetCache.ExistsAsset(43, vsName).ToString());
         }
 
@@ -986,7 +987,7 @@ namespace ModularRex.RexParts
 
         public void SetRexParticleScriptByName(string vPrimLocalId, string vsName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: SetRexParticleScriptByName asset search by name disabled");
             //SetRexParticleScriptUUID(vPrimLocalId, World.AssetCache.ExistsAsset(47, vsName).ToString());
         }
 
@@ -1016,7 +1017,7 @@ namespace ModularRex.RexParts
 
         public void SetRexAnimationPackageByName(string vPrimLocalId, string vsName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: SetRexAnimationPackageByName asset search by name disabled");
             //SetRexAnimationPackageUUID(vPrimLocalId, World.AssetCache.ExistsAsset(44, vsName).ToString());
         }
 
@@ -1106,7 +1107,7 @@ namespace ModularRex.RexParts
 
         public void RexSetMaterialByName(string vPrimLocalId, int vIndex, string vsMatName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: RexSetMaterialByName, asset search by name disabled");
             //SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             //if (target != null)
             //{
@@ -1174,7 +1175,7 @@ namespace ModularRex.RexParts
 
         public void SetRexSoundByName(string vPrimLocalId, string vsName)
         {
-            throw new NotImplementedException("Could not get asset by name");
+            m_log.Warn("[REXSCRIPT]: SetRexSoundByName asset search by name disabled");
             //SetRexSoundUUID(vPrimLocalId, World.AssetCache.ExistsAsset(1, vsName).ToString());
         }
 
