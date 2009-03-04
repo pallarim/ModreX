@@ -59,6 +59,7 @@ namespace ModularRex.RexNetwork
         public event RexStartUpDelegate OnRexStartUp;
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
         public event ReceiveRexMediaURL OnReceiveRexMediaURL;
+        public event RexGenericMessageDelegate OnPrimFreeData;
 
         public RexClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
@@ -96,7 +97,10 @@ namespace ModularRex.RexNetwork
             AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage);
+
+            //This added here only to disable warning about unhandled generic message
+            //RexPrimData is actually handled  in RexClientView_BinaryGenericMessage
+            AddGenericPacketHandler("RexPrimData", RealXtendClientView_OnGenericMessage); 
             AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexMediaUrl", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("rexstartup", RealXtendClientView_OnGenericMessage);
@@ -104,6 +108,7 @@ namespace ModularRex.RexNetwork
             m_genericMessageHandlers.Add("rexfaceexpression", OnRexFaceExpression);
             m_genericMessageHandlers.Add("rexavatarprop", OnRexAvatarProperties);
             m_genericMessageHandlers.Add("rexmediaurl", TriggerOnReceivedRexMediaURL);
+            m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
         }
 
         /// <summary>
@@ -115,6 +120,7 @@ namespace ModularRex.RexNetwork
         {
             RegisterInterface<IClientRexAppearance>(this);
             RegisterInterface<IClientRexFaceExpression>(this);
+            RegisterInterface<IClientMediaURL>(this);
 
             // Register our own class 'as-is' so it can be
             // used via IClientCore.Get<RexClientView>()...
@@ -320,6 +326,8 @@ namespace ModularRex.RexNetwork
                     return;
                 }
             }
+            if (method == "rexprimdata")
+                return;
 
             m_log.Warn("[REXCLIENT] Unhandled GenericMessage (" + method + ") {");
             foreach (string s in args)
@@ -327,6 +335,26 @@ namespace ModularRex.RexNetwork
                 m_log.Warn("\t" + s);
             }
             m_log.Warn("}");
+        }
+
+        private void TriggerOnPrimFreeData(IClientAPI sender, List<string> args)
+        {
+            try
+            {
+                //foreach (string s in args)
+                //{
+                //    m_log.Debug("[REXCLIENT] PrimFreeData: " + s);
+                //}
+
+                if (OnPrimFreeData != null)
+                {
+                    OnPrimFreeData(this, args);
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[REXCLIENT] Error parseing incoming prim free data. Exception: ", e);
+            }
         }
 
         private void TriggerOnReceivedRexMediaURL(IClientAPI sender, List<string> args)
@@ -650,9 +678,16 @@ namespace ModularRex.RexNetwork
         {
             List<string> pack = new List<string>();
 
-            pack.Add(direction.ToString());
-            pack.Add(colour.ToString());
-            pack.Add(ambientColour.ToString());
+            string slightDirection = direction.X.ToString() + " " + direction.Y.ToString() + " " + direction.Z.ToString();
+            slightDirection = slightDirection.Replace(",", ".");
+            string slightColour = colour.X.ToString() + " " + colour.Y.ToString() + " " + colour.Z.ToString();
+            slightColour = slightColour.Replace(",", ".");
+            string sambientColour = ambientColour.X.ToString() + " " + ambientColour.Y.ToString() + " " + ambientColour.Z.ToString();
+            sambientColour = sambientColour.Replace(",", ".");
+
+            pack.Add(slightDirection);
+            pack.Add(slightColour);
+            pack.Add(sambientColour);
 
             SendGenericMessage("RexAmbientL", pack);
         }

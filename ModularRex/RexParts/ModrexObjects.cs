@@ -68,10 +68,28 @@ namespace ModularRex.RexParts
             if (client.TryGet(out rcv))
             {
                 rcv.OnRexObjectProperties += rcv_OnRexObjectProperties;
+                rcv.OnPrimFreeData += rcv_OnPrimFreeData;
                 //rcv.OnChatFromClient += rcv_OnChatFromClient;
 
                 // Send them the current Scene.
                 SendAllPropertiesToUser(rcv);
+            }
+        }
+
+        private void rcv_OnPrimFreeData(RexClientView sender, List<string> parameters)
+        {
+            m_log.Info("[REXOBJS] Received Prim free data");
+            if (parameters.Count == 2)
+            {
+                UUID primID = new UUID(parameters[0]);
+                string data = parameters[1];
+
+                RexObjectProperties props = GetObject(primID);
+                props.RexData = data;
+            }
+            else
+            {
+                m_log.Warn("[REXOBJS] unexpected number of parameters");
             }
         }
 
