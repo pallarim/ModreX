@@ -136,7 +136,7 @@ namespace ModularRex.RexParts.RexPython
          
         public void SetMass(string vId, float vMass)
         {
-            throw new NotImplementedException("SetMass not implemented");
+            m_log.Warn("[REXSCRIPT]: SetMass not implemented");
             //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
             //if (tempobj != null)
             //{
@@ -163,7 +163,8 @@ namespace ModularRex.RexParts.RexPython
 
         public bool GetUsePrimVolumeCollision(string vId)
         {
-            throw new NotImplementedException("GetUsePrimVolumeCollision not implemented");
+            m_log.Warn("[REXSCRIPT]: GetUsePrimVolumeCollision not implemented");
+            return false;
             //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
             //if (tempobj != null)
             //{
@@ -178,7 +179,7 @@ namespace ModularRex.RexParts.RexPython
 
         public void SetUsePrimVolumeCollision(string vId, bool vUseVolumeCollision)
         {
-            throw new NotImplementedException("SetUsePrimVolumeCollision not implemented");
+            m_log.Warn("[REXSCRIPT]: SetUsePrimVolumeCollision not implemented");
             //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
             //if (tempobj != null)
             //{
@@ -218,7 +219,7 @@ namespace ModularRex.RexParts.RexPython
         // ******************************
         public void SendGeneralAlertAll(string vId, string vMessage)
         {
-            throw new NotImplementedException("SendGeneralAlertAll not implemented");
+            m_log.Warn("[REXSCRIPT]: SendGeneralAlertAll not implemented");
             //TODO: Fix this. Broken in newest OpenSim
             //myScriptEngine.World.SendGeneralAlert(vMessage);
         }
@@ -303,7 +304,6 @@ namespace ModularRex.RexParts.RexPython
 
         public string SpawnActor(LSL_Types.Vector3 location, int shape, bool temporary, string pythonClass)
         {
-            //throw new NotImplementedException("Could not spawn actor to scene");
             UUID TempID = myScriptEngine.World.RegionInfo.MasterAvatarAssignedUUID;
             Vector3 pos = new Vector3((float)location.x, (float)location.y, (float)location.z);
             Quaternion rot = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
@@ -321,7 +321,8 @@ namespace ModularRex.RexParts.RexPython
 
         public bool DestroyActor(string vId)
         {
-            throw new NotImplementedException("DestroyActor not implemented");
+            m_log.Warn("[REXSCRIPT]: DestroyActor not implemented");
+            return true;
             //EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
             //if (tempobj != null && tempobj is RexObjects.RexObjectGroup)
             //{
