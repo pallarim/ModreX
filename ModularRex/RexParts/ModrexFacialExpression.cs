@@ -18,9 +18,9 @@ namespace ModularRex.RexParts
 
         static void EventManager_OnNewClient(IClientAPI client)
         {
-            if (client is IRexClientAPI)
+            if (client is IClientRexFaceExpression)
             {
-                IRexClientAPI mcv = (IRexClientAPI)client;
+                IClientRexFaceExpression mcv = (IClientRexFaceExpression)client;
                 mcv.OnRexFaceExpression += mcv_OnRexFaceExpression;
             }
         }
@@ -32,9 +32,11 @@ namespace ModularRex.RexParts
             Scene x = (Scene) sender.Scene;
             x.ForEachScenePresence(delegate(ScenePresence scenePresence)
                                        {
-                                           if (scenePresence.ControllingClient is RexClientView)
-                                               ((RexClientView) scenePresence.ControllingClient).
-                                                   SendRexFaceExpression(vParams);
+                                           IClientRexFaceExpression rexFace;
+                                           if (scenePresence.ClientView.TryGet(out rexFace))
+                                           {
+                                               rexFace.SendRexFaceExpression(vParams);
+                                           }
                                        }
                 );
 

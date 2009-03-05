@@ -40,7 +40,7 @@ using ModularRex.RexFramework;
 
 namespace OpenSim.Region.Examples.RexBot
 {
-    public class RexBot : GenericNpcCharacter, IRexBot, IClientCore
+    public class RexBot : GenericNpcCharacter, IRexBot, IClientAPI, IRexClientCore, IClientRexAppearance, IClientCore
     {
         public enum RexBotState { Idle, Walking, Flying, Unknown }
 
@@ -80,11 +80,9 @@ namespace OpenSim.Region.Examples.RexBot
         private NavMeshManager m_navMeshManager;
         private NavMeshInstance m_navMesh;
 
-#pragma warning disable 67
         public event RexAppearanceDelegate OnRexAppearance;
-        public event RexGenericMessageDelegate OnRexFaceExpression;
-        public event ReceiveRexMediaURL OnReceiveRexMediaURL;
-#pragma warning restore 67
+        public event RexStartUpDelegate OnRexStartUp;
+        public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
 
         private string m_rexAccountID;
         private string m_rexAvatarURL;
@@ -660,26 +658,26 @@ namespace OpenSim.Region.Examples.RexBot
 
         public void SetBotAppearance(string address)
         {
-            if(m_scenePresence.ControllingClient is IRexClientAPI)
-                ((IRexClientAPI)m_scenePresence.ControllingClient).RexAvatarURLOverride = address;
+            if (m_scenePresence.ControllingClient is IClientRexAppearance)
+                ((IClientRexAppearance)m_scenePresence.ControllingClient).RexAvatarURLOverride = address;
         }
 
         public void DisableWalk(bool disable)
         {
-            if(m_scenePresence.ControllingClient is IRexClientAPI)        
-                ((IRexClientAPI)m_scenePresence.ControllingClient).RexWalkDisabled = disable;
+            if (m_scenePresence.ControllingClient is IRexClientCore)
+                ((IRexClientCore)m_scenePresence.ControllingClient).RexWalkDisabled = disable;
         }
 
         public void SetMovementSpeedMod(float speed)
         {
-            if (m_scenePresence.ControllingClient is IRexClientAPI)
-                ((IRexClientAPI)m_scenePresence.ControllingClient).RexMovementSpeedMod = speed;
+            if (m_scenePresence.ControllingClient is IRexClientCore)
+                ((IRexClientCore)m_scenePresence.ControllingClient).RexMovementSpeedMod = speed;
         }
 
         public void SetVertMovementSpeedMod(float speed)
         {
-            if (m_scenePresence.ControllingClient is IRexClientAPI)
-                ((IRexClientAPI)m_scenePresence.ControllingClient).RexVertMovementSpeedMod = speed;
+            if (m_scenePresence.ControllingClient is IRexClientCore)
+                ((IRexClientCore)m_scenePresence.ControllingClient).RexVertMovementSpeedMod = speed;
         }
 
         private bool m_adminMode;
@@ -842,21 +840,49 @@ namespace OpenSim.Region.Examples.RexBot
             get { return m_scene; }
         }    
 
-        public void SendRexFaceExpression(List<string> expressionData){   }
         public void SendRexAppearance(UUID agentID, string avatarURL){  }
-        public void SendMediaURL(UUID assetId, string mediaURL, byte refreshRate) { }
-        
+
+
+        #region IClientCore Members
+
+        private readonly Dictionary<Type, object> m_clientInterfaces = new Dictionary<Type, object>();
+
+        public T Get<T>()
+        {
+            return (T)m_clientInterfaces[typeof(T)];
+        }
 
         public bool TryGet<T>(out T iface)
         {
+            if (m_clientInterfaces.ContainsKey(typeof(T)))
+            {
+                iface = (T)m_clientInterfaces[typeof(T)];
+                return true;
+            }
             iface = default(T);
             return false;
         }
 
-        public T Get<T>()
+        protected virtual void RegisterInterfaces()
         {
-            return default(T);
+            RegisterInterface<IRexBot>(this);
+            RegisterInterface<IClientAPI>(this);
+            RegisterInterface<IRexClientCore>(this);
+            RegisterInterface<IClientRexAppearance>(this);
+            RegisterInterface<RexBot>(this);
         }
 
+        protected void RegisterInterface<T>(T iface)
+        {
+            lock (m_clientInterfaces)
+            {
+                if (!m_clientInterfaces.ContainsKey(typeof(T)))
+                {
+                    m_clientInterfaces.Add(typeof(T), iface);
+                }
+            }
+        }
+
+        #endregion
     }
 }

@@ -23,7 +23,7 @@ namespace ModularRex.RexParts.RexPython
     public delegate void SendAppearanceToAllAgents(); // rex
     */
 
-    public interface IRexBot : IClientAPI, IRexClientAPI
+    public interface IRexBot
     {
         /* tucofixme, delete?
         event ReceiveRexClientScriptCmd OnReceiveRexClientScriptCmd; // rex

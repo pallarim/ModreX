@@ -24,7 +24,7 @@ namespace ModularRex.RexNetwork
     /// between Rex and LL, you can use a override on those specific functions
     /// to overload the request.
     /// </summary>                                                                 
-    public class RexClientView : LLClientView, IRexClientAPI
+    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance, IClientMediaURL, IRexClientCore
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -103,7 +103,7 @@ namespace ModularRex.RexNetwork
             m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
         }
 
-        #region Properties
+        
 
         /// <summary>
         /// Registers interfaces for IClientCore,
@@ -115,6 +115,7 @@ namespace ModularRex.RexNetwork
             RegisterInterface<IClientRexAppearance>(this);
             RegisterInterface<IClientRexFaceExpression>(this);
             RegisterInterface<IClientMediaURL>(this);
+            RegisterInterface<IRexClientCore>(this);
 
             // Register our own class 'as-is' so it can be
             // used via IClientCore.Get<RexClientView>()...
@@ -122,6 +123,8 @@ namespace ModularRex.RexNetwork
 
             base.RegisterInterfaces();
         }
+
+        #region Properties
 
         /// <summary>
         /// The avatar URL for this avatar

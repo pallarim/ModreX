@@ -9,5 +9,9 @@ namespace ModularRex.RexNetwork
     {
         event RexAppearanceDelegate OnRexAppearance;
         void SendRexAppearance(UUID agentID, string avatarURL);
+
+        string RexAvatarURL { get; set; }
+        string RexAvatarURLOverride { get; set; }
+        string RexAvatarURLVisible { get; }
     }
 }

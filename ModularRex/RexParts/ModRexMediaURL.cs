@@ -10,6 +10,7 @@ using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using log4net;
+using ModularRex.RexNetwork;
 
 namespace ModularRex.RexParts
 {
@@ -116,7 +117,7 @@ namespace ModularRex.RexParts
             ((RexNetwork.IClientMediaURL)obj).OnReceiveRexMediaURL -= OnReceiveRexMediaURL;
         }
 
-        private void OnReceiveRexMediaURL(IClientAPI remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate)
+        private void OnReceiveRexMediaURL(IClientMediaURL remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate)
         {
             //TODO: check priviledges
 

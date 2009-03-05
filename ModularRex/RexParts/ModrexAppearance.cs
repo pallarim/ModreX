@@ -36,7 +36,7 @@ namespace ModularRex.RexParts
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            RexClientView rex;
+                            IClientRexAppearance rex;
                             if (avatar.ClientView.TryGet(out rex))
                             {
                                 rex.SendRexAppearance(user, avatarServerURL);
@@ -52,28 +52,28 @@ namespace ModularRex.RexParts
 
             IClientAPI client;
             string avatarurl;
-            
+
             foreach (Scene scene in m_scenes)
             {
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
+                    {
+                        IClientRexAppearance rex;
+                        if (avatar.ClientView.TryGet(out rex))
                         {
-                            if (avatar.ControllingClient is IRexClientAPI)
-                                client = avatar.ControllingClient;
-                            else
-                                client = null;
-                            
-                            if(client != null && !sent.Contains(client.AgentId) && target != client)
+                            client = avatar.ControllingClient;
+                            if (!sent.Contains(client.AgentId) && target != client)
                             {
-                                avatarurl = ((IRexClientAPI)client).RexAvatarURLVisible;
+                                avatarurl = rex.RexAvatarURLVisible;
                                 if (!string.IsNullOrEmpty(avatarurl))
                                 {
-                                    target.SendRexAppearance(client.AgentId,avatarurl);
-                                    sent.Add(client.AgentId);                                
-                                }       
+                                    target.SendRexAppearance(client.AgentId, avatarurl);
+                                    sent.Add(client.AgentId);
+                                }
                             }
-                        });
-            }            
+                        }
+                    });
+            }
         }
 
         public void SendAllAppearancesToAllUsers()
@@ -123,17 +123,21 @@ namespace ModularRex.RexParts
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
         }
 
-        void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
+        void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore clientCore)
         {
-            if(client is IRexClientAPI)
+            IClientAPI client;
+            if (clientCore.TryGet(out client))
             {
-                IRexClientAPI rexclientapi = (IRexClientAPI)client;
-                rexclientapi.OnRexAppearance += mcv_OnRexAppearance;
-                SendAppearanceToAllUsers(rexclientapi.AgentId,rexclientapi.RexAvatarURLVisible);
+                IClientRexAppearance rexClientAppearance;
+                if (clientCore.TryGet(out rexClientAppearance))
+                {
+                    rexClientAppearance.OnRexAppearance += mcv_OnRexAppearance;
+                    SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible);
+
+                    if (client is RexClientView)
+                        SendAllAppearancesToUser((RexClientView)client);
+                }
             }
-        
-            if(client is RexClientView)
-                SendAllAppearancesToUser((RexClientView)client); 
         }
 
         /// <summary>
@@ -142,8 +146,8 @@ namespace ModularRex.RexParts
         /// <param name="sender">IClientApi of the sender</param>
         void mcv_OnRexAppearance(IClientAPI sender)
         {
-            if (sender is IRexClientAPI)
-                SendAppearanceToAllUsers(sender.AgentId, ((IRexClientAPI)sender).RexAvatarURLVisible);
+            if (sender is IClientRexAppearance)
+                SendAppearanceToAllUsers(sender.AgentId, ((IClientRexAppearance)sender).RexAvatarURLVisible);
         }
 
         public void PostInitialise()

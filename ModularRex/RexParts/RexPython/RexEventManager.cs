@@ -7,6 +7,7 @@ using OpenSim;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using log4net;
+using ModularRex.RexNetwork;
 
 namespace ModularRex.RexParts.RexPython
 {
@@ -155,7 +156,7 @@ namespace ModularRex.RexParts.RexPython
                 }
 
                 //Tie up some RexClientView events
-                RexNetwork.RexClientView rex;
+                RexNetwork.IRexClientCore rex;
                 if (vPresence.ClientView.TryGet(out rex))
                 {
                     rex.OnRexStartUp += OnRexClientStartUp;
@@ -261,7 +262,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientScriptCommand(IClientAPI remoteClient, UUID agentID, List<string> commands)
+        public void OnRexClientScriptCommand(IRexClientCore remoteClient, UUID agentID, List<string> commands)
         {
             try
             {
@@ -339,7 +340,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientStartUp(IClientAPI client, UUID agentID, string status)
+        public void OnRexClientStartUp(IRexClientCore client, UUID agentID, string status)
         {
             try
             {

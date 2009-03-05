@@ -2,6 +2,8 @@
 
 namespace ModularRex.RexNetwork
 {
+    public delegate void ReceiveRexMediaURL(IClientMediaURL remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate);
+
     /// <summary>
     /// This client supports Rex style MediaURLs
     /// </summary>
