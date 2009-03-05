@@ -5,6 +5,7 @@ using ModularRex.RexNetwork;
 using Nini.Config;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+using OpenSim.Framework;
 
 namespace ModularRex.RexParts
 {
@@ -17,7 +18,7 @@ namespace ModularRex.RexParts
             scene.EventManager.OnNewClient += new EventManager.OnNewClientDelegate(EventManager_OnNewClient);
         }
 
-        void EventManager_OnNewClient(OpenSim.Framework.IClientAPI client)
+        void EventManager_OnNewClient(IClientAPI client)
         {
             client.OnChatFromClient += new OpenSim.Framework.ChatMessage(client_OnChatFromClient);
             
@@ -27,9 +28,10 @@ namespace ModularRex.RexParts
             }
         }
 
-        void RexScriptTestModule_OnRexAvatarProperties(RexClientView sender, List<string> parameters)
+        void RexScriptTestModule_OnRexAvatarProperties(IClientAPI sender, List<string> parameters)
         {
-            sender.SendRexInventoryMessage(parameters[0]);
+            if (sender is RexClientView)
+                ((RexClientView)sender).SendRexInventoryMessage(parameters[0]);
         }
 
         void client_OnChatFromClient(object sender, OpenSim.Framework.OSChatMessage e)

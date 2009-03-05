@@ -7,6 +7,7 @@ using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+using OpenSim.Framework;
 
 namespace ModularRex.RexParts
 {
@@ -49,25 +50,27 @@ namespace ModularRex.RexParts
             m_log.Info("[REXAPR] Sending all appearances to user " + target.AgentId + ".");
             List<UUID> sent = new List<UUID>();
 
+            IClientAPI client;
+            string avatarurl;
+            
             foreach (Scene scene in m_scenes)
             {
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            RexClientView rex;
-                            if (avatar.ClientView.TryGet(out rex))
+                            if (avatar.ControllingClient is IRexClientAPI)
+                                client = avatar.ControllingClient;
+                            else
+                                client = null;
+                            
+                            if(client != null && !sent.Contains(client.AgentId) && target != client)
                             {
-                                if (!sent.Contains(rex.AgentId) &&
-                                    rex != target &&
-                                    !string.IsNullOrEmpty(
-                                         rex.RexAvatarURLVisible))
+                                avatarurl = ((IRexClientAPI)client).RexAvatarURLVisible;
+                                if (!string.IsNullOrEmpty(avatarurl))
                                 {
-                                    target.SendRexAppearance(
-                                        avatar.ControllingClient.AgentId,
-                                        ((RexClientView) avatar.ControllingClient)
-                                            .RexAvatarURLVisible);
-                                    sent.Add(avatar.ControllingClient.AgentId);
-                                }
+                                    target.SendRexAppearance(client.AgentId,avatarurl);
+                                    sent.Add(client.AgentId);                                
+                                }       
                             }
                         });
             }            
@@ -122,25 +125,25 @@ namespace ModularRex.RexParts
 
         void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
         {
-            RexClientView rex;
-            if (client.TryGet(out rex))
+            if(client is IRexClientAPI)
             {
-                rex.OnRexAppearance += mcv_OnRexAppearance;
-
-                // Send initial appearance to others
-                SendAppearanceToAllUsers(rex.AgentId, rex.RexAvatarURLVisible);
-                // Send others appearance to us
-                SendAllAppearancesToUser((RexClientView) client);
+                IRexClientAPI rexclientapi = (IRexClientAPI)client;
+                rexclientapi.OnRexAppearance += mcv_OnRexAppearance;
+                SendAppearanceToAllUsers(rexclientapi.AgentId,rexclientapi.RexAvatarURLVisible);
             }
+        
+            if(client is RexClientView)
+                SendAllAppearancesToUser((RexClientView)client); 
         }
 
         /// <summary>
         /// Fired when a "Neighbours: Update your appearance" packet is sent by the viewer
         /// </summary>
         /// <param name="sender">IClientApi of the sender</param>
-        void mcv_OnRexAppearance(RexClientView sender)
+        void mcv_OnRexAppearance(IClientAPI sender)
         {
-            SendAppearanceToAllUsers(sender.AgentId, sender.RexAvatarURLVisible);
+            if (sender is IRexClientAPI)
+                SendAppearanceToAllUsers(sender.AgentId, ((IRexClientAPI)sender).RexAvatarURLVisible);
         }
 
         public void PostInitialise()

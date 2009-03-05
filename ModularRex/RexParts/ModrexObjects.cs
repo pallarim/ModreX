@@ -76,7 +76,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        private void rcv_OnPrimFreeData(RexClientView sender, List<string> parameters)
+        private void rcv_OnPrimFreeData(IClientAPI sender, List<string> parameters)
         {
             m_log.Info("[REXOBJS] Received Prim free data");
             if (parameters.Count == 2)
@@ -177,7 +177,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        void rcv_OnRexObjectProperties(RexClientView sender, UUID id, RexObjectProperties props)
+        void rcv_OnRexObjectProperties(IClientAPI sender, UUID id, RexObjectProperties props)
         {
             m_log.Info("[REXOBJS] Received RexObjData for " + id);
             if (props.ParentObjectID == UUID.Zero)

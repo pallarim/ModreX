@@ -7,6 +7,7 @@ using OpenMetaverse;
 
 namespace ModularRex.RexParts.RexPython
 {
+    /* tucofixme, delete?
     public delegate void ObjectClickAction(IClientAPI remoteClient, uint objectLocalId, byte clickAction);
     public delegate void ReceiveRexClientScriptCmd(IClientAPI remoteClient, UUID agentID, List<string> vParams); // rex
     public delegate void ReceiveRexFaceExpression(IClientAPI remoteClient, UUID agentID, List<string> expressionData); // rex
@@ -20,9 +21,11 @@ namespace ModularRex.RexParts.RexPython
     public delegate void UpdateRexPrimData(IClientAPI remoteClient, UUID vPrimID, byte[] vData);
 
     public delegate void SendAppearanceToAllAgents(); // rex
+    */
 
-    public interface IRexBot : IClientAPI, IClientRexAppearance, IClientRexFaceExpression
+    public interface IRexBot : IClientAPI, IRexClientAPI
     {
+        /* tucofixme, delete?
         event ReceiveRexClientScriptCmd OnReceiveRexClientScriptCmd; // rex
         event ReceiveRexFaceExpression OnReceiveRexFaceExpression; // rex
         event ReceiveRexIKAnimation OnReceiveRexIKAnimation; // rex
@@ -35,7 +38,7 @@ namespace ModularRex.RexParts.RexPython
         event ReceiveRexStartUp OnReceiveRexStartUp; // rex
         event ReceiveRexMediaURL OnReceiveRexMediaURL; // rex
         event TriggerSound OnTriggerSound; // rex
-
+        */ 
         void WalkTo(Vector3 destination);
         void FlyTo(Vector3 destination);
         void RotateTo(Vector3 destination);

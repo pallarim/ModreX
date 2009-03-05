@@ -4,6 +4,7 @@ using ModularRex.RexNetwork;
 using Nini.Config;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+using OpenSim.Framework;
 
 namespace ModularRex.RexParts
 {
@@ -17,7 +18,7 @@ namespace ModularRex.RexParts
             scene.EventManager.OnNewClient += EventManager_OnNewClient;
         }
 
-        void EventManager_OnNewClient(OpenSim.Framework.IClientAPI client)
+        void EventManager_OnNewClient(IClientAPI client)
         {
             if (client is RexClientView)
             {
@@ -47,12 +48,12 @@ namespace ModularRex.RexParts
             }
         }
 
-        void rcv_OnRexFaceExpression(RexClientView sender, System.Collections.Generic.List<string> vParams)
+        void rcv_OnRexFaceExpression(IClientAPI sender, System.Collections.Generic.List<string> vParams)
         {
             m_log.Info("[REXCLIENT] Recieved Rex Facial Expression");
         }
 
-        void rcv_OnRexAppearance(RexClientView sender)
+        void rcv_OnRexAppearance(IClientAPI sender)
         {
             m_log.Info("[REXCLIENT] Recieved Rex Appearance");
         }

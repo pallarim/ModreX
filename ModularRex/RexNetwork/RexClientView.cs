@@ -16,13 +16,6 @@ using OpenSim.Region.ClientStack.LindenUDP;
 
 namespace ModularRex.RexNetwork
 {
-    public delegate void RexGenericMessageDelegate(RexClientView sender, List<string> parameters);
-    public delegate void RexAppearanceDelegate(RexClientView sender);
-    public delegate void RexObjectPropertiesDelegate(RexClientView sender, UUID id, RexObjectProperties props);
-    public delegate void RexStartUpDelegate(RexClientView remoteClient, UUID agentID, string status);
-    public delegate void RexClientScriptCmdDelegate(RexClientView remoteClient, UUID agentID, List<string> parameters);
-    public delegate void ReceiveRexMediaURL(IClientAPI remoteClient, UUID agentID, UUID itemID, string mediaURL, byte refreshRate);
-
     /// <summary>
     /// Inherits from LLClientView the majority of functionality
     /// Overrides and extends for Rex-specific functionality.
@@ -30,8 +23,8 @@ namespace ModularRex.RexNetwork
     /// In the case whereby functionality uses the same packets but differs
     /// between Rex and LL, you can use a override on those specific functions
     /// to overload the request.
-    /// </summary>
-    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance, IClientMediaURL
+    /// </summary>                                                                 
+    public class RexClientView : LLClientView, IRexClientAPI
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -43,14 +36,13 @@ namespace ModularRex.RexNetwork
         private string m_rexAvatarURLOverride;
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
-        public string AvatarStorageOverride;
 
-        public float RexCharacterSpeedMod = 1.0f;
-        public float RexMovementSpeedMod = 1.0f;
-        public float RexVertMovementSpeedMod = 1.0f; 
-        public bool RexWalkDisabled = false;
-        public bool RexFlyDisabled = false;
-        public bool RexSitDisabled = false;
+        private float m_RexCharacterSpeedMod = 1.0f;
+        private float m_RexMovementSpeedMod = 1.0f;
+        private float m_RexVertMovementSpeedMod = 1.0f;
+        private bool m_RexWalkDisabled = false;
+        private bool m_RexFlyDisabled = false;
+        private bool m_RexSitDisabled = false;
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexGenericMessageDelegate OnRexFaceExpression;
@@ -110,6 +102,8 @@ namespace ModularRex.RexNetwork
             m_genericMessageHandlers.Add("rexmediaurl", TriggerOnReceivedRexMediaURL);
             m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
         }
+
+        #region Properties
 
         /// <summary>
         /// Registers interfaces for IClientCore,
@@ -232,6 +226,45 @@ namespace ModularRex.RexNetwork
                 ThreadPool.QueueUserWorkItem(RequestProperties);
             }
         }
+        
+        public float RexCharacterSpeedMod
+        {
+            get { return m_RexCharacterSpeedMod; }
+            set { m_RexCharacterSpeedMod = value; }
+        }  
+              
+        public float RexMovementSpeedMod
+        {
+            get { return m_RexMovementSpeedMod; }
+            set { m_RexMovementSpeedMod = value; }
+        }
+                  
+        public float RexVertMovementSpeedMod
+        {
+            get { return m_RexVertMovementSpeedMod; }
+            set { m_RexVertMovementSpeedMod = value; }
+        }
+                
+        public bool RexWalkDisabled
+        {
+            get { return m_RexWalkDisabled; }
+            set { m_RexWalkDisabled = value; }
+        }
+                
+        public bool RexFlyDisabled
+        {
+            get { return m_RexFlyDisabled; }
+            set { m_RexFlyDisabled = value; }
+        }
+                
+        public bool RexSitDisabled 
+        { 
+            get { return m_RexSitDisabled; }
+            set { m_RexSitDisabled = value; }
+        }
+
+        #endregion
+        
 
         private void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
         {

@@ -261,7 +261,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientScriptCommand(RexNetwork.RexClientView remoteClient, UUID agentID, List<string> commands)
+        public void OnRexClientScriptCommand(IClientAPI remoteClient, UUID agentID, List<string> commands)
         {
             try
             {
@@ -339,7 +339,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnRexClientStartUp(RexNetwork.RexClientView client, UUID agentID, string status)
+        public void OnRexClientStartUp(IClientAPI client, UUID agentID, string status)
         {
             try
             {

@@ -18,17 +18,14 @@ namespace ModularRex.RexParts
 
         static void EventManager_OnNewClient(IClientAPI client)
         {
-            // Check if the client was insubstantiated as a RexClientView.
-            if (client is RexClientView)
+            if (client is IRexClientAPI)
             {
-                // It was? Subscribed to our special events...
-                RexClientView mcv = (RexClientView)client;
-
+                IRexClientAPI mcv = (IRexClientAPI)client;
                 mcv.OnRexFaceExpression += mcv_OnRexFaceExpression;
             }
         }
 
-        static void mcv_OnRexFaceExpression(RexClientView sender, List<string> vParams)
+        static void mcv_OnRexFaceExpression(IClientAPI sender, List<string> vParams)
         {
             // OpenSim BUG: IScene contains insufficient properties for handling agents.
             // FIXME Then return.
