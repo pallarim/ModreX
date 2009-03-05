@@ -125,17 +125,19 @@ namespace ModularRex.RexParts
 
         void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore clientCore)
         {
-            IClientAPI client;
-            if (clientCore.TryGet(out client))
+            if(clientCore is IClientAPI)
             {
+                IClientAPI client = (IClientAPI)clientCore;
+
                 IClientRexAppearance rexClientAppearance;
                 if (clientCore.TryGet(out rexClientAppearance))
                 {
                     rexClientAppearance.OnRexAppearance += mcv_OnRexAppearance;
                     SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible);
-
                     if (client is RexClientView)
+                    {
                         SendAllAppearancesToUser((RexClientView)client);
+                    }
                 }
             }
         }
