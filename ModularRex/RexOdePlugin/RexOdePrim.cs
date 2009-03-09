@@ -2977,5 +2977,15 @@ namespace ModularRex.RexOdePlugin
             m_taintsize = _size;
             m_ReCreateCollision = false;
         }
+
+        private float m_PIDHoverHeight = 0f;
+        private float m_PIDHoverTau = 0f;
+        private bool m_useHoverPID = false;
+        private PIDHoverType m_PIDHoverType = PIDHoverType.Ground;
+
+        public override float PIDHoverHeight { set { m_PIDHoverHeight = value; ; } }
+        public override bool PIDHoverActive { set { m_useHoverPID = value; } }
+        public override PIDHoverType PIDHoverType { set { m_PIDHoverType = value; } }
+        public override float PIDHoverTau { set { m_PIDHoverTau = value; } }
     }
 }
