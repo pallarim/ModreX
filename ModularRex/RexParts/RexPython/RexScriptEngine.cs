@@ -208,8 +208,8 @@ namespace ModularRex.RexParts.RexPython
                             ((SceneObjectGroup)ent).RootPart.SetScriptEvents(rexobj.ParentObjectID, (int)scriptEvents.touch_start);
                         }
                         //TODO: Get Py-classname and tag from prim description?
+                        CreateActorToPython(ent.LocalId.ToString(), PythonClassName, PythonTag);
                     }
-                    CreateActorToPython(ent.LocalId.ToString(), PythonClassName, PythonTag);
                 }
 
                 #region old code for checking class name from RexObjectPart. not in use, only as reference
@@ -269,10 +269,10 @@ namespace ModularRex.RexParts.RexPython
                 foreach (ScenePresence avatar in ScenePresencesList)
                 {
                     if (avatar.ControllingClient is IRexBot)
-                        PParams = "\"add_bot\"," + avatar.LocalId.ToString() + "," + "\"" + avatar.UUID.ToString() + "\"";                    
+                        PParams = "\"add_bot\"," + avatar.LocalId.ToString() + "," + "\"" + avatar.UUID.ToString() + "\"";
                     else
                         PParams = "\"add_presence\"," + avatar.LocalId.ToString() + "," + "\"" + avatar.UUID.ToString() + "\"";
-                    
+
                     ExecutePythonStartCommand("CreateEventWithName(" + PParams + ")");
                 }
              

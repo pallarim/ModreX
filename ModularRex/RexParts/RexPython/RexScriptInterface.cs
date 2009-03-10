@@ -67,11 +67,13 @@ namespace ModularRex.RexParts.RexPython
 
         private EntityBase GetEntityBase(uint vId)
         {
-            SceneObjectPart part = myScriptEngine.World.GetSceneObjectPart(vId);
-            if (part != null && (EntityBase)(part.ParentGroup) != null)
-                return (EntityBase)(part.ParentGroup);
-            else
-                return null;
+            EntityBase entity;
+            if (myScriptEngine.World.Entities.TryGetValue(vId, out entity))
+            {
+                if(entity is SceneObjectGroup)
+                    return entity;
+            }
+            return null;
         }
 
         // Functions exposed to Python!
@@ -80,16 +82,24 @@ namespace ModularRex.RexParts.RexPython
         {
             uint id = System.Convert.ToUInt32(vId, 10);
 
-            SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(id);
-            if (tempobj != null)
+            EntityBase entity;
+            if (myScriptEngine.World.Entities.TryGetValue(id, out entity))
             {
-                m_host = tempobj;
-                m_localID = tempobj.LocalId;
-                m_itemID = tempobj.UUID;
-                return true;
+                if (entity is SceneObjectGroup)
+                {
+                    SceneObjectGroup sog = (SceneObjectGroup)entity;
+                    m_host = sog.RootPart;
+                    m_localID = sog.LocalId;
+                    m_itemID = sog.UUID;
+                    return true;
+                }
+                m_log.DebugFormat("entity not scene object group: {0}", entity.GetType().ToString());
             }
             else
-                return false;
+            {
+                m_log.Debug("no entity found with id");
+            }
+            return false;
         }
 
         public void CommandToClient(string vPresenceId, string vUnit, string vCommand, string vCmdParams)
@@ -204,9 +214,11 @@ namespace ModularRex.RexParts.RexPython
             
             if(tempid != UUID.Zero)            
             {
-                SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(tempid);
-                if(tempobj != null)
-                    return (int)tempobj.LocalId;
+                EntityBase entity;
+                if (myScriptEngine.World.Entities.TryGetValue(tempid, out entity))
+                {
+                    return (int)entity.LocalId;
+                }
                 else
                     myScriptEngine.Log.WarnFormat("[PythonScript]: GetPrimLocalIdFromUUID did not find prim with uuid:" + vUUID);
             }

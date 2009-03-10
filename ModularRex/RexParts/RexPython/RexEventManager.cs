@@ -68,15 +68,16 @@ namespace ModularRex.RexParts.RexPython
 
         private void onPythonClassChange(UUID id)
         {
-            SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(id);
-            if (sop != null)
+            EntityBase entity;
+            if (m_scriptEngine.World.Entities.TryGetValue(id, out entity))
             {
-                OnPythonClassChange(sop.LocalId);
+                if (entity is SceneObjectGroup)
+                {
+                    OnPythonClassChange(((SceneObjectGroup)entity).LocalId);
+                    return;
+                }
             }
-            else
-            {
-                m_log.Warn("[RexScriptEngine]: Scene Object Part not found. Could not initiate OnPythonClassChange");
-            }
+            m_log.Warn("[RexScriptEngine]: Object not found with UUID. Could not initiate OnPythonClassChange");
         }
 
         private void PythonScriptCommand(string module, string[] cmdparams)
@@ -230,30 +231,33 @@ namespace ModularRex.RexParts.RexPython
                 string PythonClassName = "rxactor.Actor";
                 string PythonTag = "";
 
-                SceneObjectPart tempobj = m_scriptEngine.World.GetSceneObjectPart(localID);
-                if (tempobj != null)
+                EntityBase entity;
+                if (m_scriptEngine.World.Entities.TryGetValue(localID, out entity))
                 {
-
-                    RexFramework.RexObjectProperties rexObj = m_rexObjects.GetObject(tempobj.UUID);
-                    if (rexObj != null)
+                    if (entity is SceneObjectGroup)
                     {
-                        int tagindex = rexObj.RexClassName.IndexOf("?", 0);
-                        if (tagindex > -1)
+                        SceneObjectGroup tempobj = (SceneObjectGroup)entity;
+                        RexFramework.RexObjectProperties rexObj = m_rexObjects.GetObject(tempobj.UUID);
+                        if (rexObj != null)
                         {
-                            PythonClassName = rexObj.RexClassName.Substring(0, tagindex);
-                            PythonTag = rexObj.RexClassName.Substring(tagindex + 1);
-                        }
-                        else
-                            PythonClassName = rexObj.RexClassName;
+                            int tagindex = rexObj.RexClassName.IndexOf("?", 0);
+                            if (tagindex > -1)
+                            {
+                                PythonClassName = rexObj.RexClassName.Substring(0, tagindex);
+                                PythonTag = rexObj.RexClassName.Substring(tagindex + 1);
+                            }
+                            else
+                                PythonClassName = rexObj.RexClassName;
 
-                        if (rexObj.RexClassName.Length > 0)
-                        {
-                            tempobj.SetScriptEvents(rexObj.ParentObjectID, (int)scriptEvents.touch_start);
-                            tempobj.SendFullUpdateToAllClients();
+                            if (rexObj.RexClassName.Length > 0)
+                            {
+                                tempobj.RootPart.SetScriptEvents(rexObj.ParentObjectID, (int)scriptEvents.touch_start);
+                                tempobj.RootPart.SendFullUpdateToAllClients();
+                            }
                         }
+                        if (m_scriptEngine.IsEngineStarted)
+                            m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
                     }
-                    if (m_scriptEngine.IsEngineStarted)
-                        m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
                 }
             }
             catch (Exception e)
@@ -317,6 +321,7 @@ namespace ModularRex.RexParts.RexPython
                         ScenePresence sp = m_scriptEngine.World.GetScenePresence(chat.Sender.AgentId);
                         if (sp != null)
                         {
+                            return;
                             localId = sp.LocalId;
                             sid = chat.Sender.AgentId.ToString();
                             if (name == "" || name == null) name = chat.Sender.Name; 
