@@ -32,3 +32,4 @@ import testambient
 import testobject
 import avatarutils
 import samplemediaurl
+import scriptfunctiontest
