@@ -2,6 +2,9 @@ import rxactor
 import rxavatar
 import sys
 import clr
+from System.Reflection import MethodBase
+
+logAsm = clr.LoadAssemblyByName('log4net')
 
 asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
 Vector3 = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3
@@ -11,6 +14,10 @@ import math
 
 
 class Test(rxactor.Actor):
+    def __init__(self,vId):
+        self.log = logAsm.log4net.LogManager.GetLogger(type(MethodBase.GetCurrentMethod().DeclaringType))
+        super(Test, self).__init__(vId)
+
     def GetScriptClassName():
         return "scriptfunctiontest.Test"
 
@@ -59,7 +66,7 @@ class Test(rxactor.Actor):
         self.CurrentTest = self.CurrentTest+1
         eval("self.Test"+str(self.CurrentTest)+"()")
         self._testsRun += 1
-        print "Tests passed: "+ str(self._testsOK) +"/"+ str(self._testsRun)
+        self.log.Info("[PYTHON]: Tests passed: "+ str(self._testsOK) +"/"+ str(self._testsRun))
 
     #SetRexDrawDistance
     def Test1(self):
@@ -288,3 +295,6 @@ class Test(rxactor.Actor):
             self._testsOK += 1
         else :
             self.llSay(0, "test 33 failed")
+            
+
+

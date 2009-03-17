@@ -33,3 +33,4 @@ import testobject
 import avatarutils
 import samplemediaurl
 import scriptfunctiontest
+import avatarfunctiontest
