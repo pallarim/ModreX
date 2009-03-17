@@ -497,7 +497,11 @@ namespace ModularRex.RexParts.RexPython
                     if (vbRelative)
                         client.SendRexScriptCommand("client", "setrelrot", sparams);
                     else
-                        client.SendRexScriptCommand("client", "setrot", sparams);
+                    {
+                        temppre.Rotation = new Quaternion((float)vRot.x, (float)vRot.y, (float)vRot.z, (float)vRot.s);
+                        temppre.UpdateMovement();
+                        //client.SendRexScriptCommand("client", "setrot", sparams);
+                    }
                 }
             }    
         }

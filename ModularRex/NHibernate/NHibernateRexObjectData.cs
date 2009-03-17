@@ -100,7 +100,6 @@ namespace OpenSim.Data.NHibernate
                         {
                             foreach (RexMaterialsDictionaryItem item in templist)
                             {
-                                m_log.Debug("hibernate item id = " + item.ID);
                                 if (item.ID == 0)
                                 {
                                     session = manager.GetSession();
@@ -130,7 +129,6 @@ namespace OpenSim.Data.NHibernate
                         }
                         
                     }
-                    else m_log.Debug("nhibernate templist = null\n#!%$£");
                 }
                 else
                 {
@@ -154,11 +152,7 @@ namespace OpenSim.Data.NHibernate
         {
             try
             {
-                //foreach (SceneObjectPart part in obj.Children.Values)
-                //{
-                    m_log.InfoFormat("Storing part {0}", obj.ParentObjectID);
-                    SaveOrUpdate(obj);
-                //}
+                SaveOrUpdate(obj);
             }
             catch (Exception e)
             {

@@ -80,7 +80,8 @@ namespace OpenSim.Region.Examples.RexBot
         // read bot data from config file and add avatars to scene
         private void readBotConfig()
         {
-            m_log.Warn("[RexBotManager]: Reading bot config file.");
+            //No need to warn
+            //m_log.Warn("[RexBotManager]: Reading bot config file.");
             XmlDocument xml = new XmlDocument();
             try
             {
@@ -101,7 +102,7 @@ namespace OpenSim.Region.Examples.RexBot
             }
             catch (System.IO.FileNotFoundException)
             {
-                m_log.Warn("[RexBotManager]: Failed to find bot config file: " + DEFAULT_CONFIG_FILENAME);
+                m_log.InfoFormat("[RexBotManager]: Bot config file {0} not present. Bots not loaded.", DEFAULT_CONFIG_FILENAME);
             }
             catch (System.IO.IOException e)
             {
