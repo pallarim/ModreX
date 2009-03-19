@@ -113,6 +113,7 @@
 	 <Reference name="log4net.dll"/>
 	 <Reference name="Nini.dll" />
 	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverse.StructuredData.dll"/>
 	 <Reference name="OpenMetaverseTypes.dll"/>
 	 <Reference name="OpenSim"/>
 	 <Reference name="OpenSim.Framework.dll"/>

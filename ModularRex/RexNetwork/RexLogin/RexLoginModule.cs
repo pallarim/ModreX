@@ -66,7 +66,14 @@ namespace ModularRex.RexNetwork.RexLogin
             RexClientView rex;
             if(client.TryGet(out rex))
             {
-                rex.RexAccount = m_authUrl[rex.AgentId];
+                if (m_authUrl.ContainsKey(rex.AgentId))
+                {
+                    rex.RexAccount = m_authUrl[rex.AgentId];
+                }
+                else
+                {
+                    m_log.WarnFormat("[REX] Client {0} does not have realXtend acccount", rex.AgentId);
+                }
             }
         }
 
@@ -234,6 +241,12 @@ namespace ModularRex.RexNetwork.RexLogin
 
             string account;
             string sessionHash;
+            string clientVersion = "Unknown";
+
+            if (requestData.Contains("version"))
+            {
+                clientVersion = (string)requestData["version"];
+            }
 
             if (GoodXML)
             {
@@ -243,13 +256,6 @@ namespace ModularRex.RexNetwork.RexLogin
                 m_log.InfoFormat(
                     "[REX LOGIN BEGIN]: XMLRPC Received login request message from user '{0}' '{1}'",
                     account, sessionHash);
-
-                string clientVersion = "Unknown";
-
-                if (requestData.Contains("version"))
-                {
-                    clientVersion = (string)requestData["version"];
-                }
 
                 if (requestData.Contains("start"))
                 {
@@ -263,17 +269,30 @@ namespace ModularRex.RexNetwork.RexLogin
             }
             else
             {
-                if (default_login_to_simulator != null)
+                if (clientVersion.StartsWith("realXtend"))
                 {
-                    m_log.Info(
-                        "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data. Trying default method.");
-                    return default_login_to_simulator(request);
+                    XmlRpcResponse rep = default_login_to_simulator(request);
+                    Hashtable val = (Hashtable)rep.Value;
+                    val["rex"] = "running rex mode";
+                    val["sim_port"] = (Int32)m_rexPort;
+                    val["region_x"] = (Int32)(m_primaryRegionInfo.RegionLocX * 256);
+                    val["region_y"] = (Int32)(m_primaryRegionInfo.RegionLocY * 256);
+                    return rep;
                 }
                 else
                 {
-                    m_log.Info(
-                        "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data.");
-                    return logResponse.CreateGridErrorResponse();
+                    if (default_login_to_simulator != null)
+                    {
+                        m_log.Info(
+                            "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data. Trying default method.");
+                        return default_login_to_simulator(request);
+                    }
+                    else
+                    {
+                        m_log.Info(
+                            "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data.");
+                        return logResponse.CreateGridErrorResponse();
+                    }
                 }
             }
 
@@ -318,9 +337,10 @@ namespace ModularRex.RexNetwork.RexLogin
                 logResponse.StartLocation = startLocationRequest;
 
                 string capsPath = OpenSim.Framework.Communications.Capabilities.CapsUtil.GetRandomCapsObjectPath();
+                string httpServerURI = "http://" + m_primaryRegionInfo.ExternalHostName + ":" + m_primaryRegionInfo.HttpPort;
                 //string seedcap = "http://" + m_scenes[0].RegionInfo.ExternalEndPoint.Address + ":" +
                 //                 "9000" + "/CAPS/" + capsPath + "0000/";
-                string seedcap = capsPath;// + "0000/";
+                string seedcap = httpServerURI + OpenSim.Framework.Communications.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
 
                 logResponse.SeedCapability = seedcap;
 
@@ -356,7 +376,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
                     acd.AgentID = agentID;
                     acd.BaseFolder = UUID.Zero;
-                    acd.CapsPath = seedcap;
+                    acd.CapsPath = capsPath;// seedcap; //this was causing problems
 
                     // Will login to the first region
                     acd.child = scene == m_scenes[0];

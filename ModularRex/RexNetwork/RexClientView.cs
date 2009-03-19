@@ -981,25 +981,22 @@ namespace ModularRex.RexNetwork
 
         public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
         {
-            m_log.Debug("[REXCLIENT]: Informing Client About Neighbour");
-            neighbourExternalEndPoint.Port = neighbourExternalEndPoint.Port - 2000;
-            base.InformClientOfNeighbour(neighbourHandle, neighbourExternalEndPoint);
+            m_log.DebugFormat("[REXCLIENT]: Informing Client About Neighbour {0}", neighbourExternalEndPoint);
+            base.InformClientOfNeighbour(neighbourHandle, new IPEndPoint(neighbourExternalEndPoint.Address, neighbourExternalEndPoint.Port-2000));
         }
 
         public override void CrossRegion(ulong newRegionHandle, Vector3 pos, Vector3 lookAt, IPEndPoint externalIPEndPoint,
                                 string capsURL)
         {
-            m_log.Debug("[REXCLIENT]: Crossing client to region");
-            externalIPEndPoint.Port = externalIPEndPoint.Port - 2000;
-            base.CrossRegion(newRegionHandle, pos, lookAt, externalIPEndPoint, capsURL);
+            m_log.DebugFormat("[REXCLIENT]: Crossing client to region {0}", externalIPEndPoint);
+            base.CrossRegion(newRegionHandle, pos, lookAt, new IPEndPoint(externalIPEndPoint.Address, externalIPEndPoint.Port - 2000), capsURL);
         }
 
         public override void SendRegionTeleport(ulong regionHandle, byte simAccess, IPEndPoint newRegionEndPoint, uint locationID,
                                        uint flags, string capsURL)
         {
-            m_log.Debug("[REXCLIENT]: Sending region teleport to client");
-            newRegionEndPoint.Port = newRegionEndPoint.Port - 2000;
-            base.SendRegionTeleport(regionHandle, simAccess, newRegionEndPoint, locationID, flags, capsURL);
+            m_log.DebugFormat("[REXCLIENT]: Sending region teleport to client {0}", newRegionEndPoint);
+            base.SendRegionTeleport(regionHandle, simAccess, new IPEndPoint(newRegionEndPoint.Address, newRegionEndPoint.Port - 2000), locationID, flags, capsURL);
         }
     }
 }
