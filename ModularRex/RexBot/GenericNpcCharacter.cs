@@ -1014,6 +1014,36 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public event AvatarNotesUpdate OnAvatarNotesUpdate;
+
+        public event MuteListRequest OnMuteListRequest;
+
+        public event PickDelete OnPickDelete;
+
+        public event PickGodDelete OnPickGodDelete;
+
+        public event PickInfoUpdate OnPickInfoUpdate;
+
+        public void SendCoarseLocationUpdate(List<UUID> users, List<Vector3> CoarseLocations)
+        {
+        }
+
+        public void SendCreateGroupReply(UUID groupID, bool success, string message)
+        {
+        }
+
+        public void SendInstantMessage(GridInstantMessage im)
+        {
+        }
+
+        public void SendMuteListUpdate(string filename)
+        {
+        }
+
+        public void SendUseCachedMuteList()
+        {
+        }
+
         #endregion
     }
 }

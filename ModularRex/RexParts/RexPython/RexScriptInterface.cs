@@ -370,7 +370,7 @@ namespace ModularRex.RexParts.RexPython
             shape.PathTwist = 0;
             shape.PathTwistBegin = 0;
             Primitive.TextureEntry ntex = new Primitive.TextureEntry(new UUID("00000000-0000-1111-9999-000000000005"));
-            shape.TextureEntry = ntex.ToBytes(); 
+            shape.TextureEntry = ntex.GetBytes();//ntex.ToBytes(); 
             return shape;
         }
 

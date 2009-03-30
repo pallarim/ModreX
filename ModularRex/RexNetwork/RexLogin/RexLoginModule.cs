@@ -8,6 +8,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications;
+using OpenSim.Framework.Communications.Services;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework.Communications.Cache;
@@ -344,10 +345,16 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.SeedCapability = seedcap;
 
-                m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
-                                                                  account, 1000, 1000, agentID);
-                m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
-
+                //UserAdminService is null in grid mode
+                if (m_scenes[0].CommsManager.UserAdminService != null)
+                {
+                    m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
+                                                                      account, 1000, 1000, agentID);
+                }
+                if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+                {
+                    m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+                }
                 LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
 
                 ArrayList AgentInventoryArray = inventData.InventoryArray;
