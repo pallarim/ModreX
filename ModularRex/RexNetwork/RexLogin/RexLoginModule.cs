@@ -26,7 +26,7 @@ namespace ModularRex.RexNetwork.RexLogin
         private IConfigSource m_config;
 
         private RegionInfo m_primaryRegionInfo;
-        private uint m_rexPort = 7000;
+        private uint m_rexPort = 7000; //TODO: Make this obselete, use dictionary instead of single default value
 
         private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
 
@@ -34,15 +34,6 @@ namespace ModularRex.RexNetwork.RexLogin
         /// Used during login to send the skeleton of the OpenSim Library to the client.
         /// </summary>
         protected LibraryRootFolder m_libraryRootFolder;
-
-        public void Configure(IConfigSource config)
-        {
-            if (config.Configs.Contains("ModRex"))
-            {
-                m_rexPort = (uint) config.Configs["ModRex"].GetInt("FirstPort", (int) m_rexPort);
-            }
-
-        }
 
         public void Initialise(Scene scene, IConfigSource source)
         {
@@ -275,7 +266,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     XmlRpcResponse rep = default_login_to_simulator(request);
                     Hashtable val = (Hashtable)rep.Value;
                     val["rex"] = "running rex mode";
-                    val["sim_port"] = (Int32)m_rexPort;
+                    val["sim_port"] = (Int32)m_primaryRegionInfo.ExternalEndPoint.Port - 2000; //TODO: fix this to get from dictionary
                     val["region_x"] = (Int32)(m_primaryRegionInfo.RegionLocX * 256);
                     val["region_y"] = (Int32)(m_primaryRegionInfo.RegionLocY * 256);
                     return rep;
@@ -330,7 +321,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 logResponse.Message = "Welcome to ModularRex";
 
                 logResponse.SimAddress = m_primaryRegionInfo.ExternalEndPoint.Address.ToString();
-                logResponse.SimPort = m_rexPort;
+                logResponse.SimPort = (uint)m_primaryRegionInfo.ExternalEndPoint.Port - 2000; //TODO: fix this to get from dictionary
                 logResponse.RegionX = m_primaryRegionInfo.RegionLocX;
                 logResponse.RegionY = m_primaryRegionInfo.RegionLocY;
 
