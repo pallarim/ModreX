@@ -26,7 +26,7 @@ class Test(rxactor.Actor):
 
         super(self.__class__,self).EventCreated()
         self.TickCount = 0
-        self.MyTimer = self.CreateRexTimer(4,10)
+        self.MyTimer = self.CreateRexTimer(4,14)
         self.MyTimer.onTimer += self.HandleTimer
         
         self._testsRun = 0
@@ -137,7 +137,7 @@ class Test(rxactor.Actor):
             
     def Test9(self):
         self.Avatar.SetFlyDisabled(True)
-        
+
     def Test10(self):
         vbFly = self.Avatar.GetFlyDisabled()
         if vbFly:
@@ -145,3 +145,27 @@ class Test(rxactor.Actor):
             self._testsOK += 2
         else:
             self.llSay(0, "test 9 & 10 failed.")
+            
+    def Test11(self):
+        self.Avatar.SetVertMovementModifier(0.8)
+        
+    def Test12(self):
+        vMod = self.Avatar.GetVertMovementModifier()
+        
+        if vMod == 0.8:
+            self.llSay(0, "test 11 & 12 passed")
+            self._testsOK += 2
+        else:
+            self.llSay(0, "test 11 & 12 failed.")
+            
+    def Test13(self):
+        self.Avatar.SetSitDisabled(True)
+        
+    def Test14(self):
+        vDis = self.Avatar.GetSitDisabled()
+        
+        if vDis :
+            self.llSay(0, "test 13 & 14 passed")
+            self._testsOK += 2
+        else:
+            self.llSay(0, "test 13 & 14 failed.")
