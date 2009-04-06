@@ -1048,6 +1048,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void SendCloudData(float[] cloudCover)
+        {
+        }
+
         #endregion
     }
 }
