@@ -1051,6 +1051,8 @@ namespace OpenSim.Region.Examples.RexBot
         public void SendCloudData(float[] cloudCover)
         {
         }
+        
+        public event RezMultipleAttachmentsFromInv OnRezMultipleAttachmentsFromInv;
 
         #endregion
     }
