@@ -228,7 +228,7 @@ namespace ModularRex.RexNetwork
 
             InventoryItemBase item = new InventoryItemBase();
             item.Owner = m_agentID;
-            item.Creator = m_agentID;
+            item.CreatorId = m_agentID.ToString();
             item.ID = inventoryItem;
             item.AssetID = asset.FullID;
             item.Description = assetDescription;
