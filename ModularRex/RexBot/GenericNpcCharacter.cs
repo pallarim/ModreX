@@ -1054,6 +1054,12 @@ namespace OpenSim.Region.Examples.RexBot
         
         public event RezMultipleAttachmentsFromInv OnRezMultipleAttachmentsFromInv;
 
+        public event SpinStart OnSpinStart;
+
+        public event SpinStop OnSpinStop;
+
+        public event SpinObject OnSpinUpdate;
+
         #endregion
     }
 }
