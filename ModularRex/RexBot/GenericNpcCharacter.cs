@@ -248,6 +248,17 @@ namespace OpenSim.Region.Examples.RexBot
         public event UpdateUserInfo OnUpdateUserInfo;
 
         public event RetrieveInstantMessages OnRetrieveInstantMessages;
+        public event RezMultipleAttachmentsFromInv OnRezMultipleAttachmentsFromInv;
+        public event SpinStart OnSpinStart;
+        public event SpinStop OnSpinStop;
+        public event SpinObject OnSpinUpdate;
+        public event ParcelDeedToGroup OnParcelDeedToGroup;
+
+        public event AvatarNotesUpdate OnAvatarNotesUpdate;
+        public event MuteListRequest OnMuteListRequest;
+        public event PickDelete OnPickDelete;
+        public event PickGodDelete OnPickGodDelete;
+        public event PickInfoUpdate OnPickInfoUpdate;
 
 #pragma warning restore 67
 
@@ -1014,16 +1025,6 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
-        public event AvatarNotesUpdate OnAvatarNotesUpdate;
-
-        public event MuteListRequest OnMuteListRequest;
-
-        public event PickDelete OnPickDelete;
-
-        public event PickGodDelete OnPickGodDelete;
-
-        public event PickInfoUpdate OnPickInfoUpdate;
-
         public void SendCoarseLocationUpdate(List<UUID> users, List<Vector3> CoarseLocations)
         {
         }
@@ -1051,14 +1052,10 @@ namespace OpenSim.Region.Examples.RexBot
         public void SendCloudData(float[] cloudCover)
         {
         }
-        
-        public event RezMultipleAttachmentsFromInv OnRezMultipleAttachmentsFromInv;
 
-        public event SpinStart OnSpinStart;
-
-        public event SpinStop OnSpinStop;
-
-        public event SpinObject OnSpinUpdate;
+        public void SendLandObjectOwners(LandData land, List<UUID> groups, Dictionary<UUID, int> ownersAndCount)
+        {
+        }
 
         #endregion
     }
