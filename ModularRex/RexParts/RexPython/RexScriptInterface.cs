@@ -28,18 +28,20 @@ namespace ModularRex.RexParts.RexPython
         {   
             myScriptEngine = vScriptEngine;
 
-            foreach (System.Collections.Generic.KeyValuePair<string, IRegionModule> de in myScriptEngine.World.Modules)
+            IScriptModule[] scriptModules = myScriptEngine.World.RequestModuleInterfaces<IScriptModule>();
+            foreach (IScriptModule sm in scriptModules)
             {
-                if (de.Value is IScriptEngine)
+                if (sm is IScriptEngine)
                 {
-                    if (((IScriptEngine)de.Value).ScriptEngineName == "ScriptEngine.DotNetEngine")
+                    IScriptEngine ise = (IScriptEngine)sm;
+                    if (ise.ScriptEngineName == "ScriptEngine.DotNetEngine")
                     {
-                        m_ScriptEngine = ((IScriptEngine)de.Value);
+                        m_ScriptEngine = ise;
                         m_log.Info("[REXSCRIPT]: Found DotNetEngine");
                     }
-                    //Console.WriteLine(((IScriptEngine)de.Value).ScriptEngineName);
                 }
             }
+
             if (m_ScriptEngine == null)
             {
                 m_log.Error("[REXSCRIPT]: Could not find DotNetEngine");

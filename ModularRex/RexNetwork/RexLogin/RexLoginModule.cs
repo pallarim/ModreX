@@ -125,6 +125,8 @@ namespace ModularRex.RexNetwork.RexLogin
 
         #region RexLoginHelper
 
+
+        //TODO: do a proper authentication
         public bool AuthenticateUser(string accountName, string sessionHash)
         {
             return true;
@@ -314,10 +316,6 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.AgentID = agentID;
 
-                // NOT SECURE
-                logResponse.SessionID = GetSessionID(account);
-                logResponse.SecureSessionID = GetSecureID(account);
-
                 logResponse.Message = "Welcome to ModularRex";
 
                 logResponse.SimAddress = m_primaryRegionInfo.ExternalEndPoint.Address.ToString();
@@ -336,16 +334,32 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.SeedCapability = seedcap;
 
+
                 //UserAdminService is null in grid mode
-                if (m_scenes[0].CommsManager.UserAdminService != null)
-                {
-                    m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
+                m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
                                                                       account, 1000, 1000, agentID);
-                }
-                if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+
+                UserProfileData user = m_scenes[0].CommsManager.UserService.GetUserProfile(agentID);
+                if (m_scenes[0].CommsManager.UserService is UserManagerBase)
                 {
-                    m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+                    ((UserManagerBase)m_scenes[0].CommsManager.UserService).CreateAgent(user, request);
+                    ((UserManagerBase)m_scenes[0].CommsManager.UserService).CommitAgent(ref user);
                 }
+
+                if (user.CurrentAgent != null)
+                {
+                    logResponse.SessionID = user.CurrentAgent.SessionID;
+                    logResponse.SecureSessionID = user.CurrentAgent.SecureSessionID;
+                }
+                else
+                {
+                    // NOT SECURE
+                    logResponse.SessionID = GetSessionID(account);
+                    logResponse.SecureSessionID = GetSecureID(account);
+                }
+
+                m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+                
                 LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
 
                 ArrayList AgentInventoryArray = inventData.InventoryArray;
