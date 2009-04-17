@@ -29,7 +29,6 @@ namespace ModularRex.RexNetwork
         float RexVertMovementSpeedMod { get; set; }
         bool RexWalkDisabled { get; set; }
         bool RexFlyDisabled { get; set; }
-        bool RexSitDisabled { get; set; }
 
         event RexStartUpDelegate OnRexStartUp;
         event RexClientScriptCmdDelegate OnRexClientScriptCmd;

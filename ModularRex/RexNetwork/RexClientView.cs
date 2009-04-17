@@ -42,7 +42,6 @@ namespace ModularRex.RexNetwork
         private float m_RexVertMovementSpeedMod = 1.0f;
         private bool m_RexWalkDisabled = false;
         private bool m_RexFlyDisabled = false;
-        private bool m_RexSitDisabled = false;
 
         public event RexAppearanceDelegate OnRexAppearance;
         public event RexGenericMessageDelegate OnRexFaceExpression;
@@ -258,12 +257,6 @@ namespace ModularRex.RexNetwork
         {
             get { return m_RexFlyDisabled; }
             set { m_RexFlyDisabled = value; }
-        }
-                
-        public bool RexSitDisabled 
-        { 
-            get { return m_RexSitDisabled; }
-            set { m_RexSitDisabled = value; }
         }
 
         #endregion

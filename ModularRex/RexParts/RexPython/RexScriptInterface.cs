@@ -602,32 +602,17 @@ namespace ModularRex.RexParts.RexPython
         public bool SPGetSitDisabled(string vPresenceId)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    return rexclient.RexSitDisabled;
-                }
-            }
-            return false;
+            UUID avatarID = new UUID(vPresenceId);
+            ISitMod mod = m_ScriptEngine.World.RequestModuleInterface<ISitMod>();
+            return mod.GetSitDisabled(avatarID);
         }
 
         public void SPSetSitDisabled(string vPresenceId, bool vbValue)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    rexclient.RexSitDisabled = vbValue;
-                }
-            }
+            UUID avatarID = new UUID(vPresenceId);
+            ISitMod mod = m_ScriptEngine.World.RequestModuleInterface<ISitMod>();
+            mod.SetSitDisabled(avatarID, vbValue);
         }
 
 
