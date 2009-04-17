@@ -35,3 +35,4 @@ import samplemediaurl
 import scriptfunctiontest
 import avatarfunctiontest
 import botfunctiontest
+import sittest
