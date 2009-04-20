@@ -25,7 +25,6 @@ namespace ModularRex.RexNetwork
         string RexAuthURL { get; set; }
 
         float RexCharacterSpeedMod { get; set; }
-        float RexMovementSpeedMod { get; set; }
         float RexVertMovementSpeedMod { get; set; }
         bool RexWalkDisabled { get; set; }
         bool RexFlyDisabled { get; set; }

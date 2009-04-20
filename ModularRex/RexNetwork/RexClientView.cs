@@ -38,7 +38,6 @@ namespace ModularRex.RexNetwork
         private string m_rexSkypeURL;
 
         private float m_RexCharacterSpeedMod = 1.0f;
-        private float m_RexMovementSpeedMod = 1.0f;
         private float m_RexVertMovementSpeedMod = 1.0f;
         private bool m_RexWalkDisabled = false;
         private bool m_RexFlyDisabled = false;
@@ -234,12 +233,6 @@ namespace ModularRex.RexNetwork
             get { return m_RexCharacterSpeedMod; }
             set { m_RexCharacterSpeedMod = value; }
         }  
-              
-        public float RexMovementSpeedMod
-        {
-            get { return m_RexMovementSpeedMod; }
-            set { m_RexMovementSpeedMod = value; }
-        }
                   
         public float RexVertMovementSpeedMod
         {

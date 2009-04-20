@@ -90,7 +90,6 @@ namespace OpenSim.Region.Examples.RexBot
         private string m_rexAuthURL;
         private string m_rexSkypeURL;
         private float m_RexCharacterSpeedMod = 1.0f;
-        private float m_RexMovementSpeedMod = 1.0f;
         private float m_RexVertMovementSpeedMod = 1.0f;
         private bool m_RexWalkDisabled = false;
         private bool m_RexFlyDisabled = false;
@@ -203,12 +202,6 @@ namespace OpenSim.Region.Examples.RexBot
         {
             get { return m_RexCharacterSpeedMod; }
             set { m_RexCharacterSpeedMod = value; }
-        }
-
-        public float RexMovementSpeedMod
-        {
-            get { return m_RexMovementSpeedMod; }
-            set { m_RexMovementSpeedMod = value; }
         }
 
         public float RexVertMovementSpeedMod
@@ -670,8 +663,7 @@ namespace OpenSim.Region.Examples.RexBot
 
         public void SetMovementSpeedMod(float speed)
         {
-            if (m_scenePresence.ControllingClient is IRexClientCore)
-                ((IRexClientCore)m_scenePresence.ControllingClient).RexMovementSpeedMod = speed;
+            m_scenePresence.SpeedModifier = speed;
         }
 
         public void SetVertMovementSpeedMod(float speed)

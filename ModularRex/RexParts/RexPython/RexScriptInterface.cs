@@ -426,32 +426,16 @@ namespace ModularRex.RexParts.RexPython
 
         public float SPGetMovementModifier(string vPresenceId)
         {
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    return rexclient.RexMovementSpeedMod;
-                }
-            }
-            return 0.0f;
+            UUID avatarID = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarID);
+            return avatar.SpeedModifier;
         }
 
         public void SPSetMovementModifier(string vPresenceId,float vSpeedModifier)
         {
-         
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    rexclient.RexMovementSpeedMod = vSpeedModifier;
-                }
-            }
+            UUID avatarID = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarID);
+            avatar.SpeedModifier = vSpeedModifier;
         }
 
         public LSL_Types.Vector3 SPGetPos(string vPresenceId)
