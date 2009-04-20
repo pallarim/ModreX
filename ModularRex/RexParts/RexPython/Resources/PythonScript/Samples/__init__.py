@@ -36,3 +36,4 @@ import scriptfunctiontest
 import avatarfunctiontest
 import botfunctiontest
 import sittest
+import avatarspeedtest
