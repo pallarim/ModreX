@@ -260,6 +260,8 @@ namespace OpenSim.Region.Examples.RexBot
         public event PickGodDelete OnPickGodDelete;
         public event PickInfoUpdate OnPickInfoUpdate;
 
+        public event PlacesQuery OnPlacesQuery;
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();
