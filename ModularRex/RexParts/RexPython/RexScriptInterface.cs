@@ -495,63 +495,33 @@ namespace ModularRex.RexParts.RexPython
         public bool SPGetWalkDisabled(string vPresenceId)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    return rexclient.RexWalkDisabled;
-                }
-            }
-            return false;
+            UUID avatarId = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarId);
+            return avatar.ForceFly;
         }
 
         public void SPSetWalkDisabled(string vPresenceId, bool vbValue)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    rexclient.RexWalkDisabled = vbValue;
-                }
-            }
+            UUID avatarId = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarId);
+            avatar.ForceFly = vbValue;
         }
 
         public bool SPGetFlyDisabled(string vPresenceId)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    return rexclient.RexFlyDisabled;
-                }
-            }
-            return false;
+            UUID avatarId = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarId);
+            return avatar.FlyDisabled;
         }
 
         public void SPSetFlyDisabled(string vPresenceId, bool vbValue)
         {
 
-            UUID TempId = new UUID(vPresenceId);
-            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
-            if (temppre != null)
-            {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
-                {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
-                    rexclient.RexFlyDisabled = vbValue;
-                }
-            }
+            UUID avatarId = new UUID(vPresenceId);
+            ScenePresence avatar = myScriptEngine.World.GetScenePresence(avatarId);
+            avatar.FlyDisabled = vbValue;
         }
 
         public float SPGetVertMovementModifier(string vPresenceId)

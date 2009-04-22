@@ -91,9 +91,6 @@ namespace OpenSim.Region.Examples.RexBot
         private string m_rexSkypeURL;
         private float m_RexCharacterSpeedMod = 1.0f;
         private float m_RexVertMovementSpeedMod = 1.0f;
-        private bool m_RexWalkDisabled = false;
-        private bool m_RexFlyDisabled = false;
-        private bool m_RexSitDisabled = false;
 
         /// <summary>
         /// The avatar URL for this avatar
@@ -209,30 +206,6 @@ namespace OpenSim.Region.Examples.RexBot
             get { return m_RexVertMovementSpeedMod; }
             set { m_RexVertMovementSpeedMod = value; }
         }
-
-        public bool RexWalkDisabled
-        {
-            get { return m_RexWalkDisabled; }
-            set { m_RexWalkDisabled = value; }
-        }
-
-        public bool RexFlyDisabled
-        {
-            get { return m_RexFlyDisabled; }
-            set { m_RexFlyDisabled = value; }
-        }
-
-        public bool RexSitDisabled
-        {
-            get { return m_RexSitDisabled; }
-            set { m_RexSitDisabled = value; }
-        }
-
-
-
-
-
-
 
         // creates new bot on the default location
         public RexBot(Scene scene, NavMeshManager navMeshManager)
@@ -657,8 +630,7 @@ namespace OpenSim.Region.Examples.RexBot
 
         public void DisableWalk(bool disable)
         {
-            if (m_scenePresence.ControllingClient is IRexClientCore)
-                ((IRexClientCore)m_scenePresence.ControllingClient).RexWalkDisabled = disable;
+            m_scenePresence.ForceFly = disable;
         }
 
         public void SetMovementSpeedMod(float speed)
