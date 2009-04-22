@@ -306,7 +306,7 @@ namespace OpenSim.Region.Communications.VoiceChat
                 m_scenes.Add(scene);
             }
 
-            m_voiceServerUrl = source.Configs["Network"].GetString("voice_server_url", "");
+            m_voiceServerUrl = source.Configs["realXtend"].GetString("voice_server_url", "");
         }
 
         public void PostInitialise()

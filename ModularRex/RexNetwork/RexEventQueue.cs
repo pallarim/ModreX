@@ -31,6 +31,8 @@ namespace ModularRex.RexNetwork
 
         private Dictionary<UUID, Type> m_agent_type = new Dictionary<UUID, Type>();
 
+        private RexLogin.IRexUDPPort rexUdpPortModule;
+
         #region IRegionModule Members
 
         public override void Close()
@@ -156,36 +158,25 @@ namespace ModularRex.RexNetwork
             return false;
         }
 
-        string ModifyCAPS(string caps)
+        private IPEndPoint modifyIPEndPoint(IPEndPoint endPoint, ulong regionHandle)
         {
-            return caps;
-            //Example CAPS construction
-            //string capsPath = "http://" + reg.ExternalHostName + ":" + reg.HttpPort
-            //      + "/CAPS/" + a.CapsPath + "0000/";
-            //http://192.168.0.101:9000/CAPS/da43e83f-4e45-47de-bc7c-546150df0000/
-
-            int start = caps.IndexOf(':', 6);
-            int end = caps.IndexOf('/', start);
-
-            string port = caps.Substring(start + 1, (end - start - 1));
-            //m_log.InfoFormat("[REXEVENTQUEUE]: parse port {0}", port);
-            int iPort = Convert.ToInt32(port);
-
-            string newCaps = caps.Substring(0, start+1) + (iPort - 2000).ToString() + caps.Substring(end);
-            m_log.InfoFormat("[REXEVENTQUEUE]: new caps {0}", newCaps);
-            return newCaps;
+            if (rexUdpPortModule == null)
+            {
+                rexUdpPortModule = m_scene.RequestModuleInterface<RexLogin.IRexUDPPort>();
+            }
+            int port = rexUdpPortModule.GetPort(regionHandle);
+            return new IPEndPoint(endPoint.Address, port);
         }
 
         #region IEventQueue Members
 
         //Can't be inherited
-        public override void CrossRegion(ulong handle, OpenMetaverse.Vector3 pos, OpenMetaverse.Vector3 lookAt, System.Net.IPEndPoint newRegionExternalEndPoint, string capsURL, OpenMetaverse.UUID avatarID, OpenMetaverse.UUID sessionID)
+        public override void CrossRegion(ulong handle, Vector3 pos, Vector3 lookAt, IPEndPoint newRegionExternalEndPoint, string capsURL, UUID avatarID, UUID sessionID)
         {
             IPEndPoint endpoint;
             if (IsRexClient(avatarID))
             {
-                endpoint = new IPEndPoint(newRegionExternalEndPoint.Address, newRegionExternalEndPoint.Port - 2000);
-                capsURL = ModifyCAPS(capsURL);
+                endpoint = modifyIPEndPoint(newRegionExternalEndPoint, handle);
             }
             else
                 endpoint = newRegionExternalEndPoint;
@@ -196,13 +187,12 @@ namespace ModularRex.RexNetwork
             Enqueue(item, avatarID);
         }
 
-        //Can't be inherited
         public override void EnableSimulator(ulong handle, System.Net.IPEndPoint endPoint, OpenMetaverse.UUID avatarID)
         {
             IPEndPoint newEndpoint;
             if (IsRexClient(avatarID))
             {
-                newEndpoint = new IPEndPoint(endPoint.Address, endPoint.Port - 2000);
+                newEndpoint = modifyIPEndPoint(endPoint, handle);
             }
             else
                 newEndpoint = endPoint;
@@ -211,15 +201,13 @@ namespace ModularRex.RexNetwork
             Enqueue(item, avatarID);
         }
 
-        //Can't be inherited
-        public override void EstablishAgentCommunication(OpenMetaverse.UUID avatarID, System.Net.IPEndPoint endPoint, string capsPath)
+        public override void EstablishAgentCommunication(UUID avatarID, IPEndPoint endPoint, string capsPath)
         {
             IPEndPoint newEndpoint;
             if (IsRexClient(avatarID))
             {
-                newEndpoint = new IPEndPoint(endPoint.Address, endPoint.Port - 2000);
-                //endPoint.Port = endPoint.Port - 2000;
-                capsPath = ModifyCAPS(capsPath);
+                int port = rexUdpPortModule.GetPort(endPoint);
+                newEndpoint = new IPEndPoint(endPoint.Address, port);
             }
             else
                 newEndpoint = endPoint;
@@ -228,15 +216,12 @@ namespace ModularRex.RexNetwork
             Enqueue(item, avatarID);
         }
 
-        //Can't be inherited
-        public override void TeleportFinishEvent(ulong regionHandle, byte simAccess, System.Net.IPEndPoint regionExternalEndPoint, uint locationID, uint flags, string capsURL, OpenMetaverse.UUID agentID)
+        public override void TeleportFinishEvent(ulong regionHandle, byte simAccess, IPEndPoint regionExternalEndPoint, uint locationID, uint flags, string capsURL, OpenMetaverse.UUID agentID)
         {
             IPEndPoint newEndpoint;
             if (IsRexClient(agentID))
             {
-                newEndpoint = new IPEndPoint(regionExternalEndPoint.Address, regionExternalEndPoint.Port - 2000);
-                //regionExternalEndPoint.Port = regionExternalEndPoint.Port - 2000;
-                capsURL = ModifyCAPS(capsURL);
+                newEndpoint = modifyIPEndPoint(regionExternalEndPoint, regionHandle);
             }
             else
                 newEndpoint = regionExternalEndPoint;

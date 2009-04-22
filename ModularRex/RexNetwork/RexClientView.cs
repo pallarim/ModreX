@@ -13,6 +13,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Communications.Cache;
 using OpenSim.Region.ClientStack;
 using OpenSim.Region.ClientStack.LindenUDP;
+using ModularRex.RexNetwork.RexLogin;
 
 namespace ModularRex.RexNetwork
 {
@@ -953,22 +954,31 @@ namespace ModularRex.RexNetwork
 
         public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
         {
+            IRexUDPPort module = m_scene.RequestModuleInterface<IRexUDPPort>();
+            int udpport = module.GetPort(neighbourHandle);
+
             m_log.DebugFormat("[REXCLIENT]: Informing Client About Neighbour {0}", neighbourExternalEndPoint);
-            base.InformClientOfNeighbour(neighbourHandle, new IPEndPoint(neighbourExternalEndPoint.Address, neighbourExternalEndPoint.Port-2000));
+            base.InformClientOfNeighbour(neighbourHandle, new IPEndPoint(neighbourExternalEndPoint.Address, udpport));
         }
 
         public override void CrossRegion(ulong newRegionHandle, Vector3 pos, Vector3 lookAt, IPEndPoint externalIPEndPoint,
                                 string capsURL)
         {
+            IRexUDPPort module = m_scene.RequestModuleInterface<IRexUDPPort>();
+            int udpport = module.GetPort(newRegionHandle);
+
             m_log.DebugFormat("[REXCLIENT]: Crossing client to region {0}", externalIPEndPoint);
-            base.CrossRegion(newRegionHandle, pos, lookAt, new IPEndPoint(externalIPEndPoint.Address, externalIPEndPoint.Port - 2000), capsURL);
+            base.CrossRegion(newRegionHandle, pos, lookAt, new IPEndPoint(externalIPEndPoint.Address, udpport), capsURL);
         }
 
         public override void SendRegionTeleport(ulong regionHandle, byte simAccess, IPEndPoint newRegionEndPoint, uint locationID,
                                        uint flags, string capsURL)
         {
+            IRexUDPPort module = m_scene.RequestModuleInterface<IRexUDPPort>();
+            int udpport = module.GetPort(regionHandle);
+
             m_log.DebugFormat("[REXCLIENT]: Sending region teleport to client {0}", newRegionEndPoint);
-            base.SendRegionTeleport(regionHandle, simAccess, new IPEndPoint(newRegionEndPoint.Address, newRegionEndPoint.Port - 2000), locationID, flags, capsURL);
+            base.SendRegionTeleport(regionHandle, simAccess, new IPEndPoint(newRegionEndPoint.Address, udpport), locationID, flags, capsURL);
         }
     }
 }

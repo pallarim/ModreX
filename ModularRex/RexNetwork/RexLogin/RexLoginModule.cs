@@ -15,7 +15,7 @@ using OpenSim.Framework.Communications.Cache;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
-    public class RexLoginModule : IRegionModule 
+    public class RexLoginModule : IRegionModule, IRexUDPPort
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -23,10 +23,10 @@ namespace ModularRex.RexNetwork.RexLogin
         private readonly Dictionary<UUID, string> m_authUrl = new Dictionary<UUID, string>();
 
         private List<RexUDPServer> m_udpservers = new List<RexUDPServer>();
+        private Dictionary<ulong, int> m_region_ports = new Dictionary<ulong, int>();
         private IConfigSource m_config;
 
         private RegionInfo m_primaryRegionInfo;
-        private uint m_rexPort = 7000; //TODO: Make this obselete, use dictionary instead of single default value
 
         private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
 
@@ -45,6 +45,7 @@ namespace ModularRex.RexNetwork.RexLogin
             m_scenes.Add(scene);
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
+            scene.RegisterModuleInterface<IRexUDPPort>(this);
         }
 
         /// <summary>
@@ -78,6 +79,8 @@ namespace ModularRex.RexNetwork.RexLogin
                 string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
                 m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
 
+                int udp_port = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
+
                 m_log.Info("[REX] Overloading Login_to_Simulator");
                 default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
                 m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
@@ -85,22 +88,21 @@ namespace ModularRex.RexNetwork.RexLogin
                 m_primaryRegionInfo = m_scenes[0].RegionInfo;
 
                 m_log.Info("[REX] Initialising");
-                //m_udpserver.Initialise(m_primaryRegionInfo.InternalEndPoint.Address, ref m_rexPort, 0, false, m_config, m_scenes[0].AssetCache,
-                //                       m_scenes[0].AuthenticateHandler);
+                
                 foreach (Scene scene in m_scenes)
                 {
                     RexUDPServer udpserver = new RexUDPServer();
-                    m_log.Debug("[REX] RegionInfo: " + scene.RegionInfo.InternalEndPoint.Port);
-                    uint udp_port = Convert.ToUInt32(scene.RegionInfo.InternalEndPoint.Port - 2000);
-                    //uses 2000 smaller port num than spesified for LLClient in Regions/ xml-file
-                    udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref udp_port, 0, false, m_config,
+                    uint _udpport = (uint)udp_port;
+                    udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
                         scene.CommsManager.AssetCache, scene.AuthenticateHandler);
                     udpserver.AddScene(scene);
-                    //m_udpserver.AddScene(scene); //this doesn't add scene to existing UDP server, but instead replaces the old one
+
+                    m_region_ports.Add(scene.RegionInfo.RegionHandle, udp_port);
                     m_udpservers.Add(udpserver);
                     udpserver.Start();
+                    udp_port++;
                 }
-                //m_udpserver.Start();
+                
             }
             else
             {
@@ -471,5 +473,40 @@ namespace ModularRex.RexNetwork.RexLogin
 
         #endregion
 
+
+        #region IRexUDPPort Members
+
+        public int GetPort(ulong regionHandle)
+        {
+            if (m_region_ports.ContainsKey(regionHandle))
+            {
+                return m_region_ports[regionHandle];
+            }
+            else
+            {
+                m_log.Warn("[IRexUDPPort]: Port not found for region handle " + regionHandle);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Inefficient way to get port
+        /// </summary>
+        /// <param name="endPoint">SL endpoint to fetch</param>
+        /// <returns>Rex udp port</returns>
+        public int GetPort(System.Net.IPEndPoint endPoint)
+        {
+            foreach (Scene s in m_scenes)
+            {
+                if (s.RegionInfo.ExternalEndPoint.Address.Equals(endPoint.Address) && s.RegionInfo.ExternalEndPoint.Port == endPoint.Port)
+                {
+                    return GetPort(s.RegionInfo.RegionHandle);
+                }
+            }
+            m_log.WarnFormat("[IRexUDPPort]: Port not found for IP end point {0}", endPoint);
+            return 0;
+        }
+
+        #endregion
     }
 }
