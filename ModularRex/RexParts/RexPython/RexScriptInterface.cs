@@ -14,6 +14,7 @@ using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.ScriptBase;
 using log4net;
 using OpenMetaverse;
+using ModularRex.RexParts.Modules;
 
 namespace ModularRex.RexParts.RexPython
 {

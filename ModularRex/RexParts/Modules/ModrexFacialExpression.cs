@@ -7,9 +7,9 @@ using OpenSim.Region.Framework.Scenes;
 
 
 
-namespace ModularRex.RexParts
+namespace ModularRex.RexParts.Modules
 {
-    class ModrexFacialExpression : IRegionModule
+    public class ModrexFacialExpression : IRegionModule
     {
         public void Initialise(Scene scene, IConfigSource source)
         {

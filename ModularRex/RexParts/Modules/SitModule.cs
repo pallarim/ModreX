@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using log4net;
 using System.Reflection;
 
-namespace ModularRex.RexParts
+namespace ModularRex.RexParts.Modules
 {
     public interface ISitMod
     {

@@ -9,7 +9,7 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
 
-namespace ModularRex.RexParts
+namespace ModularRex.RexParts.Modules
 {
     public class ModrexAppearance : IRegionModule
     {
