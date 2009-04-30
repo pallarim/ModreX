@@ -67,6 +67,7 @@ namespace ModularRex.RexNetwork
                 m_scene.DumpAssetsToFile);
             rexcaps.UUID = agentID;
             rexcaps.Caps = caps;
+            rexcaps.GetClient = m_scene.SceneContents.GetControllingClient;
 
             rexcaps.OverloadHandlers();
             
@@ -85,6 +86,8 @@ namespace ModularRex.RexNetwork
         private bool m_dumpAssetsToFile;
         private IAssetCache m_assetCache;
         private UUID m_agentID;
+
+        public GetClientDelegate GetClient = null;
 
         public RexCaps(IAssetCache assetCache, IHttpServer httpServer, string httpListen, uint httpPort, bool dumbAssetsToFile)
         {
@@ -116,36 +119,61 @@ namespace ModularRex.RexNetwork
             //m_log.Debug("[CAPS]: NewAgentInventoryRequest Request is: " + llsdRequest.ToString());
             //m_log.Debug("asset upload request via CAPS" + llsdRequest.inventory_type + " , " + llsdRequest.asset_type);
 
-            ///Fancy money module stuff:
-            //if (llsdRequest.asset_type == "texture" ||
-            //    llsdRequest.asset_type == "animation" ||
-            //    llsdRequest.asset_type == "sound")
-            //{
-            //    IClientAPI client = null;
-            //    IScene scene = null;
-            //    if (GetClient != null)
-            //    {
-            //        client = GetClient(m_agentID);
-            //        scene = client.Scene;
+            IClientAPI client = null;
+            if (GetClient != null)
+            {
+                client = GetClient(m_agentID);
+            }
 
-            //        IMoneyModule mm = scene.RequestModuleInterface<IMoneyModule>();
+            #region Upload permissions
+            if (client != null)
+            {
+                IUploadPermissions uploadPermissionModule = client.Scene.RequestModuleInterface<IUploadPermissions>();
+                if (uploadPermissionModule != null)
+                {
+                    if (!uploadPermissionModule.CanUpload(m_agentID))
+                    {
+                        client.SendAgentAlertMessage("Unable to upload asset. Insufficient permissions.", false);
 
-            //        if (mm != null)
-            //        {
-            //            if (!mm.UploadCovered(client))
-            //            {
-            //                if (client != null)
-            //                    client.SendAgentAlertMessage("Unable to upload asset. Insufficient funds.", false);
+                        LLSDAssetUploadResponse errorResponse = new LLSDAssetUploadResponse();
+                        errorResponse.uploader = "";
+                        errorResponse.state = "error";
+                        return errorResponse;
+                    }
+                }
+            }
+            #endregion
 
-            //                LLSDAssetUploadResponse errorResponse = new LLSDAssetUploadResponse();
-            //                errorResponse.uploader = "";
-            //                errorResponse.state = "error";
-            //                return errorResponse;
-            //            }
-            //        }
-            //    }
-            //}
+            #region Fancy money module stuff:
+            if (llsdRequest.asset_type == "texture" ||
+                llsdRequest.asset_type == "animation" ||
+                llsdRequest.asset_type == "sound" ||
+                llsdRequest.asset_type == "ogremesh" ||
+                llsdRequest.asset_type == "flashani")
+            {
+                IScene scene = null;
+                if (client != null)
+                {
+                    scene = client.Scene;
 
+                    IMoneyModule mm = scene.RequestModuleInterface<IMoneyModule>();
+
+                    if (mm != null)
+                    {
+                        if (!mm.UploadCovered(client))
+                        {
+                            if (client != null)
+                                client.SendAgentAlertMessage("Unable to upload asset. Insufficient funds.", false);
+
+                            LLSDAssetUploadResponse errorResponse = new LLSDAssetUploadResponse();
+                            errorResponse.uploader = "";
+                            errorResponse.state = "error";
+                            return errorResponse;
+                        }
+                    }
+                }
+            }
+            #endregion
 
             string assetName = llsdRequest.name;
             string assetDes = llsdRequest.description;
@@ -183,7 +211,10 @@ namespace ModularRex.RexNetwork
             sbyte assType = 0;
             sbyte inType = 0;
 
-            if (inventoryType == "sound")
+            if (inventoryType == "texture")
+            {
+            }
+            else if (inventoryType == "sound")
             {
                 inType = 1;
                 assType = 1;
