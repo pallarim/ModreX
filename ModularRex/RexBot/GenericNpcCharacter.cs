@@ -523,6 +523,11 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public virtual void SendAvatarTerseUpdate(ulong regionHandle, ushort timeDilation, uint localID,
+                                                  Vector3 position, Vector3 velocity, Quaternion rotation, UUID agentId)
+        {
+        }
+
         public virtual void SendCoarseLocationUpdate(List<Vector3> CoarseLocations)
         {
         }
