@@ -57,6 +57,7 @@ namespace ModularRex.RexParts.RexPython
             //myScriptEngine.World.EventManager.OnAddEntity += OnAddEntity; //this was previously launched from Scene or InnerScene
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity; //this was previously launched from Scene
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision; //this was launched from PhysicActor
+            m_scriptEngine.World.EventManager.OnScriptColliding += HandleScriptColliding; //No rex collision, but the same than in LSL
             m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
             m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
@@ -64,6 +65,31 @@ namespace ModularRex.RexParts.RexPython
             m_scriptEngine.World.AddCommand(scriptEngine, "python", "python help",
                 "Gives more help on python commands", PythonScriptCommand);
             //OpenSim.OpenSim.RegisterCmd("python", PythonScriptCommand, "Rex python commands. Type \"python help\" for more information.");
+        }
+
+        private void HandleScriptColliding(uint localID, ColliderArgs colliders)
+        {
+            SceneObjectPart part = m_scriptEngine.World.GetSceneObjectPart(localID);
+            if (part != null)
+            {
+                //filter out regular collision
+                //might be fun though later on
+                if (part.VolumeDetectActive)
+                {
+                    foreach (DetectedObject obj in colliders.Colliders)
+                    {
+                        EntityBase eb = null;
+                        if (m_scriptEngine.World.Entities.TryGetValue(obj.keyUUID, out eb))
+                        {
+                            OnPrimVolumeCollision(localID, eb.LocalId);
+                        }
+                        else
+                            m_log.Warn("[RexScriptEngine]: Could not find object with id " + obj.keyUUID);
+                    }
+                }
+            }
+            else
+                m_log.Warn("[RexScriptEngine]: Could not find object with id "+localID);
         }
 
         private void onPythonClassChange(UUID id)
@@ -77,7 +103,6 @@ namespace ModularRex.RexParts.RexPython
                     return;
                 }
             }
-            m_log.Warn("[RexScriptEngine]: Object not found with UUID. Could not initiate OnPythonClassChange");
         }
 
         private void PythonScriptCommand(string module, string[] cmdparams)

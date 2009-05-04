@@ -176,34 +176,33 @@ namespace ModularRex.RexParts.RexPython
 
         public bool GetUsePrimVolumeCollision(string vId)
         {
-            m_log.Warn("[REXSCRIPT]: GetUsePrimVolumeCollision not implemented");
-            return false;
-            //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
-            //if (tempobj != null)
-            //{
-            //    if (tempobj is RexObjects.RexObjectPart)
-            //    {
-            //        RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
-            //        return rexObj.GetUsePrimVolumeCollision();
-            //    }
-            //}
-            //return false;
+            uint primId = Convert.ToUInt32(vId, 10);
+
+            SceneObjectPart prim = myScriptEngine.World.GetSceneObjectPart(primId);
+            if (prim != null)
+            {
+                return prim.VolumeDetectActive;
+            }
+            else
+            {
+                m_log.Warn("[PythonScript]: GetPrimVolumeCollision for nonexisting object: " + vId);
+                return false;
+            }
+
         }
 
         public void SetUsePrimVolumeCollision(string vId, bool vUseVolumeCollision)
         {
-            m_log.Warn("[REXSCRIPT]: SetUsePrimVolumeCollision not implemented");
-            //SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
-            //if (tempobj != null)
-            //{
-            //    if (tempobj is RexObjects.RexObjectPart)
-            //    {
-            //        RexObjects.RexObjectPart rexObj = (RexObjects.RexObjectPart)tempobj;
-            //        rexObj.SetUsePrimVolumeCollision(vUseVolumeCollision);
-            //    }
-            //}
-            //else
-            //    myScriptEngine.Log.WarnFormat("[PythonScript]: SetPrimVolumeCollision for nonexisting object:" + vId);
+            uint primId = Convert.ToUInt32(vId, 10);
+
+            SceneObjectPart prim = myScriptEngine.World.GetSceneObjectPart(primId);
+            if (prim != null)
+            {
+                prim.ScriptSetVolumeDetect(vUseVolumeCollision);
+                prim.SetScriptEvents(prim.UUID, (int)scriptEvents.collision); //this needs to be set so the collision event is used
+            }
+            else
+                m_log.Warn("[PythonScript]: SetPrimVolumeCollision for nonexisting object: " + vId);
         }
 
         public int GetPrimLocalIdFromUUID(string vUUID)
