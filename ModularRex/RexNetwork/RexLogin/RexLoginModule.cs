@@ -30,6 +30,8 @@ namespace ModularRex.RexNetwork.RexLogin
 
         private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
 
+        private int m_nextUdpPort = 7000;
+
         /// <summary>
         /// Used during login to send the skeleton of the OpenSim Library to the client.
         /// </summary>
@@ -37,15 +39,44 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void Initialise(Scene scene, IConfigSource source)
         {
-            //if (m_udpserver == null)
-            //    m_udpserver = new RexUDPServer();
-
             m_config = source;
 
             m_scenes.Add(scene);
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.RegisterModuleInterface<IRexUDPPort>(this);
+
+            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            {
+                if (m_scenes.Count == 1) //Listen very carefully, I will say this only once
+                {
+                    //Load OpenSim Library folder config
+                    string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
+                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);   
+
+                    m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
+
+                    m_primaryRegionInfo = m_scenes[0].RegionInfo;
+                }
+
+                m_log.Info("[REX] Initialising");
+
+                RexUDPServer udpserver = new RexUDPServer();
+                uint _udpport = (uint)m_nextUdpPort;
+                udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
+                    scene.CommsManager.AssetCache, scene.AuthenticateHandler);
+                udpserver.AddScene(scene);
+
+                m_region_ports.Add(scene.RegionInfo.RegionHandle, m_nextUdpPort);
+                m_udpservers.Add(udpserver);
+                udpserver.Start();
+                m_nextUdpPort++;
+
+            }
+            else
+            {
+                m_log.Info("[REX] Not overloading Login_to_Simulator and not starting UDP server");
+            }
         }
 
         /// <summary>
@@ -73,41 +104,10 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void PostInitialise()
         {
-            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
-            {
-                //Load OpenSim Library folder config
-                string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
-                m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
-
-                int udp_port = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
-
-                m_log.Info("[REX] Overloading Login_to_Simulator");
-                default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
-                m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
-
-                m_primaryRegionInfo = m_scenes[0].RegionInfo;
-
-                m_log.Info("[REX] Initialising");
-                
-                foreach (Scene scene in m_scenes)
-                {
-                    RexUDPServer udpserver = new RexUDPServer();
-                    uint _udpport = (uint)udp_port;
-                    udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
-                        scene.CommsManager.AssetCache, scene.AuthenticateHandler);
-                    udpserver.AddScene(scene);
-
-                    m_region_ports.Add(scene.RegionInfo.RegionHandle, udp_port);
-                    m_udpservers.Add(udpserver);
-                    udpserver.Start();
-                    udp_port++;
-                }
-                
-            }
-            else
-            {
-                m_log.Info("[REX] Not overloading Login_to_Simulator and not starting UDP server");
-            }
+            //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
+            m_log.Info("[REX] Overloading Login_to_Simulator");
+            default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
+            m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
         }
 
         public void Close()
