@@ -321,7 +321,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 logResponse.Message = "Welcome to ModularRex";
 
                 logResponse.SimAddress = m_primaryRegionInfo.ExternalEndPoint.Address.ToString();
-                logResponse.SimPort = (uint)m_primaryRegionInfo.ExternalEndPoint.Port - 2000; //TODO: fix this to get from dictionary
+                logResponse.SimPort = (uint)GetPort(m_primaryRegionInfo.RegionHandle);
                 logResponse.RegionX = m_primaryRegionInfo.RegionLocX;
                 logResponse.RegionY = m_primaryRegionInfo.RegionLocY;
 
