@@ -1064,6 +1064,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void FlushPrimUpdates()
+        {
+        }
+
         #endregion
     }
 }

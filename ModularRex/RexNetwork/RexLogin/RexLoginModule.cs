@@ -12,6 +12,7 @@ using OpenSim.Framework.Communications.Services;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework.Communications.Cache;
+using OpenSim.Framework.Servers.HttpServer;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
@@ -28,7 +29,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
         private RegionInfo m_primaryRegionInfo;
 
-        private OpenSim.Framework.Servers.XmlRpcMethod default_login_to_simulator;
+        private XmlRpcMethod default_login_to_simulator;
 
         private int m_nextUdpPort = 7000;
 

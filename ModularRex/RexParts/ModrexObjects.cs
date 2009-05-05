@@ -11,6 +11,7 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Data.NHibernate;
 using OpenSim.Framework;
+using ModularRex.NHibernate;
 
 namespace ModularRex.RexParts
 {
