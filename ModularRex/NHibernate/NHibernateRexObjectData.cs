@@ -80,7 +80,7 @@ namespace ModularRex.NHibernate
                 }
                 else
                 {
-                    object tmp = criteria.UniqueResult();
+                    object tmp = criteria.UniqueResult(); //Q: how many objcts with same id
                     if (tmp is int && tmp != null)
                     {
                         i = (int)tmp;
@@ -91,56 +91,62 @@ namespace ModularRex.NHibernate
                     }
                 }
                 session.Close();
-                if (i != 0)
+                if (i != 0) //A: more than zero, update instead of insert
                 {
                     m_log.InfoFormat("[NHIBERNATE] updating RexObjectProperties {0}", p.ParentObjectID);
                     manager.Update(p);
-                    if (templist != null && templist.Count > 0)
-                    {
-                        try
-                        {
-                            foreach (RexMaterialsDictionaryItem item in templist)
-                            {
-                                if (item.ID == 0)
-                                {
-                                    session = manager.GetSession();
-                                    ICriteria criteria2 = session.CreateCriteria(typeof(RexMaterialsDictionaryItem));
-                                    criteria2.Add(Restrictions.Eq("RexObjectUUID", p.ParentObjectID));
-                                    criteria2.Add(Restrictions.Eq("Num", item.Num));
-                                    criteria2.SetMaxResults(1);
-                                    List<RexMaterialsDictionaryItem> list = (List<RexMaterialsDictionaryItem>)criteria2.List<RexMaterialsDictionaryItem>();
-                                    session.Close();
-                                    if (list.Count == 0)
-                                    {
-                                        item.RexObjectUUID = p.ParentObjectID;
-                                        manager.Insert(item);
-                                    }
-                                    else
-                                    {
-                                        list[0].AssetID = item.AssetID;
-                                        manager.Update(list[0]);
-                                    }
-
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            m_log.Error("[NHibernate]: Exception was thrown while processing RexObjectMaterials" + ex);
-                        }
-                        
-                    }
                 }
-                else
+                else //B: zero, insert
                 {
                     m_log.InfoFormat("[NHIBERNATE] saving RexObjectProperties {0}", p.ParentObjectID);
                     p.RexMaterialDictionaryItems = new List<RexMaterialsDictionaryItem>();
                     manager.Insert(p);
                 }
+
+                //Process materials after inserting/updateing other data. New items have material if they are copied!
+                if (templist != null && templist.Count > 0)
+                {
+                    ProcessMaterials(p, templist);
+                }
             }
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue saving RexObjectProperties: "+ e.Message + e.Source + e.StackTrace);
+            }
+        }
+
+        private void ProcessMaterials(RexObjectProperties p, IList<RexMaterialsDictionaryItem> rexMaterials)
+        {
+            try
+            {
+                foreach (RexMaterialsDictionaryItem item in rexMaterials)
+                {
+                    if (item.ID == 0)
+                    {
+                        ISession session = manager.GetSession();
+                        ICriteria criteria2 = session.CreateCriteria(typeof(RexMaterialsDictionaryItem));
+                        criteria2.Add(Restrictions.Eq("RexObjectUUID", p.ParentObjectID));
+                        criteria2.Add(Restrictions.Eq("Num", item.Num));
+                        criteria2.SetMaxResults(1);
+                        List<RexMaterialsDictionaryItem> list = (List<RexMaterialsDictionaryItem>)criteria2.List<RexMaterialsDictionaryItem>();
+                        session.Close();
+                        if (list.Count == 0)
+                        {
+                            item.RexObjectUUID = p.ParentObjectID;
+                            manager.Insert(item);
+                        }
+                        else
+                        {
+                            list[0].AssetID = item.AssetID;
+                            manager.Update(list[0]);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                m_log.Error("[NHibernate]: Exception was thrown while processing RexObjectMaterials" + ex);
             }
         }
 
