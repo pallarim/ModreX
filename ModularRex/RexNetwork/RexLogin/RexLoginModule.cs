@@ -404,10 +404,20 @@ namespace ModularRex.RexNetwork.RexLogin
                     acd.SessionID = logResponse.SessionID;
                     acd.startpos = new Vector3(128, 128, 128);
 
-                    scene.NewUserConnection(acd);
-                }
+                    string reason;
 
-                
+                    if (!scene.NewUserConnection(acd, out reason))
+                    {
+                        //Login failed
+                        XmlRpcResponse resp = new XmlRpcResponse();
+                        Hashtable respdata = new Hashtable();
+                        respdata["success"] = "FALSE";
+                        respdata["reason"] = reason;
+                        resp.Value = respdata;
+                        return resp;
+                    }
+
+                }
 
                 XmlRpcResponse rep = logResponse.ToXmlRpcResponse();
 
