@@ -6,5 +6,4 @@ then
     exit
 fi
 
-rm OpenSim
-ln -s ${1} OpenSim
+ln -fs ${1} OpenSim
