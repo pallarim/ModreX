@@ -221,9 +221,6 @@ namespace ModularRex.RexNetwork
             set
             {
                 m_rexAuthURL = value;
-                
-                // Request Agent Properties Asynchronously
-                ThreadPool.QueueUserWorkItem(RequestProperties);
             }
         }
         
@@ -491,52 +488,6 @@ namespace ModularRex.RexNetwork
             pack.Add(agentID.ToString());
 
             SendGenericMessage("RexAppearance", pack);
-        }
-
-        /// <summary>
-        /// Requests properties about this agent from their 
-        /// authentication server. This should be run in
-        /// an async thread.
-        /// 
-        /// Note that this particular function may set the
-        /// avatars appearance which may in turn call 
-        /// additional modules and functions elsewhere.
-        /// </summary>
-        /// <param name="o"></param>
-        private void RequestProperties(object o)
-        {
-            m_log.Info("[REXCLIENT] Resolving avatar...");
-            Hashtable ReqVals = new Hashtable();
-            ReqVals["avatar_account"] = RexAccount;
-            ReqVals["AuthenticationAddress"] = RexAuthURL;
-
-            ArrayList SendParams = new ArrayList();
-            SendParams.Add(ReqVals);
-
-            XmlRpcRequest req = new XmlRpcRequest("get_user_by_account", SendParams);
-
-            m_log.Info("[REXCLIENT] Sending XMLRPC Request to http://" + RexAuthURL);
-
-            XmlRpcResponse authreply = req.Send("http://" + RexAuthURL, 9000);
-
-            //m_log.Info(authreply.ToString());
-            if (!((Hashtable)authreply.Value).ContainsKey("error_type"))
-            {
-            string rexAsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-            //string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); 
-            UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
-
-                // Sanity check
-                if (userID == AgentId)
-                {
-                    RexAvatarURL = rexAsAddress;
-                    //RexSkypeURL = rexSkypeURL;
-                }
-            }
-            else
-            {
-                m_log.Warn("[REXCLIENT]: User not found");
-            }
         }
 
         /// <summary>

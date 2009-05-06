@@ -48,6 +48,7 @@ namespace ModularRex.RexNetwork
                 }
 
                 RexUserProfileData userProfile = ConvertXMLRPCDataToUserProfile((Hashtable)response.Value);
+                userProfile.AuthUrl = authUrl;
 
                 if (userProfile == null)
                 {
@@ -294,7 +295,15 @@ namespace ModularRex.RexNetwork
 
         }
 
-        public static string SimAuthenticationAccount(string account, string sessionHash, string authUrl)
+
+        /// <summary>
+        /// Authenticates incoming avatar against it's own authentication server
+        /// </summary>
+        /// <param name="account">Account of the incoming user</param>
+        /// <param name="sessionHash">Has given by the incoming client</param>
+        /// <param name="authUrl">Location of the users authentication server</param>
+        /// <returns>true if the hash matches, false if the authentication fails</returns>
+        public static bool SimAuthenticationAccount(string account, string sessionHash, string authUrl)
         {
 
             m_log.Info("[AUTHENTICATIONSERVICE]: SimAuthenticationAccount with account");
@@ -307,7 +316,7 @@ namespace ModularRex.RexNetwork
                     authUrl == null || authUrl.Length == 0)
                 {
                     m_log.Warn("[AUTHENTICATIONSERVICE] SimAuthenticationAccount: Parameters invalid.");
-                    return null;
+                    return false;
                 }
 
                 Hashtable requestData = new Hashtable();
@@ -319,7 +328,7 @@ namespace ModularRex.RexNetwork
                 if (response == null)
                 {
                     m_log.Warn("[AUTHENTICATIONSERVICE] SimAuthenticationAccount: Response is null.");
-                    return null;
+                    return false;
                 }
 
                 Hashtable responseData = (Hashtable)response.Value;
@@ -329,7 +338,7 @@ namespace ModularRex.RexNetwork
                     string sessionHashTemp = (string)responseData["sessionHash"];
                     if (login.Equals("success") && sessionHashTemp != null)
                     {
-                        return sessionHashTemp;
+                        return true;
                     }
                 }
 
@@ -339,7 +348,7 @@ namespace ModularRex.RexNetwork
                 m_log.Error("[AUTHENTICATIONSERVICE]: SimAuthenticationAccount", e);
             }
 
-            return null;
+            return false;
             
         }
 
@@ -1204,34 +1213,34 @@ namespace ModularRex.RexNetwork
                     userData.Partner = UUID.Zero;
 
                 if (data.Contains("account"))
-                    userData.account = (string)data["account"];
+                    userData.Account = (string)data["account"];
                 else
-                    userData.account = "";
+                    userData.Account = "";
 
                 if (data.Contains("realname"))
-                    userData.realname = (string)data["realname"];
+                    userData.RealName = (string)data["realname"];
                 else
-                    userData.realname = "";
+                    userData.RealName = "";
 
                 if (data.Contains("sessionHash"))
-                    userData.sessionHash = (string)data["sessionHash"];
+                    userData.SessionHash = (string)data["sessionHash"];
                 else
-                    userData.sessionHash = "";
+                    userData.SessionHash = "";
                 
                 if (data.Contains("avatarStorageUrl"))
-                    userData.avatarStorageUrl = (string)data["avatarStorageUrl"];
+                    userData.AvatarStorageUrl = (string)data["avatarStorageUrl"];
                 else
-                    userData.avatarStorageUrl = "";
+                    userData.AvatarStorageUrl = "";
 
                 if (data.Contains("skypeUrl"))
-                    userData.skypeUrl = (string)data["skypeUrl"];
+                    userData.SkypeUrl = (string)data["skypeUrl"];
                 else
-                    userData.account = "";
+                    userData.Account = "";
 
                 if (data.Contains("gridUrl"))
-                    userData.gridUrl = (string)data["gridUrl"];
+                    userData.GridUrl = (string)data["gridUrl"];
                 else
-                    userData.gridUrl = "";
+                    userData.GridUrl = "";
 
                 RexUserAgentData agent = new RexUserAgentData();
 

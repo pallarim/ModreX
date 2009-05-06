@@ -15,33 +15,37 @@ namespace ModularRex.RexDBObjects
         ///<summary>
         /// Users account
         ///</summary>
-        public string account;
+        public string Account;
 
         ///<summary>
         /// Users real name
         ///</summary>
-        public string realname;
+        public string RealName;
 
         ///<summary>
         /// Session hash
         ///</summary>
-        public string sessionHash;
+        public string SessionHash;
 
         ///<summary>
         /// Avatar storage url
         ///</summary>
-        public string avatarStorageUrl;
+        public string AvatarStorageUrl;
 
         /// <summary>
         /// Skype url for user
         /// </summary>
-        public string skypeUrl;
+        public string SkypeUrl;
 
         ///<summary>
         /// Grid url
         ///</summary>
-        public string gridUrl;
+        public string GridUrl;
 
+        /// <summary>
+        /// Authentication server URL
+        /// </summary>
+        public string AuthUrl;
     }
   
 }

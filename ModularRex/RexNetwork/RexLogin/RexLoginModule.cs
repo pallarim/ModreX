@@ -13,6 +13,7 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework.Communications.Cache;
 using OpenSim.Framework.Servers.HttpServer;
+using ModularRex.RexDBObjects;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
@@ -21,7 +22,7 @@ namespace ModularRex.RexNetwork.RexLogin
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly List<Scene> m_scenes = new List<Scene>();
-        private readonly Dictionary<UUID, string> m_authUrl = new Dictionary<UUID, string>();
+        private readonly Dictionary<UUID, RexUserProfileData> m_userData = new Dictionary<UUID, RexUserProfileData>();
 
         private List<RexUDPServer> m_udpservers = new List<RexUDPServer>();
         private Dictionary<ulong, int> m_region_ports = new Dictionary<ulong, int>();
@@ -91,9 +92,18 @@ namespace ModularRex.RexNetwork.RexLogin
             RexClientView rex;
             if(client.TryGet(out rex))
             {
-                if (m_authUrl.ContainsKey(rex.AgentId))
+                if (m_userData.ContainsKey(rex.AgentId))
                 {
-                    rex.RexAccount = m_authUrl[rex.AgentId];
+                    if (m_userData[rex.AgentId].Account.Contains("@"))
+                    {
+                        rex.RexAccount = m_userData[rex.AgentId].Account;
+                    }
+                    else
+                    {
+                        rex.RexAccount = m_userData[rex.AgentId].Account + "@" + m_userData[rex.AgentId].AuthUrl;
+                    }
+                    rex.RexAvatarURL = m_userData[rex.AgentId].AvatarStorageUrl;
+                    rex.RexSkypeURL = m_userData[rex.AgentId].SkypeUrl;
                 }
                 else
                 {
@@ -128,11 +138,11 @@ namespace ModularRex.RexNetwork.RexLogin
 
         #region RexLoginHelper
 
-
-        //TODO: do a proper authentication
-        public bool AuthenticateUser(string accountName, string sessionHash)
+        public bool AuthenticateUser(string account, string sessionHash)
         {
-            return true;
+            string actName = account.Split('@')[0];
+            string actSrv = account.Split('@')[1];
+            return AuthenticationService.SimAuthenticationAccount(actName, sessionHash, actSrv);
         }
 
         private static LoginService.InventoryData GetInventorySkeleton(Scene any, UUID userID)
@@ -175,52 +185,6 @@ namespace ModularRex.RexNetwork.RexLogin
             inventoryLibOwner.Add(TempHash);
             return inventoryLibOwner;
         }
-
-        // TEMP // TEMP //
-
-        public class RexAccountProperties
-        {
-            public string FirstName;
-            public string LastName;
-            public string AsAddress;
-            public UUID uuid;
-            public string Account;
-        }
-
-        public RexAccountProperties GetRexProperties(string RexAccount, string RexAuthURL)
-        {
-            m_log.Info("[REXCLIENT] Resolving avatar...");
-            Hashtable ReqVals = new Hashtable();
-            ReqVals["avatar_account"] = RexAccount;
-            ReqVals["AuthenticationAddress"] = RexAuthURL;
-
-            ArrayList SendParams = new ArrayList();
-            SendParams.Add(ReqVals);
-
-            XmlRpcRequest req = new XmlRpcRequest("get_user_by_account", SendParams);
-
-            m_log.Info("[REXCLIENT] Sending XMLRPC Request to http://" + RexAuthURL);
-
-            XmlRpcResponse authreply = req.Send("http://" + RexAuthURL, 9000);
-
-            //m_log.Info(authreply.ToString());
-
-            string rexAsAddress = ((Hashtable) authreply.Value)["as_address"].ToString();
-            /*            string rexSkypeURL = ((Hashtable)authreply.Value)["skype_url"].ToString(); */
-            UUID userID = new UUID(((Hashtable) authreply.Value)["uuid"].ToString());
-
-            RexAccountProperties rtn = new RexAccountProperties();
-
-            rtn.FirstName = ((Hashtable)authreply.Value)["firstname"].ToString();
-            rtn.LastName = ((Hashtable)authreply.Value)["lastname"].ToString();
-            rtn.AsAddress = ((Hashtable)authreply.Value)["as_address"].ToString();
-            rtn.uuid = userID;
-            rtn.Account = RexAccount;
-
-            return rtn;
-        }
-
-        // TEMP // TEMP //
 
         public virtual XmlRpcResponse XmlRpcLoginMethod(XmlRpcRequest request)
         {
@@ -304,18 +268,19 @@ namespace ModularRex.RexNetwork.RexLogin
                 string actName = account.Split('@')[0];
                 string actSrv = account.Split('@')[1];
 
-                RexAccountProperties rap = GetRexProperties(actName, actSrv);
+                RexUserProfileData rap = AuthenticationService.GetUserByAccount(actName, actSrv);
+                //RexAccountProperties rap = GetRexProperties(actName, actSrv);
 
-                UUID agentID = rap.uuid;
+                UUID agentID = rap.ID;
 
                 // Used to transmit the login URL to the 
                 // RexAvatar class when it connects.
-                m_authUrl[agentID] = account;
+                m_userData[agentID] = rap;
 
                 logResponse.CircuitCode = Util.RandomClass.Next();
 
                 logResponse.Lastname = "<" + account + ">";
-                logResponse.Firstname = rap.FirstName + " " + rap.LastName;
+                logResponse.Firstname = rap.FirstName + " " + rap.SurName;
 
                 logResponse.AgentID = agentID;
 
