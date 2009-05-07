@@ -245,7 +245,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     XmlRpcResponse rep = default_login_to_simulator(request);
                     Hashtable val = (Hashtable)rep.Value;
                     val["rex"] = "running rex mode";
-                    val["sim_port"] = (Int32)m_primaryRegionInfo.ExternalEndPoint.Port - 2000; //TODO: fix this to get from dictionary
+                    val["sim_port"] = GetPort(m_primaryRegionInfo.RegionHandle);
                     val["region_x"] = (Int32)(m_primaryRegionInfo.RegionLocX * 256);
                     val["region_y"] = (Int32)(m_primaryRegionInfo.RegionLocY * 256);
                     return rep;
