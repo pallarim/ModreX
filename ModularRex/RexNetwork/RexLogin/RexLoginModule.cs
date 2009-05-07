@@ -33,6 +33,7 @@ namespace ModularRex.RexNetwork.RexLogin
         private XmlRpcMethod default_login_to_simulator;
 
         private int m_nextUdpPort = 7000;
+        private bool m_checkSessionHash = true;
 
         /// <summary>
         /// Used during login to send the skeleton of the OpenSim Library to the client.
@@ -59,6 +60,8 @@ namespace ModularRex.RexNetwork.RexLogin
                     m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
 
                     m_primaryRegionInfo = m_scenes[0].RegionInfo;
+
+                    m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
                 }
 
                 m_log.Info("[REX] Initialising");
@@ -140,9 +143,16 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public bool AuthenticateUser(string account, string sessionHash)
         {
-            string actName = account.Split('@')[0];
-            string actSrv = account.Split('@')[1];
-            return AuthenticationService.SimAuthenticationAccount(actName, sessionHash, actSrv);
+            if (m_checkSessionHash)
+            {
+                string actName = account.Split('@')[0];
+                string actSrv = account.Split('@')[1];
+                return AuthenticationService.SimAuthenticationAccount(actName, sessionHash, actSrv);
+            }
+            else
+            {
+                return true;
+            }
         }
 
         private static LoginService.InventoryData GetInventorySkeleton(Scene any, UUID userID)
