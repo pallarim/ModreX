@@ -171,7 +171,7 @@ namespace ModularRex.NHibernate
         {
             try
             {
-                RexObjectProperties obj = new RexObjectProperties();
+                RexObjectProperties obj = null;
                 ICriteria criteria = manager.GetSession().CreateCriteria(typeof(RexObjectProperties));
                 criteria.Add(Expression.Eq("ParentObjectID", uuid));
                 criteria.AddOrder(Order.Asc("ParentObjectID"));

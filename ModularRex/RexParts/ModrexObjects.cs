@@ -12,6 +12,7 @@ using OpenSim.Region.Framework.Scenes;
 using OpenSim.Data.NHibernate;
 using OpenSim.Framework;
 using ModularRex.NHibernate;
+using OpenSim.Framework.Communications.Cache;
 
 namespace ModularRex.RexParts
 {
@@ -74,7 +75,7 @@ namespace ModularRex.RexParts
 
                 // Send them the current Scene.
                 SendAllPropertiesToUser(rcv);
-            }
+            }   
         }
 
         private void rcv_OnPrimFreeData(IClientAPI sender, List<string> parameters)
@@ -373,7 +374,13 @@ namespace ModularRex.RexParts
             RexObjectProperties props = RexObjectPropertiesCache[id];
             if (props == null)
             {
-                props = new RexObjectProperties(id, this);
+                //Objects that are not in the scene can't be found from cache.
+                //So before we create new properties, we try to find them from db
+                props = m_db.LoadObject(id);
+                if (props == null)
+                {
+                    props = new RexObjectProperties(id, this);
+                }
                 RexObjectPropertiesCache.Add(id, props);
             }
             return props;
@@ -394,7 +401,6 @@ namespace ModularRex.RexParts
             }
             return false;
         }
-
 
         #endregion
 
