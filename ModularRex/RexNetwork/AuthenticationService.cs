@@ -1226,9 +1226,9 @@ namespace ModularRex.RexNetwork
                     userData.SessionHash = (string)data["sessionHash"];
                 else
                     userData.SessionHash = "";
-                
-                if (data.Contains("avatarStorageUrl"))
-                    userData.AvatarStorageUrl = (string)data["avatarStorageUrl"];
+
+                if (data.Contains("as_address"))
+                    userData.AvatarStorageUrl = (string)data["as_address"];
                 else
                     userData.AvatarStorageUrl = "";
 
