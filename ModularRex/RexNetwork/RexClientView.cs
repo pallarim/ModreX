@@ -1045,7 +1045,7 @@ namespace ModularRex.RexNetwork
         {
             byte[] bytes = new byte[30];
             int i = 0;
-            ImprovedTerseObjectUpdatePacket.ObjectDataBlock dat = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
+            ImprovedTerseObjectUpdatePacket.ObjectDataBlock dat = PacketPool.GetDataBlock<ImprovedTerseObjectUpdatePacket.ObjectDataBlock>();
 
             dat.TextureEntry = new byte[0];
 
