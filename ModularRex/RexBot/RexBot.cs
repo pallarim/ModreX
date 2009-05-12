@@ -847,6 +847,14 @@ namespace OpenSim.Region.Examples.RexBot
             }
         }
 
+        public void Disconnect()
+        {
+        }
+
+        public void Disconnect(string reason)
+        {
+        }
+
         #endregion
     }
 }
