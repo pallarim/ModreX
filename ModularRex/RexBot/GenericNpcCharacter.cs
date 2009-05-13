@@ -1068,6 +1068,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void RefreshGroupMembership()
+        {
+        }
+
         #endregion
     }
 }
