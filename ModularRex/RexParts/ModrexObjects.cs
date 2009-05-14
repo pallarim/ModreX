@@ -34,6 +34,7 @@ namespace ModularRex.RexParts
         {
             m_scenes.Add(scene);
 
+            scene.RegisterModuleInterface<ModrexObjects>(this);
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.SceneContents.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
             scene.SceneContents.OnObjectRemove += SceneGraph_OnObjectRemove;

@@ -42,6 +42,8 @@ namespace ModularRex.RexNetwork.RexLogin
         /// </summary>
         protected LibraryRootFolder m_libraryRootFolder;
 
+        protected WorldAssetsFolder m_worldAssets;
+
         public void Initialise(Scene scene, IConfigSource source)
         {
             m_config = source;
@@ -57,7 +59,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 {
                     //Load OpenSim Library folder config
                     string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
-                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);   
+                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
 
                     m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
 
@@ -124,9 +126,13 @@ namespace ModularRex.RexNetwork.RexLogin
             m_log.Info("[REX] Overloading Login_to_Simulator");
             default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
             m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
+
+            m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
+            if (m_worldAssets != null)
+                m_libraryRootFolder.AddChildFolder(m_worldAssets);
+
             //Rex-NG
             m_scenes[0].CommsManager.HttpServer.AddHTTPHandler("/enable_client", CableBeachLoginMethod);
-
         }
 
         public void Close()
@@ -614,6 +620,20 @@ namespace ModularRex.RexNetwork.RexLogin
                 TempHash["type_default"] = (Int32)folder.Type;
                 TempHash["folder_id"] = folder.ID.ToString();
                 folderHashes.Add(TempHash);
+            }
+
+            if (m_worldAssets != null)
+            {
+                foreach (InventoryFolderBase folder in m_worldAssets.WorldFolders)
+                {
+                    Hashtable temp = new Hashtable();
+                    temp["name"] = folder.Name;
+                    temp["parent_id"] = folder.ParentID.ToString();
+                    temp["version"] = (Int32)folder.Version;
+                    temp["type_default"] = (Int32)folder.Type;
+                    temp["folder_id"] = folder.ID.ToString();
+                    folderHashes.Add(temp);
+                }
             }
 
             return folderHashes;
