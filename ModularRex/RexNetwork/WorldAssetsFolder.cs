@@ -245,7 +245,7 @@ namespace ModularRex.RexNetwork
                 }
             }
 
-            UuidGatherer assetGatherer = new UuidGatherer(scene.CommsManager.AssetCache);
+            UuidGatherer assetGatherer = new UuidGatherer(scene.AssetService);
 
 
             if (assetType == 0 || assetType == 1) //do this only for textures and sounds

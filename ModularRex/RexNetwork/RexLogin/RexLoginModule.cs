@@ -73,7 +73,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 RexUDPServer udpserver = new RexUDPServer();
                 uint _udpport = (uint)m_nextUdpPort;
                 udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
-                    scene.CommsManager.AssetCache, scene.AuthenticateHandler);
+                    scene.AuthenticateHandler);
                 udpserver.AddScene(scene);
 
                 m_region_ports.Add(scene.RegionInfo.RegionHandle, m_nextUdpPort);
