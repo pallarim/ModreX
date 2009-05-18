@@ -431,14 +431,20 @@ namespace ModularRex.RexNetwork
             // Flash anims
             List<AssetBase> allFlashs = GetAssetList(scene, 42);
             m_WorldFlashFolder.Purge();
-            foreach (AssetBase asset in allFlashs)
-            {
-                if (asset.Type == 49)
-                {
-                    item = CreateItem(UUID.Random(), asset.FullID, asset.Name, asset.Description, 49, 42, m_WorldFlashFolder.ID);
-                    m_WorldFlashFolder.Items.Add(item.ID, item);
-                }
-            }
+            AssetBase ass = new AssetBase(UUID.Random(), "README");
+            ass.Type = (sbyte)AssetType.Notecard;
+            ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");
+            scene.AssetService.Store(ass);
+            item = CreateItem(UUID.Random(), ass.FullID, ass.Name, ass.Description, (int)AssetType.Notecard, (int)InventoryType.Notecard, m_WorldFlashFolder.ID);
+            m_WorldFlashFolder.Items.Add(item.ID, item);
+            //foreach (AssetBase asset in allFlashs)
+            //{
+            //    if (asset.Type == 49)
+            //    {
+            //        item = CreateItem(UUID.Random(), asset.FullID, asset.Name, asset.Description, 49, 42, m_WorldFlashFolder.ID);
+            //        m_WorldFlashFolder.Items.Add(item.ID, item);
+            //    }
+            //}
         }
 
         #region IRegionModule Members
