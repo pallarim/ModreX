@@ -1072,6 +1072,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void SendDialog(string objectname, UUID objectID, string ownerFirstName, string ownerLastName, string msg, UUID textureID, int ch, string[] buttonlabels)
+        {
+        }
+
         #endregion
     }
 }
