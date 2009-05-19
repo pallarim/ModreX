@@ -117,6 +117,7 @@
 	 <Reference name="OpenMetaverse.StructuredData.dll"/>
 	 <Reference name="OpenMetaverseTypes.dll"/>
 	 <Reference name="OpenSim"/>
+     <Reference name="OpenSim.Services.Interfaces"/>
 	 <Reference name="OpenSim.Framework.dll"/>
 	 <Reference name="OpenSim.Framework.Communications.dll"/>
 	 <Reference name="OpenSim.Framework.Console.dll"/>
