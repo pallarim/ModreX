@@ -268,7 +268,7 @@ namespace ModularRex.RexNetwork
                         case 1: //sound
                             if (rop.RexSoundUUID != UUID.Zero)
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(rop.RexSoundUUID, false);
+                                asset = scene.AssetService.Get(rop.RexSoundUUID.ToString());
                                 if (asset != null && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -278,7 +278,7 @@ namespace ModularRex.RexNetwork
                         case 6: //3d
                             if (rop.RexMeshUUID != UUID.Zero)
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(rop.RexMeshUUID, false);
+                                asset = scene.AssetService.Get(rop.RexMeshUUID.ToString());
                                 if (asset != null && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -286,7 +286,7 @@ namespace ModularRex.RexNetwork
                             }
                             if (rop.RexCollisionMeshUUID != UUID.Zero)
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(rop.RexCollisionMeshUUID, false);
+                                asset = scene.AssetService.Get(rop.RexCollisionMeshUUID.ToString());
                                 if (asset != null && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -296,7 +296,7 @@ namespace ModularRex.RexNetwork
                         case 0: //texture
                             foreach (KeyValuePair<uint, UUID> kvp in rop.GetRexMaterials())
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(kvp.Value, true);
+                                asset = scene.AssetService.Get(kvp.Value.ToString());
                                 if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -306,7 +306,7 @@ namespace ModularRex.RexNetwork
                         case 41: //Material && Particle, WTF??!
                             foreach (KeyValuePair<uint, UUID> kvp in rop.GetRexMaterials())
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(kvp.Value, false);
+                                asset = scene.AssetService.Get(kvp.Value.ToString());
                                 if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -314,7 +314,7 @@ namespace ModularRex.RexNetwork
                             }
                             if (rop.RexParticleScriptUUID != UUID.Zero)
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(rop.RexParticleScriptUUID, false);
+                                asset = scene.AssetService.Get(rop.RexParticleScriptUUID.ToString());
                                 if (asset != null && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -324,7 +324,7 @@ namespace ModularRex.RexNetwork
                         case 19: //3d anim
                             if (rop.RexAnimationPackageUUID != UUID.Zero)
                             {
-                                asset = scene.CommsManager.AssetCache.GetAsset(rop.RexAnimationPackageUUID, false);
+                                asset = scene.AssetService.Get(rop.RexAnimationPackageUUID.ToString());
                                 if (asset != null && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -347,7 +347,7 @@ namespace ModularRex.RexNetwork
             {
                 if (kvp.Value == assetType)
                 {
-                    AssetBase asset = scene.CommsManager.AssetCache.GetAsset(kvp.Key, (kvp.Value == 0) ? true : false);
+                    AssetBase asset = scene.AssetService.Get(kvp.Key.ToString());
                     if (asset != null)
                     {
                         foundObjects.Add(asset);

@@ -306,7 +306,7 @@ namespace ModularRex.RexParts
 
             if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor is IRexPhysicsActor)
             {
-                AssetBase tempmodel = sop.ParentGroup.Scene.CommsManager.AssetCache.GetAsset(p.RexCollisionMeshUUID, false);
+                AssetBase tempmodel = sop.ParentGroup.Scene.AssetService.Get(p.RexCollisionMeshUUID.ToString());
                 if (tempmodel != null)
                     ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
             }
@@ -314,9 +314,9 @@ namespace ModularRex.RexParts
         
         public byte GetAssetType(UUID assetid)
         {
-            AssetBase tempmodel = m_scenes[0].CommsManager.AssetCache.GetAsset(assetid, true);
+            AssetBase tempmodel = m_scenes[0].AssetService.Get(assetid.ToString());
             if (tempmodel == null)
-                m_scenes[0].CommsManager.AssetCache.GetAsset(assetid, false);
+                m_scenes[0].AssetService.Get(assetid.ToString());
 
             if (tempmodel != null)
                 return(byte)(tempmodel.Type);

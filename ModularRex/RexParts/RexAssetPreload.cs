@@ -62,11 +62,10 @@ namespace ModularRex
             if (this.rexSceneProperties.PreloadAssetDictionary.ContainsKey(vAssetID))
                 return;
 
-            AssetBase tempAsset;
-            if (scene.CommsManager.AssetCache.TryGetCachedAsset(vAssetID, out tempAsset))
+            AssetBase tempAsset = scene.AssetService.Get(vAssetID.ToString());
+            if (tempAsset != null)
             {
-                if (tempAsset != null)
-                    this.rexSceneProperties.PreloadAssetDictionary.Add(tempAsset.FullID, (uint)vAssetID.GetULong());             
+                this.rexSceneProperties.PreloadAssetDictionary.Add(tempAsset.FullID, (uint)vAssetID.GetULong());
             }
             else
             {

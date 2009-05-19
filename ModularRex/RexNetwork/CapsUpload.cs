@@ -11,6 +11,7 @@ using OpenMetaverse;
 using Caps = OpenSim.Framework.Communications.Capabilities.Caps;
 using log4net;
 using System.Reflection;
+using OpenSim.Services.Interfaces;
 
 namespace ModularRex.RexNetwork
 {
@@ -60,7 +61,7 @@ namespace ModularRex.RexNetwork
         private void OnClientRegisterCaps(OpenMetaverse.UUID agentID, Caps caps)
         {
             RexCaps rexcaps = new RexCaps(
-                m_scene.CommsManager.AssetCache,
+                m_scene.AssetService,
                 m_scene.CommsManager.HttpServer,
                 m_scene.RegionInfo.ExternalHostName,
                 m_scene.CommsManager.HttpServer.Port,
@@ -84,12 +85,12 @@ namespace ModularRex.RexNetwork
         private string m_httpListenerHostName;
         private uint m_httpListenPort;
         private bool m_dumpAssetsToFile;
-        private IAssetCache m_assetCache;
+        private IAssetService m_assetCache;
         private UUID m_agentID;
 
         public GetClientDelegate GetClient = null;
 
-        public RexCaps(IAssetCache assetCache, IHttpServer httpServer, string httpListen, uint httpPort, bool dumbAssetsToFile)
+        public RexCaps(IAssetService assetCache, IHttpServer httpServer, string httpListen, uint httpPort, bool dumbAssetsToFile)
         {
             m_assetCache = assetCache;
             m_httpListener = httpServer;
@@ -255,7 +256,7 @@ namespace ModularRex.RexNetwork
             if (Caps.AddNewAsset != null)
                 Caps.AddNewAsset(asset);
             else if (m_assetCache != null)
-                m_assetCache.AddAsset(asset);
+                m_assetCache.Store(asset);
 
             InventoryItemBase item = new InventoryItemBase();
             item.Owner = m_agentID;

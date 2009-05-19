@@ -66,7 +66,7 @@ namespace ModularRex.RexNetwork
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
-        public RexClientView(EndPoint remoteEP, IScene scene, AssetCache assetCache,
+        public RexClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
