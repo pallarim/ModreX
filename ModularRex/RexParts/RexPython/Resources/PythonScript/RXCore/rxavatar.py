@@ -143,8 +143,8 @@ class Avatar(rxactor.Actor):
     def rexSetSky(self,type,images,curvature,tiling):
         self.MyWorld.CS.rexSetSky(self.AgentId,type,images,curvature,tiling)
 
-    def rexPlayFlashAnimationByUUID(self,assetId,left,top,right,bottom):
-        self.MyWorld.CS.rexPlayFlashAnimation(self.AgentId,assetId,left,top,right,bottom)
+    def rexPlayFlashAnimationByUUID(self,assetId,left,top,right,bottom, timeToDeath):
+        self.MyWorld.CS.rexPlayFlashAnimation(self.AgentId,assetId,left,top,right,bottom, timeToDeath)
 
     def rexPlayFlashAnimation(self,name,left,top,right,bottom, timeToDeath):
         self.MyWorld.CS.rexPlayFlashAnimation(self.AgentId,name,49,left,top,right,bottom, timeToDeath)
