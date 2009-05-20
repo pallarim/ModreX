@@ -39,7 +39,7 @@ namespace OpenSim.Region.Communications.VoiceChat
 
         public void NewClient(IClientAPI client)
         {
-            if (client is RexClientView)
+            if (client is RexClientViewBase)
             {
                 lock (m_uuidToClient)
                 {

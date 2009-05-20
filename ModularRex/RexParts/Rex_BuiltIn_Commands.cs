@@ -104,9 +104,9 @@ namespace ModularRex.RexParts
             {
                 World.ForEachScenePresence(delegate(ScenePresence controller)
                 {
-                    if (controller.ControllingClient is RexNetwork.RexClientView)
+                    if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        ((RexNetwork.RexClientView)controller.ControllingClient).SendMediaURL(texface.TextureID, url, vRefreshRate);
+                        ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendMediaURL(texface.TextureID, url, vRefreshRate);
                     }
                 });
                 //Old Rex: World.UpdateAssetMediaURLRequest(texface.TextureID, texasset, url, vRefreshRate);
@@ -131,9 +131,9 @@ namespace ModularRex.RexParts
                     Vector3 targetpos = new Vector3((float)vDest.x, (float)vDest.y, (float)vDest.z);
                     World.ForEachScenePresence(delegate(ScenePresence controller)
                     {
-                        if (controller.ControllingClient is RexNetwork.RexClientView)
+                        if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            ((RexNetwork.RexClientView)controller.ControllingClient).RexIKSendLimbTarget(target.UUID, vLimbId, targetpos, vTimeToTarget, vStayTime, vConstraintAngle, vStartAnim, vTargetAnim, vEndAnim);
+                            ((RexNetwork.RexClientViewBase)controller.ControllingClient).RexIKSendLimbTarget(target.UUID, vLimbId, targetpos, vTimeToTarget, vStayTime, vConstraintAngle, vStartAnim, vTargetAnim, vEndAnim);
                         }
                     });
                     //World.SendRexIKSetLimbTargetToAll(target.UUID, vLimbId, targetpos, vTimeToTarget, vStayTime, vConstraintAngle, vStartAnim, vTargetAnim, vEndAnim);
@@ -151,9 +151,9 @@ namespace ModularRex.RexParts
                 {
                     World.ForEachScenePresence(delegate(ScenePresence controller)
                     {
-                        if (controller.ControllingClient is RexNetwork.RexClientView)
+                        if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            ((RexNetwork.RexClientView)controller.ControllingClient).SendRexAvatarAnimation(target.UUID, vAnimName, vRate, vFadeIn, vFadeOut, nRepeats, vbStopAnim);
+                            ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendRexAvatarAnimation(target.UUID, vAnimName, vRate, vFadeIn, vFadeOut, nRepeats, vbStopAnim);
                         }
                     });
                     //World.SendRexPlayAvatarAnimToAll(target.UUID, vAnimName, vRate, vFadeIn, vFadeOut, nRepeats, vbStopAnim);
@@ -171,9 +171,9 @@ namespace ModularRex.RexParts
                 {
                     World.ForEachScenePresence(delegate(ScenePresence controller)
                     {
-                        if (controller.ControllingClient is RexNetwork.RexClientView)
+                        if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            ((RexNetwork.RexClientView)controller.ControllingClient).SendRexAvatarMorph(target.UUID, vMorphName, vWeight, vTime);
+                            ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendRexAvatarMorph(target.UUID, vMorphName, vWeight, vTime);
                         }
                     });
                     //World.SendRexSetAvatarMorphToAll(target.UUID, vMorphName, vWeight, vTime);
@@ -191,9 +191,9 @@ namespace ModularRex.RexParts
                 {
                     World.ForEachScenePresence(delegate(ScenePresence controller)
                     {
-                        if (controller.ControllingClient is RexNetwork.RexClientView)
+                        if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            ((RexNetwork.RexClientView)controller.ControllingClient).SendRexMeshAnimation(target.UUID, vAnimName, vRate, vbLooped, vbStopAnim);
+                            ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendRexMeshAnimation(target.UUID, vAnimName, vRate, vbLooped, vbStopAnim);
                         }
                     });
                     //World.SendRexPlayMeshAnimToAll(target.UUID, vAnimName, vRate, vbLooped, vbStopAnim);
@@ -209,9 +209,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexFog(vStart, vEnd, vR, vG, vB);
                     }
                 }
@@ -226,9 +226,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexWaterHeight(vHeight);
                     }
                 }
@@ -243,9 +243,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexPostProcess(vEffectId, vbToggle);
                     }
                 }
@@ -262,9 +262,9 @@ namespace ModularRex.RexParts
                 {
                     Vector3 pos = new Vector3((float)vPos.x, (float)vPos.y, (float)vPos.z);
                     Vector3 lookat = new Vector3((float)vLookAt.x, (float)vLookAt.y, (float)vLookAt.z);
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexRttCamera(command, name, new UUID(assetID), pos, lookat, width, height);
                     }
                 }
@@ -280,9 +280,9 @@ namespace ModularRex.RexParts
                 Vector3 lookat = new Vector3((float)vLookAt.x, (float)vLookAt.y, (float)vLookAt.z);
                 World.ForEachScenePresence(delegate(ScenePresence controller)
                 {
-                    if (controller.ControllingClient is RexNetwork.RexClientView)
+                    if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        ((RexNetwork.RexClientView)controller.ControllingClient).SendRexRttCamera(command, name, new UUID(assetID), pos, lookat, width, height);
+                        ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendRexRttCamera(command, name, new UUID(assetID), pos, lookat, width, height);
                     }
                 });
                 //World.SendRexRttCameraToAll(command, name, new UUID(assetID), pos, lookat, width, height);
@@ -297,9 +297,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexViewport(command, name, vX, vY, vWidth, vHeight);
                     }
                 }
@@ -314,9 +314,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView rexClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase rexClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         rexClient.RexAvatarURLOverride = vAvatarAddress;
                         //No need to send appearance to others manually. RexClientView handles that.
                     }
@@ -332,9 +332,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(vAvatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexToggleWindSound(vbToggle);
                     }
                 }
@@ -349,9 +349,9 @@ namespace ModularRex.RexParts
                 Quaternion rot = new Quaternion((float)vRot.x, (float)vRot.y, (float)vRot.z, (float)vRot.s);
                 World.ForEachScenePresence(delegate(ScenePresence controller)
                 {
-                    if (controller.ControllingClient is RexNetwork.RexClientView)
+                    if (controller.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        ((RexNetwork.RexClientView)controller.ControllingClient).SendRexClientSideEffect(assetId, vTimeUntilLaunch, vTimeUntilDeath, pos, rot, vSpeed);
+                        ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendRexClientSideEffect(assetId, vTimeUntilLaunch, vTimeUntilDeath, pos, rot, vSpeed);
                     }
                 });
                 //World.SendRexClientSideEffectToAll(new UUID(assetId), vTimeUntilLaunch, vTimeUntilDeath, pos, rot, vSpeed);
@@ -382,9 +382,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexCameraClientSideEffect(enable, new UUID(assetId), pos, rot);
                     }
                 }
@@ -432,9 +432,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexSetAmbientLight(lightDir, lightC, ambientC);
                     }
                 }
@@ -449,9 +449,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexSky(type, images, curvature, tiling);
                     }
                 }
@@ -466,9 +466,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexPlayFlashAnimation(new UUID(assetId), left, top, right, bottom, timeToDeath);
                     }
                 }
@@ -509,9 +509,9 @@ namespace ModularRex.RexParts
                     }
                     if (tempassetlist.Count > 0)
                     {
-                        if (target.ControllingClient is RexNetwork.RexClientView)
+                        if (target.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                            RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                             targetClient.SendRexPreloadAssets(tempassetlist);
                         }
                     }
@@ -529,9 +529,9 @@ namespace ModularRex.RexParts
                 {
                     if (vAssetsList.Count > 0)
                     {
-                        if (target.ControllingClient is RexNetwork.RexClientView)
+                        if (target.ControllingClient is RexNetwork.RexClientViewBase)
                         {
-                            RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                            RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                             targetClient.SendRexPreloadAvatarAssets(vAssetsList);
                         }
                     }
@@ -547,9 +547,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexForceFOV(fov, enable);
                     }
                 }
@@ -564,9 +564,9 @@ namespace ModularRex.RexParts
                 ScenePresence target = World.GetScenePresence(new UUID(avatar));
                 if (target != null)
                 {
-                    if (target.ControllingClient is RexNetwork.RexClientView)
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
                     {
-                        RexNetwork.RexClientView targetClient = (RexNetwork.RexClientView)target.ControllingClient;
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
                         targetClient.SendRexForceCamera(forceMode, minZoom, maxZoom);
                     }
                 }

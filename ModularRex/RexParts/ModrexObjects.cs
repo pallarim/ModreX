@@ -67,7 +67,7 @@ namespace ModularRex.RexParts
 
         void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
         {
-            RexClientView rcv;
+            RexClientViewBase rcv;
             if (client.TryGet(out rcv))
             {
                 rcv.OnRexObjectProperties += rcv_OnRexObjectProperties;
@@ -132,7 +132,7 @@ namespace ModularRex.RexParts
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                     {
-                        RexClientView rex;
+                        RexClientViewBase rex;
                         if (avatar.ClientView.TryGet(out rex))
                         {
                             rex.SendRexObjectProperties(id,props);
@@ -141,7 +141,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        private void SendPreloadAssetsToUser(RexClientView user)
+        private void SendPreloadAssetsToUser(RexClientViewBase user)
         {
             try
             {
@@ -170,7 +170,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        void SendAllPropertiesToUser(RexClientView user)
+        void SendAllPropertiesToUser(RexClientViewBase user)
         {
             SendPreloadAssetsToUser(user);
 

@@ -96,7 +96,7 @@ namespace ModularRex.RexNetwork.RexLogin
         /// </summary>
         void EventManager_OnClientConnect(OpenSim.Framework.Client.IClientCore client)
         {
-            RexClientView rex;
+            RexClientViewBase rex;
             if(client.TryGet(out rex))
             {
                 if (m_userData.ContainsKey(rex.AgentId))
@@ -110,7 +110,11 @@ namespace ModularRex.RexNetwork.RexLogin
                         rex.RexAccount = m_userData[rex.AgentId].Account + "@" + m_userData[rex.AgentId].AuthUrl;
                     }
                     rex.RexAvatarURL = m_userData[rex.AgentId].AvatarStorageUrl;
-                    rex.RexSkypeURL = m_userData[rex.AgentId].SkypeUrl;
+
+                    if (rex is RexClientViewLegacy)
+                    {
+                        ((RexClientViewLegacy)rex).RexSkypeURL = m_userData[rex.AgentId].SkypeUrl;
+                    }
                 }
                 else
                 {

@@ -31,8 +31,10 @@ namespace ModularRex.RexNetwork
             AuthenticateResponse sessionInfo, OpenMetaverse.UUID agentId, 
             OpenMetaverse.UUID sessionId, uint circuitCode, EndPoint proxyEP)
         {
+            //TODO: Make some way to identify which client view class is created
+            //      Uses now RexClientViewLegacy, because Bob can't connect to server anyway.
             return
-                new RexClientView(remoteEP, scene, assetCache, packServer,
+                new RexClientViewLegacy(remoteEP, scene, assetCache, packServer,
                                   sessionInfo, agentId, sessionId,
                                   circuitCode, proxyEP, new ClientStackUserSettings());
         }
@@ -47,11 +49,11 @@ namespace ModularRex.RexNetwork
                 return false;
             }
 
-            RexClientView rexuser;
+            RexClientViewBase rexuser;
 
             m_log.Debug("[REXCLIENT] Creating RexClient for user");
 
-            rexuser = (RexClientView) CreateNewCircuit(epSender, m_scene, assetCache, this, circuitManager,
+            rexuser = (RexClientViewBase) CreateNewCircuit(epSender, m_scene, assetCache, this, circuitManager,
                                                        useCircuit.CircuitCode.ID, useCircuit.CircuitCode.SessionID,
                                                        useCircuit.CircuitCode.Code, proxyEP);
 

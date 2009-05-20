@@ -175,7 +175,7 @@ namespace ModularRex.RexParts
                 s.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                     {
-                        RexNetwork.RexClientView rex;
+                        RexNetwork.RexClientViewBase rex;
                         if (avatar.ClientView.TryGet(out rex))
                         {
                             SendMediaURLtoUser(rex, assetID);

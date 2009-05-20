@@ -111,9 +111,9 @@ namespace ModularRex.RexParts.RexPython
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null)
             {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                if (temppre.ControllingClient is RexNetwork.RexClientViewBase)
                 {
-                    RexNetwork.RexClientView client = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    RexNetwork.RexClientViewBase client = (RexNetwork.RexClientViewBase)temppre.ControllingClient;
                     client.SendRexScriptCommand(vUnit, vCommand, vCmdParams);
                 }
             }
@@ -475,9 +475,9 @@ namespace ModularRex.RexParts.RexPython
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null)
             {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                if (temppre.ControllingClient is RexNetwork.RexClientViewBase)
                 {
-                    RexNetwork.RexClientView client = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    RexNetwork.RexClientViewBase client = (RexNetwork.RexClientViewBase)temppre.ControllingClient;
                     string sparams = vRot.x.ToString() + " " + vRot.y.ToString() + " " + vRot.z.ToString() + " " + vRot.s.ToString();
                     sparams = sparams.Replace(",", ".");
                     if (vbRelative)
@@ -530,9 +530,9 @@ namespace ModularRex.RexParts.RexPython
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null)
             {
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                if (temppre.ControllingClient is RexNetwork.RexClientViewBase)
                 {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    RexNetwork.RexClientViewBase rexclient = (RexNetwork.RexClientViewBase)temppre.ControllingClient;
                     return rexclient.RexVertMovementSpeedMod;
                 }
             }
@@ -545,9 +545,9 @@ namespace ModularRex.RexParts.RexPython
             UUID TempId = new UUID(vPresenceId);
             ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
             if (temppre != null)
-                if (temppre.ControllingClient is RexNetwork.RexClientView)
+                if (temppre.ControllingClient is RexNetwork.RexClientViewBase)
                 {
-                    RexNetwork.RexClientView rexclient = (RexNetwork.RexClientView)temppre.ControllingClient;
+                    RexNetwork.RexClientViewBase rexclient = (RexNetwork.RexClientViewBase)temppre.ControllingClient;
                     rexclient.RexVertMovementSpeedMod = vSpeedModifier;
                 }
         }

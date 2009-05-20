@@ -71,9 +71,9 @@ namespace ModularRex.RexNetwork
 
         private void OnNewClient(IClientAPI client)
         {
-            if (client is RexClientView)
+            if (client is RexClientViewBase)
             {
-                m_agent_type.Add(client.AgentId, typeof(RexClientView));
+                m_agent_type.Add(client.AgentId, typeof(RexClientViewBase));
             }
             else
             {
@@ -146,7 +146,7 @@ namespace ModularRex.RexNetwork
         {
             if (m_agent_type.ContainsKey(AgentId))
             {
-                if (m_agent_type[AgentId] == typeof(RexClientView))
+                if (m_agent_type[AgentId] == typeof(RexClientViewBase))
                 {
                     return true;
                 }

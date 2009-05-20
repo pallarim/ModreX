@@ -45,7 +45,7 @@ namespace ModularRex.RexParts.Modules
             }
         }
 
-        public void SendAllAppearancesToUser(RexClientView target)
+        public void SendAllAppearancesToUser(RexClientViewBase target)
         {
             m_log.Info("[REXAPR] Sending all appearances to user " + target.AgentId + ".");
             List<UUID> sent = new List<UUID>();
@@ -86,7 +86,7 @@ namespace ModularRex.RexParts.Modules
                 scene.ForEachScenePresence(
                     delegate(ScenePresence avatar)
                         {
-                            RexClientView rex;
+                            RexClientViewBase rex;
                             if (avatar.ClientView.TryGet(out rex))
                             {
                                 if (!sent.Contains(avatar.ControllingClient.AgentId))
@@ -134,9 +134,9 @@ namespace ModularRex.RexParts.Modules
                 {
                     rexClientAppearance.OnRexAppearance += mcv_OnRexAppearance;
                     SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible);
-                    if (client is RexClientView)
+                    if (client is RexClientViewBase)
                     {
-                        SendAllAppearancesToUser((RexClientView)client);
+                        SendAllAppearancesToUser((RexClientViewBase)client);
                     }
                 }
             }

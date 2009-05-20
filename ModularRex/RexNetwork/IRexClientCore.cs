@@ -9,7 +9,6 @@ namespace ModularRex.RexNetwork
     #region Rex ClientView delegate definitions
 
     public delegate void RexGenericMessageDelegate(IClientAPI sender, List<string> parameters);
-    public delegate void ReceiveRexSkypeStore(RexClientView remoteClient);
     public delegate void RexAppearanceDelegate(IClientAPI sender);
     public delegate void RexObjectPropertiesDelegate(IClientAPI sender, UUID id, RexObjectProperties props);
     public delegate void RexStartUpDelegate(IRexClientCore remoteClient, UUID agentID, string status);
@@ -21,7 +20,6 @@ namespace ModularRex.RexNetwork
     {
         UUID AgentId { get; }
 
-        string RexSkypeURL { get; set; }
         string RexAccount { get; set; }
         string RexAuthURL { get; set; }
 

@@ -25,8 +25,10 @@ namespace ModularRex.RexNetwork
     /// In the case whereby functionality uses the same packets but differs
     /// between Rex and LL, you can use a override on those specific functions
     /// to overload the request.
+    /// 
+    /// This class acts as a base class for legacy client and new rex-ng client (Bob)
     /// </summary>                                                                 
-    public class RexClientView : LLClientView, IClientRexFaceExpression, IClientRexAppearance, IClientMediaURL, IRexClientCore
+    public class RexClientViewBase : LLClientView, IClientRexFaceExpression, IClientRexAppearance, IClientMediaURL, IRexClientCore
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -37,7 +39,6 @@ namespace ModularRex.RexNetwork
         private string m_rexAvatarURL;
         private string m_rexAvatarURLOverride;
         private string m_rexAuthURL;
-        private string m_rexSkypeURL;
 
         private float m_RexCharacterSpeedMod = 1.0f;
         private float m_RexVertMovementSpeedMod = 1.0f;
@@ -50,9 +51,8 @@ namespace ModularRex.RexNetwork
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
         public event ReceiveRexMediaURL OnReceiveRexMediaURL;
         public event RexGenericMessageDelegate OnPrimFreeData;
-        public event ReceiveRexSkypeStore OnReceiveRexSkypeStore;
 
-        public RexClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
+        public RexClientViewBase(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
@@ -66,7 +66,7 @@ namespace ModularRex.RexNetwork
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
-        public RexClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
+        public RexClientViewBase(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
@@ -95,13 +95,11 @@ namespace ModularRex.RexNetwork
             AddGenericPacketHandler("RexData", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexMediaUrl", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("rexstartup", RealXtendClientView_OnGenericMessage);
-            AddGenericPacketHandler("RexSkypeStore", RealXtendClientView_OnGenericMessage);
 
             m_genericMessageHandlers.Add("rexfaceexpression", OnRexFaceExpression);
             m_genericMessageHandlers.Add("rexavatarprop", OnRexAvatarProperties);
             m_genericMessageHandlers.Add("rexmediaurl", TriggerOnReceivedRexMediaURL);
             m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
-            m_genericMessageHandlers.Add("rexskypestore", HandleOnSkypeStore);
         }
 
         
@@ -176,24 +174,6 @@ namespace ModularRex.RexNetwork
                     return RexAvatarURLOverride;
                 else
                     return RexAvatarURL;         
-            }
-        }
-
-
-        /// <summary>
-        /// Skype username of the avatar
-        /// eg: Skypeuser
-        /// </summary>
-        public string RexSkypeURL
-        {
-            get { return m_rexSkypeURL; }
-            set
-            {
-                m_rexSkypeURL = value;
-                if (OnReceiveRexSkypeStore != null)
-                {
-                    OnReceiveRexSkypeStore(this);
-                }
             }
         }
 
@@ -352,12 +332,6 @@ namespace ModularRex.RexNetwork
                 m_log.Warn("\t" + s);
             }
             m_log.Warn("}");
-        }
-
-        private void HandleOnSkypeStore(IClientAPI sender, List<string> args)
-        {
-            string skypeAddr = args[0];
-            this.RexSkypeURL = skypeAddr;
         }
 
         private void TriggerOnPrimFreeData(IClientAPI sender, List<string> args)
@@ -918,16 +892,6 @@ namespace ModularRex.RexNetwork
             pack.Add(speed.ToString().Replace(",", "."));
 
             SendGenericMessage("RexCSEffect", pack);
-        }
-
-        public void SendSkypeAddress(UUID agentID, string skypeAddress)
-        {
-            List<string> pack = new List<string>();
-
-            pack.Add(skypeAddress);
-            pack.Add(agentID.ToString());
-
-            SendGenericMessage("SkypeAdderss", pack);
         }
 
         public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
