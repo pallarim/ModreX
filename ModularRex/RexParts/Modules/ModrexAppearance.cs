@@ -139,6 +139,10 @@ namespace ModularRex.RexParts.Modules
                         SendAllAppearancesToUser((RexClientViewBase)client);
                     }
                 }
+
+                IRexClientCore rexclientcore;
+                if (clientCore.TryGet(out rexclientcore))
+                    rexclientcore.OnRexStartUp += mcv_OnRexClientStartUp;
             }
         }
 
@@ -150,6 +154,15 @@ namespace ModularRex.RexParts.Modules
         {
             if (sender is IClientRexAppearance)
                 SendAppearanceToAllUsers(sender.AgentId, ((IClientRexAppearance)sender).RexAvatarURLVisible, !string.IsNullOrEmpty(((IClientRexAppearance)sender).RexAvatarURLOverride));
+        }
+
+        /// <summary>
+        /// Fired when a client is started (rendering world after loading menu)
+        /// </summary>
+        void mcv_OnRexClientStartUp(IRexClientCore remoteClient, UUID agentID, string status)
+        {
+            if (status.ToLower() == "started" && remoteClient is IClientRexAppearance)
+                SendAppearanceToAllUsers(remoteClient.AgentId, ((IClientRexAppearance)remoteClient).RexAvatarURLVisible, !string.IsNullOrEmpty(((IClientRexAppearance)remoteClient).RexAvatarURLOverride));
         }
 
         public void PostInitialise()

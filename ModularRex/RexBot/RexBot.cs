@@ -209,6 +209,8 @@ namespace OpenSim.Region.Examples.RexBot
         // creates new bot on the default location
         public RexBot(Scene scene, NavMeshManager navMeshManager)
         {
+            RegisterInterfaces(); 
+
             m_scene = scene;
             m_navMeshManager = navMeshManager;
             m_navMesh = null;
