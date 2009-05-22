@@ -104,6 +104,12 @@ class Avatar(rxactor.Actor):
     def rexPlayAvatarAnim(self, vAnimName, vRate, vFadeIn, vFadeOut, nRepeats, vbStopAnim):
         self.MyWorld.CS.rexPlayAvatarAnim(self.AgentId,vAnimName, vRate, vFadeIn, vFadeOut, nRepeats, vbStopAnim)
 
+    def rexPlayMeshAnimation(self,vAnimName,vRate,vbLooped, vbStopAnim):
+        if(vbLooped):
+            return self.MyWorld.CS.rexPlayAvatarAnim(self.Id,vAnimName,vRate,0,0,9999999,False)
+        else:
+            return self.MyWorld.CS.rexPlayAvatarAnim(self.Id,vAnimName,vRate,0,0,1,False)
+
     def rexSetAvatarMorph(self, vMorphName, vWeight, vTime):
         self.MyWorld.CS.rexSetAvatarMorph(self.AgentId,vMorphName, vWeight, vTime)
 
