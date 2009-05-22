@@ -144,7 +144,6 @@ namespace OpenSim.Region.Examples.RexBot
             }
         }
 
-
         /// <summary>
         /// Skype username of the avatar
         /// eg: Skypeuser
@@ -802,9 +801,9 @@ namespace OpenSim.Region.Examples.RexBot
         public override IScene Scene
         {
             get { return m_scene; }
-        }    
+        }
 
-        public void SendRexAppearance(UUID agentID, string avatarURL){  }
+        public void SendRexAppearance(UUID agentID, string avatarURL, bool overrideUsed) { }
 
 
         #region IClientCore Members

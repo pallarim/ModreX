@@ -8,7 +8,7 @@ namespace ModularRex.RexNetwork
     public interface IClientRexAppearance
     {
         event RexAppearanceDelegate OnRexAppearance;
-        void SendRexAppearance(UUID agentID, string avatarURL);
+        void SendRexAppearance(UUID agentID, string avatarURL, bool overrideUsed);
 
         string RexAvatarURL { get; set; }
         string RexAvatarURLOverride { get; set; }

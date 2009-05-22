@@ -18,7 +18,7 @@ namespace ModularRex.RexParts.Modules
 
         private readonly List<Scene> m_scenes = new List<Scene>();
 
-        public void SendAppearanceToAllUsers(UUID user, string avatarServerURL)
+        public void SendAppearanceToAllUsers(UUID user, string avatarServerURL, bool overrideUsed)
         {
             m_log.Info("[REXAPR] Sending user " + user + " appearance to all users. [" + avatarServerURL + "]");
             // Ignore empty avatars
@@ -39,7 +39,7 @@ namespace ModularRex.RexParts.Modules
                             IClientRexAppearance rex;
                             if (avatar.ClientView.TryGet(out rex))
                             {
-                                rex.SendRexAppearance(user, avatarServerURL);
+                                rex.SendRexAppearance(user, avatarServerURL, overrideUsed);
                             }
                         });
             }
@@ -67,7 +67,7 @@ namespace ModularRex.RexParts.Modules
                                 avatarurl = rex.RexAvatarURLVisible;
                                 if (!string.IsNullOrEmpty(avatarurl))
                                 {
-                                    target.SendRexAppearance(client.AgentId, avatarurl);
+                                    target.SendRexAppearance(client.AgentId, avatarurl, !string.IsNullOrEmpty(rex.RexAvatarURLOverride));
                                     sent.Add(client.AgentId);
                                 }
                             }
@@ -133,7 +133,7 @@ namespace ModularRex.RexParts.Modules
                 if (clientCore.TryGet(out rexClientAppearance))
                 {
                     rexClientAppearance.OnRexAppearance += mcv_OnRexAppearance;
-                    SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible);
+                    SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible, !string.IsNullOrEmpty(rexClientAppearance.RexAvatarURLOverride));
                     if (client is RexClientViewBase)
                     {
                         SendAllAppearancesToUser((RexClientViewBase)client);
@@ -149,7 +149,7 @@ namespace ModularRex.RexParts.Modules
         void mcv_OnRexAppearance(IClientAPI sender)
         {
             if (sender is IClientRexAppearance)
-                SendAppearanceToAllUsers(sender.AgentId, ((IClientRexAppearance)sender).RexAvatarURLVisible);
+                SendAppearanceToAllUsers(sender.AgentId, ((IClientRexAppearance)sender).RexAvatarURLVisible, !string.IsNullOrEmpty(((IClientRexAppearance)sender).RexAvatarURLOverride));
         }
 
         public void PostInitialise()

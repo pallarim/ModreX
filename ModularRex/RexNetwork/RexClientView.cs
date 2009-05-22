@@ -319,7 +319,7 @@ namespace ModularRex.RexNetwork
             {
                 if (OnRexStartUp != null)
                 {
-                    OnRexStartUp(this, AgentId, args[0]);
+                    OnRexStartUp(this, AgentId, args[1]);
                     return;
                 }
             }
@@ -472,11 +472,12 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexFaceExpression", expressionData);
         }
 
-        public void SendRexAppearance(UUID agentID, string avatarURL)
+        public void SendRexAppearance(UUID agentID, string avatarURL, bool overrideUsed)
         {
             List<string> pack = new List<string>();
             pack.Add(avatarURL);
             pack.Add(agentID.ToString());
+            pack.Add(overrideUsed.ToString());
 
             SendGenericMessage("RexAppearance", pack);
         }
