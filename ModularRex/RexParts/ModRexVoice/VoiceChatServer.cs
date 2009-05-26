@@ -287,7 +287,7 @@ namespace OpenSim.Region.Communications.VoiceChat
             }
         }
         
-        public XmlRpcResponse XmlRpcVoiceServerAddressRequestHandler(XmlRpcRequest request)
+        public XmlRpcResponse XmlRpcVoiceServerAddressRequestHandler(XmlRpcRequest request, IPEndPoint client)
         {
             XmlRpcResponse response = new XmlRpcResponse();
             Hashtable responseValue = new Hashtable();

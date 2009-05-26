@@ -16,6 +16,7 @@ using OpenSim.Framework.Communications.Cache;
 using OpenSim.Framework.Servers;
 using ModularRex.RexDBObjects;
 using OpenSim.Framework.Servers.HttpServer;
+using System.Net;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
@@ -211,7 +212,7 @@ namespace ModularRex.RexNetwork.RexLogin
             return inventoryLibOwner;
         }
 
-        public virtual XmlRpcResponse XmlRpcLoginMethod(XmlRpcRequest request)
+        public virtual XmlRpcResponse XmlRpcLoginMethod(XmlRpcRequest request, IPEndPoint client)
         {
             //CFK: CustomizeResponse contains sufficient strings to alleviate the need for this.
             //CKF: m_log.Info("[LOGIN]: Attempting login now...");
@@ -257,7 +258,7 @@ namespace ModularRex.RexNetwork.RexLogin
             {
                 if (clientVersion.StartsWith("realXtend"))
                 {
-                    XmlRpcResponse rep = default_login_to_simulator(request);
+                    XmlRpcResponse rep = default_login_to_simulator(request, client);
                     Hashtable val = (Hashtable)rep.Value;
                     val["rex"] = "running rex mode";
                     val["sim_port"] = GetPort(m_primaryRegionInfo.RegionHandle);                    
@@ -271,7 +272,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     {
                         m_log.Info(
                             "[REXLOGIN END]: XMLRPC  login_to_simulator login message did not contain all the required data. Trying default method.");
-                        return default_login_to_simulator(request);
+                        return default_login_to_simulator(request, client);
                     }
                     else
                     {
