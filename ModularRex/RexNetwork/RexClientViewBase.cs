@@ -378,12 +378,12 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        public void SendRexObjectProperties(UUID id, RexObjectProperties x)
+        public virtual void SendRexObjectProperties(UUID id, RexObjectProperties x)
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
             gmp.MethodData.Method = Utils.StringToBytes("RexPrimData");
 
-            byte[] temprexprimdata = x.GetRexPrimDataToBytes();
+            byte[] temprexprimdata = x.GetRexPrimDataToBytes(false);
             int numlines = 0;
             int i = 0;
 
@@ -418,7 +418,6 @@ namespace ModularRex.RexNetwork
 
             // m_log.Warn("[REXDEBUG]: SendRexPrimData " + vPrimId.ToString());
             OutPacket(gmp, ThrottleOutPacketType.Task);
-
         }
 
         /// <summary>

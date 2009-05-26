@@ -308,6 +308,69 @@ namespace ModularRex.RexFramework
                 TriggerChangedRexObjectProperties();
             }
         }
+
+        #region Asset URLS
+
+        //These URLs are offered to NG-clients in SendRexObjectUpdate
+
+        private string m_rexMeshURL = String.Empty;
+        private string m_rexCollisionMeshURL = String.Empty;
+        private string m_rexParticleScriptURL = String.Empty;
+        private string m_rexAnimationPackageURL = String.Empty;
+        private string m_rexSoundURL = String.Empty;
+
+        public string RexMeshURL
+        {
+            get { return m_rexMeshURL; }
+            set
+            {
+                m_rexMeshURL = value;
+                TriggerChangedRexObjectProperties();
+            }
+        }
+
+        public string RexCollisionMeshURL
+        {
+            get { return m_rexCollisionMeshURL; }
+            set
+            {
+                m_rexCollisionMeshURL = value;
+                TriggerChangedRexObjectProperties();
+            }
+        }
+
+        public string RexParticleScriptURL
+        {
+            get { return m_rexParticleScriptURL; }
+            set
+            {
+                m_rexParticleScriptURL = value;
+                TriggerChangedRexObjectProperties();
+            }
+        }
+
+        public string RexAnimationPackageURL
+        {
+            get { return m_rexAnimationPackageURL; }
+            set
+            {
+                m_rexAnimationPackageURL = value;
+                TriggerChangedRexObjectProperties();
+            }
+        }
+
+        public string RexSoundURL
+        {
+            get { return m_rexSoundURL; }
+            set
+            {
+                m_rexSoundURL = value;
+                TriggerChangedRexObjectProperties();
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Constructors
@@ -433,7 +496,7 @@ namespace ModularRex.RexFramework
         
         
         #region Old RexServer ToByte/FromByte methods
-        public byte[] GetRexPrimDataToBytes()
+        public byte[] GetRexPrimDataToBytes(bool sendURLs)
         {
             try
             {
@@ -455,6 +518,19 @@ namespace ModularRex.RexFramework
                 // Misc
                 size = size + m_RexClassName.Length + 1 + // classname & endbyte
                     16 + sizeof(float) + sizeof(float); // sounduuid,sndvolume,sndradius
+
+                //add url sizes and their endbyte to size
+                if (sendURLs)
+                {
+                    size +=
+                        m_rexMeshURL.Length + 1 +
+                        m_rexCollisionMeshURL.Length + 1 +
+                        m_rexParticleScriptURL.Length + 1 +
+                        m_rexAnimationPackageURL.Length + 1 +
+                        m_rexSoundURL.Length + 1;
+
+                    //TODO: Add material urls
+                }
 
                 // Build byte array
                 byte[] buffer = new byte[size];

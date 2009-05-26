@@ -113,11 +113,6 @@ namespace ModularRex.RexFramework
             assetId = e.Value;
         }
 
-        public KeyValuePair<uint,UUID> getDictionaryEntry()
-        {
-            return new KeyValuePair<uint, UUID>(num, assetId);
-        }
-
         private uint num = 0;
         public uint Num
         {
@@ -126,13 +121,29 @@ namespace ModularRex.RexFramework
         }
 
         private UUID assetId = UUID.Zero;
+        /// <summary>
+        /// The ID of the asset
+        /// </summary>
         public UUID AssetID
         {
             get { return assetId; }
             set { assetId = value; }
         }
 
+        private string assetUrl = String.Empty;
+        /// <summary>
+        /// The url of the asset where it is located
+        /// </summary>
+        public string AssetURL
+        {
+            get { return assetUrl; }
+            set { assetUrl = value; }
+        }
+
         private UUID rexObjectUUID;
+        /// <summary>
+        /// The UUID of the object to which this entry belongs to
+        /// </summary>
         public UUID RexObjectUUID
         {
             get { return rexObjectUUID; }
