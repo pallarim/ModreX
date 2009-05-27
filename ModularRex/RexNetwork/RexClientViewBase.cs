@@ -230,7 +230,7 @@ namespace ModularRex.RexNetwork
         #endregion
         
 
-        private void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
+        protected void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
         {
             if(method == "RexPrimData".ToLower())
             {
@@ -248,7 +248,7 @@ namespace ModularRex.RexNetwork
 
             foreach (byte[] arg in args)
             {
-                if(!first)
+                if (!first)
                 {
                     id = new UUID(Util.FieldToString(arg));
                     first = true;
@@ -263,18 +263,26 @@ namespace ModularRex.RexNetwork
 
             foreach (byte[] arg in args)
             {
-                if(!first)
+                if (!first)
                 {
                     first = true;
                     continue;
                 }
 
-                arg.CopyTo(rpdArray,idx);
+                arg.CopyTo(rpdArray, idx);
                 idx += arg.Length;
             }
 
+            //by default message doesn't contain URIs. However, with NG-client situation can be quite different
+            TriggerOnRexObjectProperties(this, id, new RexObjectProperties(rpdArray, false));
+        }
+
+        protected void TriggerOnRexObjectProperties(RexClientViewBase client, UUID id, RexObjectProperties robject)
+        {
             if (OnRexObjectProperties != null)
-                OnRexObjectProperties(this, id, new RexObjectProperties(rpdArray));
+            {
+                OnRexObjectProperties(client, id, robject);
+            }
         }
 
         /// <summary>

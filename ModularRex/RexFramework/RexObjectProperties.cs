@@ -381,9 +381,9 @@ namespace ModularRex.RexFramework
         /// the properties.
         /// </summary>
         /// <param name="data"></param>
-        public RexObjectProperties(byte[] data)
+        public RexObjectProperties(byte[] data, bool containsURIs)
         {
-            SetRexPrimDataFromBytes(data);
+            SetRexPrimDataFromBytes(data, containsURIs);
             RexMaterials.SetSceneObjectPart(this);
         }
 
@@ -643,40 +643,40 @@ namespace ModularRex.RexFramework
             }
         }
 
-        public void SetRexPrimDataFromBytes(byte[] bytes)
+        public void SetRexPrimDataFromBytes(byte[] bytes, bool containsURIs)
         {
             mProcessingPacketData = true;
         
             try
             {
                 int idx = 0;
-                RexDrawType = bytes[idx++];
+                m_RexDrawType = bytes[idx++];
 
-                RexIsVisible = BitConverter.ToBoolean(bytes, idx);
+                m_RexIsVisible = BitConverter.ToBoolean(bytes, idx);
                 idx += sizeof(bool);
-                RexCastShadows = BitConverter.ToBoolean(bytes, idx);
+                m_RexCastShadows = BitConverter.ToBoolean(bytes, idx);
                 idx += sizeof(bool);
-                RexLightCreatesShadows = BitConverter.ToBoolean(bytes, idx);
+                m_RexLightCreatesShadows = BitConverter.ToBoolean(bytes, idx);
                 idx += sizeof(bool);
-                RexDescriptionTexture = BitConverter.ToBoolean(bytes, idx);
+                m_RexDescriptionTexture = BitConverter.ToBoolean(bytes, idx);
                 idx += sizeof(bool);
-                RexScaleToPrim = BitConverter.ToBoolean(bytes, idx);
+                m_RexScaleToPrim = BitConverter.ToBoolean(bytes, idx);
                 idx += sizeof(bool);
 
-                RexDrawDistance = BitConverter.ToSingle(bytes, idx);
+                m_RexDrawDistance = BitConverter.ToSingle(bytes, idx);
                 idx += sizeof(float);
-                RexLOD = BitConverter.ToSingle(bytes, idx);
+                m_RexLOD = BitConverter.ToSingle(bytes, idx);
                 idx += sizeof(float);
 
-                RexMeshUUID = new UUID(bytes, idx);
+                m_RexMeshUUID = new UUID(bytes, idx);
                 idx += 16;
-                RexCollisionMeshUUID = new UUID(bytes, idx);
+                m_RexCollisionMeshUUID = new UUID(bytes, idx);
                 idx += 16;
-                RexParticleScriptUUID = new UUID(bytes, idx);
+                m_RexParticleScriptUUID = new UUID(bytes, idx);
                 idx += 16;
 
                 // animation
-                RexAnimationPackageUUID = new UUID(bytes, idx);
+                m_RexAnimationPackageUUID = new UUID(bytes, idx);
                 idx += 16;
                 StringBuilder bufferanimname = new StringBuilder();
                 while ((idx < bytes.Length) && (bytes[idx] != 0))
@@ -684,13 +684,14 @@ namespace ModularRex.RexFramework
                     char c = (char)bytes[idx++];
                     bufferanimname.Append(c);
                 }
-                RexAnimationName = bufferanimname.ToString();
+                m_RexAnimationName = bufferanimname.ToString();
                 idx++;
-                RexAnimationRate = BitConverter.ToSingle(bytes, idx);
+                m_RexAnimationRate = BitConverter.ToSingle(bytes, idx);
                 idx += sizeof(float);
 
                 // materials, before setting materials clear them
                 RexMaterials.ClearMaterials();
+                Dictionary<uint, UUID> materialData = new Dictionary<uint, UUID>();
                 byte matcount = bytes[idx++];
                 for (int i = 0; i < matcount; i++)
                 {
@@ -698,7 +699,15 @@ namespace ModularRex.RexFramework
                     UUID matuuid = new UUID(bytes, idx);
                     idx += 16;
                     byte matindex = bytes[idx++];
-                    RexMaterials.AddMaterial(Convert.ToUInt32(matindex), matuuid);
+                    if (!containsURIs)
+                    {
+                        RexMaterials.AddMaterial(Convert.ToUInt32(matindex), matuuid); //old clients do it like this
+                    }
+                    else
+                    {
+                        materialData.Add(Convert.ToUInt32(matindex), matuuid);
+                        //add to temporary dictinary so the information can be found when adding materials with uris
+                    }
                 }
 
                 // misc
@@ -708,22 +717,35 @@ namespace ModularRex.RexFramework
                     char c = (char)bytes[idx++];
                     buffer.Append(c);
                 }
-                RexClassName = buffer.ToString();
+                m_RexClassName = buffer.ToString();
                 idx++;
 
-                RexSoundUUID = new UUID(bytes, idx);
+                m_RexSoundUUID = new UUID(bytes, idx);
                 idx += 16;
-                RexSoundVolume = BitConverter.ToSingle(bytes, idx);
+                m_RexSoundVolume = BitConverter.ToSingle(bytes, idx);
                 idx += sizeof(float);
-                RexSoundRadius = BitConverter.ToSingle(bytes, idx);
+                m_RexSoundRadius = BitConverter.ToSingle(bytes, idx);
                 idx += sizeof(float);
 
                 if (bytes.Length >= (idx + sizeof(int)))
                 {
-                    RexSelectPriority = BitConverter.ToInt32(bytes, idx);
-// ReSharper disable RedundantAssignment
+                    m_RexSelectPriority = BitConverter.ToInt32(bytes, idx);
                     idx += sizeof(int);
-// ReSharper restore RedundantAssignment
+                }
+
+                if (containsURIs)
+                {
+                    m_rexMeshURL = BuildStringFromBytes(bytes, ref idx);
+                    m_rexCollisionMeshURL = BuildStringFromBytes(bytes, ref idx);
+                    m_rexParticleScriptURL = BuildStringFromBytes(bytes, ref idx);
+                    m_rexAnimationPackageURL = BuildStringFromBytes(bytes, ref idx);
+                    m_rexSoundURL = BuildStringFromBytes(bytes, ref idx);
+
+                    foreach (KeyValuePair<uint, UUID> kvp in materialData)
+                    {
+                        string uri = BuildStringFromBytes(bytes, ref idx);
+                        RexMaterials.AddMaterial(kvp.Key, kvp.Value, uri);
+                    }
                 }
 
                 mProcessingPacketData = false;
@@ -735,6 +757,19 @@ namespace ModularRex.RexFramework
                 m_log.Error(e.ToString());
             }
         }
+
+        private string BuildStringFromBytes(byte[] bytes, ref int idx)
+        {
+            StringBuilder uribuilder = new StringBuilder();
+            while ((idx < bytes.Length) && (bytes[idx] != 0))
+            {
+                char c = (char)bytes[idx++];
+                uribuilder.Append(c);
+            }
+            idx++;
+            return uribuilder.ToString();
+        }
+
         #endregion
 
         #region Debug
