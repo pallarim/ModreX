@@ -7,5 +7,6 @@
       <property name="AssetID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
 			<property name="Num" type="OpenSim.Data.NHibernate.UInt32Type, OpenSim.Data.NHibernate" />
       <property name="RexObjectUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+      <property name="AssetURI" type="String" length="512" />
 	</class>
 </hibernate-mapping>

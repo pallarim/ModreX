@@ -309,7 +309,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        #region Asset URLS
+        #region Asset URIS
 
         //These URLs are offered to NG-clients in SendRexObjectUpdate
 
@@ -319,7 +319,7 @@ namespace ModularRex.RexFramework
         private string m_rexAnimationPackageURL = String.Empty;
         private string m_rexSoundURL = String.Empty;
 
-        public string RexMeshURL
+        public string RexMeshURI
         {
             get { return m_rexMeshURL; }
             set
@@ -329,7 +329,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        public string RexCollisionMeshURL
+        public string RexCollisionMeshURI
         {
             get { return m_rexCollisionMeshURL; }
             set
@@ -339,7 +339,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        public string RexParticleScriptURL
+        public string RexParticleScriptURI
         {
             get { return m_rexParticleScriptURL; }
             set
@@ -349,7 +349,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        public string RexAnimationPackageURL
+        public string RexAnimationPackageURI
         {
             get { return m_rexAnimationPackageURL; }
             set
@@ -359,7 +359,7 @@ namespace ModularRex.RexFramework
             }
         }
 
-        public string RexSoundURL
+        public string RexSoundURI
         {
             get { return m_rexSoundURL; }
             set
@@ -532,7 +532,7 @@ namespace ModularRex.RexFramework
                     //Add material url lengths
                     foreach(RexMaterialsDictionaryItem item in materials.Values)
                     {
-                        size += item.AssetURL.Length + 1;
+                        size += item.AssetURI.Length + 1;
                     }
                 }
 
@@ -628,8 +628,8 @@ namespace ModularRex.RexFramework
                     //And finally, the material urls
                     foreach (RexMaterialsDictionaryItem item in materials.Values)
                     {
-                        Encoding.ASCII.GetBytes(item.AssetURL).CopyTo(buffer, idx);
-                        idx += (item.AssetURL.Length);
+                        Encoding.ASCII.GetBytes(item.AssetURI).CopyTo(buffer, idx);
+                        idx += (item.AssetURI.Length);
                         buffer[idx++] = 0;
                     }
                 }

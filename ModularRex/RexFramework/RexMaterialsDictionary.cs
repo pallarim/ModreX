@@ -43,20 +43,20 @@ namespace ModularRex.RexFramework
                 MyPart.TriggerChangedRexObjectProperties();
         }
 
-        public void AddMaterial(uint index, UUID materialUUID, string materialURL)
+        public void AddMaterial(uint index, UUID materialUUID, string materialURI)
         {
             lock (this)
             {
                 if (this.ContainsKey(index))
                 {
                     this[index].AssetID = materialUUID;
-                    this[index].AssetURL = materialURL;
+                    this[index].AssetURI = materialURI;
                 }
                 else
                 {
                     this[index] = new RexMaterialsDictionaryItem();
                     this[index].AssetID = materialUUID;
-                    this[index].AssetURL = materialURL;
+                    this[index].AssetURI = materialURI;
                 }
             }
             if (MyPart != null)
@@ -139,7 +139,7 @@ namespace ModularRex.RexFramework
         {
             num = e.Key;
             assetId = e.Value.AssetID;
-            assetUrl = e.Value.AssetURL;
+            assetUri = e.Value.AssetURI;
         }
 
         private uint num = 0;
@@ -159,14 +159,14 @@ namespace ModularRex.RexFramework
             set { assetId = value; }
         }
 
-        private string assetUrl = String.Empty;
+        private string assetUri = String.Empty;
         /// <summary>
-        /// The url of the asset where it is located
+        /// The uri of the asset where it is located
         /// </summary>
-        public string AssetURL
+        public string AssetURI
         {
-            get { return assetUrl; }
-            set { assetUrl = value; }
+            get { return assetUri; }
+            set { assetUri = value; }
         }
 
         private UUID rexObjectUUID;
@@ -181,7 +181,7 @@ namespace ModularRex.RexFramework
 
         public override string ToString()
         {
-            return num.ToString() + ";" + assetId.ToString() + ";" + assetUrl;
+            return num.ToString() + ";" + assetId.ToString() + ";" + assetUri;
         }
     }
 
