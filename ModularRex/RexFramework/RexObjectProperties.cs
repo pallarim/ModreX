@@ -209,7 +209,7 @@ namespace ModularRex.RexFramework
             get
             {
                 IList<RexMaterialsDictionaryItem> tempRexMaterialDictionaryItems = new List<RexMaterialsDictionaryItem>();
-                foreach (KeyValuePair<uint, UUID> entry in RexMaterials)
+                foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> entry in RexMaterials)
                 {
                     tempRexMaterialDictionaryItems.Add(new RexMaterialsDictionaryItem(entry));
                 }
@@ -223,7 +223,7 @@ namespace ModularRex.RexFramework
                     foreach (RexMaterialsDictionaryItem e in value)
                     {
                         //rexMaterialDictionary.Add(e.Num, e.AssetID);
-                        RexMaterials.Add(e.Num, e.AssetID);
+                        RexMaterials.Add(e.Num, e);
                     }
                 }
             }
@@ -529,7 +529,11 @@ namespace ModularRex.RexFramework
                         m_rexAnimationPackageURL.Length + 1 +
                         m_rexSoundURL.Length + 1;
 
-                    //TODO: Add material urls
+                    //Add material url lengths
+                    foreach(RexMaterialsDictionaryItem item in materials.Values)
+                    {
+                        size += item.AssetURL.Length + 1;
+                    }
                 }
 
                 // Build byte array
@@ -569,15 +573,15 @@ namespace ModularRex.RexFramework
                 idx += sizeof(float);
 
                 buffer[idx++] = (byte)materials.Values.Count;
-                foreach (KeyValuePair<uint, UUID> kvp in materials)
+                foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in materials)
                 {
                     // Client needs assettype so that it knows if this is texture or material script
                     byte assettype = 0;
                     if(RexEventManager != null)
-                        assettype = RexEventManager.GetAssetType(kvp.Value);
+                        assettype = RexEventManager.GetAssetType(kvp.Value.AssetID);
                                             
                     buffer[idx++] = assettype;
-                    kvp.Value.GetBytes().CopyTo(buffer, idx); // matuuid 
+                    kvp.Value.AssetID.GetBytes().CopyTo(buffer, idx); // matuuid 
                     idx += 16;
 
                     byte tempindex = (byte)kvp.Key; // matindex
@@ -596,9 +600,39 @@ namespace ModularRex.RexFramework
                 idx += sizeof(float);
 
                 BitConverter.GetBytes(m_RexSelectPriority).CopyTo(buffer, idx);
-// ReSharper disable RedundantAssignment
                 idx += sizeof(int);
-// ReSharper restore RedundantAssignment
+
+                //Add URL to packet
+                if (sendURLs)
+                {
+                    Encoding.ASCII.GetBytes(m_rexMeshURL).CopyTo(buffer, idx);
+                    idx += (m_rexMeshURL.Length);
+                    buffer[idx++] = 0;
+
+                    Encoding.ASCII.GetBytes(m_rexCollisionMeshURL).CopyTo(buffer, idx);
+                    idx += (m_rexCollisionMeshURL.Length);
+                    buffer[idx++] = 0;
+
+                    Encoding.ASCII.GetBytes(m_rexParticleScriptURL).CopyTo(buffer, idx);
+                    idx += (m_rexParticleScriptURL.Length);
+                    buffer[idx++] = 0;
+
+                    Encoding.ASCII.GetBytes(m_rexAnimationPackageURL).CopyTo(buffer, idx);
+                    idx += (m_rexAnimationPackageURL.Length);
+                    buffer[idx++] = 0;
+
+                    Encoding.ASCII.GetBytes(m_rexSoundURL).CopyTo(buffer, idx);
+                    idx += (m_rexSoundURL.Length);
+                    buffer[idx++] = 0;
+
+                    //And finally, the material urls
+                    foreach (RexMaterialsDictionaryItem item in materials.Values)
+                    {
+                        Encoding.ASCII.GetBytes(item.AssetURL).CopyTo(buffer, idx);
+                        idx += (item.AssetURL.Length);
+                        buffer[idx++] = 0;
+                    }
+                }
 
                 return buffer;
             }

@@ -294,9 +294,9 @@ namespace ModularRex.RexNetwork
                             }
                             break;
                         case 0: //texture
-                            foreach (KeyValuePair<uint, UUID> kvp in rop.GetRexMaterials())
+                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
                             {
-                                asset = scene.AssetService.Get(kvp.Value.ToString());
+                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
                                 if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);
@@ -304,9 +304,9 @@ namespace ModularRex.RexNetwork
                             }
                             break;
                         case 41: //Material && Particle, WTF??!
-                            foreach (KeyValuePair<uint, UUID> kvp in rop.GetRexMaterials())
+                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
                             {
-                                asset = scene.AssetService.Get(kvp.Value.ToString());
+                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
                                 if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
                                 {
                                     foundObjects.Add(asset);

@@ -16,7 +16,7 @@ namespace ModularRex.RexFramework
     /// Rex Material Dictionary
     /// May get unfolded as a seperate class
     /// </summary>
-    public class RexMaterialsDictionary : Dictionary<uint, UUID>, ICloneable, IXmlSerializable
+    public class RexMaterialsDictionary : Dictionary<uint, RexMaterialsDictionaryItem>, ICloneable, IXmlSerializable
     {
         private RexObjectProperties MyPart;
 
@@ -25,11 +25,39 @@ namespace ModularRex.RexFramework
             MyPart = vPart;
         }
 
-        public void AddMaterial(uint vIndex, UUID vMaterialUUID)
+        public void AddMaterial(uint index, UUID materialUUID)
         {
             lock (this)
             {
-                this[vIndex] = vMaterialUUID;
+                if (this.ContainsKey(index))
+                {
+                    this[index].AssetID = materialUUID;
+                }
+                else
+                {
+                    this[index] = new RexMaterialsDictionaryItem();
+                    this[index].AssetID = materialUUID;
+                }
+            }
+            if (MyPart != null)
+                MyPart.TriggerChangedRexObjectProperties();
+        }
+
+        public void AddMaterial(uint index, UUID materialUUID, string materialURL)
+        {
+            lock (this)
+            {
+                if (this.ContainsKey(index))
+                {
+                    this[index].AssetID = materialUUID;
+                    this[index].AssetURL = materialURL;
+                }
+                else
+                {
+                    this[index] = new RexMaterialsDictionaryItem();
+                    this[index].AssetID = materialUUID;
+                    this[index].AssetURL = materialURL;
+                }
             }
             if (MyPart != null)
                 MyPart.TriggerChangedRexObjectProperties();
@@ -90,7 +118,7 @@ namespace ModularRex.RexFramework
             string s = String.Empty;
 
             foreach (uint matindex in Keys)
-                s = s + "idx:" + matindex + ",value:" + this[matindex] + "\n";
+                s = s + "idx:" + matindex + ",value:" + this[matindex].ToString() + "\n";
 
             return s;
         }
@@ -107,10 +135,11 @@ namespace ModularRex.RexFramework
 
         public RexMaterialsDictionaryItem() { }
 
-        public RexMaterialsDictionaryItem(KeyValuePair<uint, UUID> e)
+        public RexMaterialsDictionaryItem(KeyValuePair<uint, RexMaterialsDictionaryItem> e)
         {
             num = e.Key;
-            assetId = e.Value;
+            assetId = e.Value.AssetID;
+            assetUrl = e.Value.AssetURL;
         }
 
         private uint num = 0;
@@ -148,6 +177,11 @@ namespace ModularRex.RexFramework
         {
             get { return rexObjectUUID; }
             set { rexObjectUUID = value; }
+        }
+
+        public override string ToString()
+        {
+            return num.ToString() + ";" + assetId.ToString() + ";" + assetUrl;
         }
     }
 
