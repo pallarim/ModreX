@@ -82,17 +82,45 @@ namespace ModularRex.RexParts
         private void rcv_OnPrimFreeData(IClientAPI sender, List<string> parameters)
         {
             m_log.Info("[REXOBJS] Received Prim free data");
-            if (parameters.Count == 2)
+            if (parameters.Count >= 2)
             {
                 UUID primID = new UUID(parameters[0]);
-                string data = parameters[1];
+                string data = String.Empty;
+                if(parameters.Count == 2)
+                {
+                    data = parameters[1];
+                }else
+                {
+                    for (int i = 1; i < parameters.Count; i++)
+                    {
+                        data += parameters[i];
+                    }
+                }
 
                 RexObjectProperties props = GetObject(primID);
                 props.RexData = data;
+
+                SendPrimFreeDataToAllUsers(primID, data);
             }
             else
             {
                 m_log.Warn("[REXOBJS] unexpected number of parameters");
+            }
+        }
+
+        void SendPrimFreeDataToAllUsers(UUID id, string data)
+        {
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachScenePresence(
+                    delegate(ScenePresence avatar)
+                    {
+                        RexClientViewBase rex;
+                        if (avatar.ClientView.TryGet(out rex))
+                        {
+                            rex.SendRexPrimFreeData(id, data);
+                        }
+                    });
             }
         }
 
@@ -177,6 +205,10 @@ namespace ModularRex.RexParts
             foreach (RexObjectProperties p in GetObjects())
             {
                 user.SendRexObjectProperties(p.ParentObjectID, p);
+                if (p.RexData.Length > 0) //send rex data also if exists
+                {
+                    user.SendRexPrimFreeData(p.ParentObjectID, p.RexData);
+                }
             }
         }
 

@@ -902,6 +902,35 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexCSEffect", pack);
         }
 
+        public void SendRexPrimFreeData(UUID primID, string rexData)
+        {
+            List<string> pack = new List<string>();
+
+            int numlines = 0;
+            int i = 0;
+            //count number of lines. 200chars/line
+            while (i <= rexData.Length)
+            {
+                numlines++;
+                i += 200;
+            }
+
+            pack.Add(primID.ToString());
+
+            string sline = "";
+            for (i = 0; i < numlines; i++) //cut the data to 200 char fields and add to packet
+            {
+                if ((rexData.Length - i * 200) < 200)
+                    sline = rexData.Substring(i * 200, rexData.Length - i * 200);
+                else
+                    sline = rexData.Substring(i * 200, 200);
+
+                pack.Add(sline);
+            }
+
+            SendGenericMessage("RexData", pack);
+        }
+
         public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
         {
             IRexUDPPort module = m_scene.RequestModuleInterface<IRexUDPPort>();
