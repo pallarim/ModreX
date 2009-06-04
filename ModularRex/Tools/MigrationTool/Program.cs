@@ -27,6 +27,9 @@ namespace ModularRex.Tools.MigrationTool
 
             MigrationWorker app = new MigrationWorker(appSettings);
             app.Start();
+
+            Console.WriteLine("Hit enter to quit");
+            Console.ReadLine();
         }
     }
 }

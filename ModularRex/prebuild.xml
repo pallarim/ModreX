@@ -239,6 +239,7 @@
       <Files>
         <Match pattern="*.cs" recurse="true"/>
         <Match path="Resources/" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match pattern="ModularRex.Tools.MigrationTool.exe.config" copyToOutput="PreserveNewest" buildAction="None"/>
       </Files>
     </Project>
 
