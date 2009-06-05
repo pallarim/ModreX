@@ -221,13 +221,13 @@
 
       <ReferencePath>../../../../bin/</ReferencePath>
       <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml" localCopy="false"/>
       <Reference name="OpenMetaverse.dll" localCopy="false"/>
       <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
       <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
       <Reference name="ModularRex"/>
       <Reference name="ModularRex.RexFramework"/>
       <Reference name="ModularRex.NHibernate"/>
-      <Reference name="OpenSim.Data.NHibernate"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim"/>
       <Reference name="Nini.dll" />

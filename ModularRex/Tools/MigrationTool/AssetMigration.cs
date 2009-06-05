@@ -92,7 +92,7 @@ namespace ModularRex.Tools.MigrationTool
 
                     //finally remove realXtend properties and update version number
                     conn.Open();
-                    //TODO: remove New website, new realXtend!
+                    //TODO: remove realXtend properties
                     // this is not done yet because SQLite is missing drop column feature
                     m.Version = 1;
                 }

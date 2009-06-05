@@ -9,7 +9,6 @@ using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Data.NHibernate;
 using OpenSim.Framework;
 using ModularRex.NHibernate;
 using OpenSim.Framework.Communications.Cache;

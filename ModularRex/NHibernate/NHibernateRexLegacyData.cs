@@ -11,7 +11,7 @@ using Environment = NHibernate.Cfg.Environment;
 using ModularRex.RexFramework;
 using OpenSim.Data.NHibernate;
 
-namespace OpenSim.Data.NHibernate
+namespace ModularRex.NHibernate
 {
     public class NHibernateRexLegacyData
     {

@@ -3,7 +3,6 @@ BEGIN TRANSACTION;
 CREATE TABLE prims(
        UUID varchar(255) primary key,
        RegionUUID varchar(255),
-       ParentID integer,
        CreationDate integer,
        Name varchar(255),
        SceneGroupID varchar(255),

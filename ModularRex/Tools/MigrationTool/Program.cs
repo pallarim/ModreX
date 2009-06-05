@@ -25,7 +25,7 @@ namespace ModularRex.Tools.MigrationTool
             NetworkServersInfo networkSettings;
             configurationLoader.LoadConfigSettings(configSource, out appSettings, out networkSettings);
 
-            MigrationWorker app = new MigrationWorker(appSettings);
+            MigrationWorker app = new MigrationWorker(configSource);
             app.Start();
 
             Console.WriteLine("Hit enter to quit");
