@@ -59,10 +59,10 @@ namespace ModularRex.Tools.MigrationTool
                     if (version == 0)
                     {
                         //read rex tables and add to rex database
-                        m_log.info("[regionstore] converting rex tables to rexobjectproperties");
-                        if (!convertlegacyrexdatatomodrex())
+                        m_log.Info("[regionstore] converting rex tables to rexobjectproperties");
+                        if (!ConvertLegacyRexDataToModreX())
                         {
-                            conn.close();
+                            conn.Close();
                             return false;
                         }
 
