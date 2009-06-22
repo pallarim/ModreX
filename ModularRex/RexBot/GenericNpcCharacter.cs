@@ -1076,6 +1076,12 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        event DeGrabObject IClientAPI.OnDeGrabObject
+        {
+            add { ;}
+            remove { ; }
+        }
+
         #endregion
     }
 }

@@ -31,7 +31,7 @@ namespace ModularRex.RexNetwork
 
         public WorldAssetsFolder() { }
 
-        private void EventManager_OnRegisterCaps(UUID agentID, OpenSim.Framework.Communications.Capabilities.Caps caps)
+        private void EventManager_OnRegisterCaps(UUID agentID, OpenSim.Framework.Capabilities.Caps caps)
         {
             caps.CAPSFetchInventoryDescendents = HandleFetchInventoryDescendentsCAPS;
         }

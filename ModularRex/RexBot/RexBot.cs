@@ -356,7 +356,7 @@ namespace OpenSim.Region.Examples.RexBot
             GetNextDestination();
         }
 
-        private void eventManager_OnClientClosed(UUID clientID)
+        private void eventManager_OnClientClosed(UUID clientID, Scene scene)
         {
             if (clientID != this.m_myID)
             {

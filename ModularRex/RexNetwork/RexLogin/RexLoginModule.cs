@@ -320,11 +320,11 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.StartLocation = startLocationRequest;
 
-                string capsPath = OpenSim.Framework.Communications.Capabilities.CapsUtil.GetRandomCapsObjectPath();
+                string capsPath = OpenSim.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath();
                 string httpServerURI = "http://" + m_primaryRegionInfo.ExternalHostName + ":" + m_primaryRegionInfo.HttpPort;
                 //string seedcap = "http://" + m_scenes[0].RegionInfo.ExternalEndPoint.Address + ":" +
                 //                 "9000" + "/CAPS/" + capsPath + "0000/";
-                string seedcap = httpServerURI + OpenSim.Framework.Communications.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
+                string seedcap = httpServerURI + OpenSim.Framework.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
 
                 logResponse.SeedCapability = seedcap;
 
@@ -492,9 +492,9 @@ namespace ModularRex.RexNetwork.RexLogin
                 // RexAvatar class when it connects.
                 m_userData[agentData.AgentID] = rap;
 
-                string capsPath = OpenSim.Framework.Communications.Capabilities.CapsUtil.GetRandomCapsObjectPath();
+                string capsPath = OpenSim.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath();
                 string httpServerURI = "http://" + m_primaryRegionInfo.ExternalHostName + ":" + m_primaryRegionInfo.HttpPort;
-                string seedcap = httpServerURI + OpenSim.Framework.Communications.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
+                string seedcap = httpServerURI + OpenSim.Framework.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
 
                 //UserAdminService is null in grid mode
                 //m_scenes[0].CommsManager.UserAdminService.AddUser(agentData.firstname, agentData.lastname, "",

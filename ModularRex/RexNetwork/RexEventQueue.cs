@@ -14,7 +14,7 @@ using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenSim.Region.CoreModules.Framework.EventQueue;
 //using BlockingLLSDQueue = OpenSim.Framework.BlockingQueue<OpenMetaverse.StructuredData.OSD>;
-using Caps = OpenSim.Framework.Communications.Capabilities.Caps;
+using Caps = OpenSim.Framework.Capabilities.Caps;
 
 namespace ModularRex.RexNetwork
 {
@@ -64,7 +64,7 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        private void ClientClosed(UUID clientID)
+        private void ClientClosed(UUID clientID, Scene scene)
         {
             m_agent_type.Remove(clientID);
         }
