@@ -306,7 +306,13 @@ namespace OpenSim.Region.Communications.VoiceChat
                 m_scenes.Add(scene);
             }
 
-            m_voiceServerUrl = source.Configs["realXtend"].GetString("voice_server_url", "");
+            if (source.Configs["realXtend"] != null)
+                m_voiceServerUrl = source.Configs["realXtend"].GetString("voice_server_url", String.Empty);
+            else
+            {
+                m_log.Warn("[VOICECHAT]: Could not find realXtend configuration from OpenSim.ini");
+                m_voiceServerUrl = String.Empty;
+            }
         }
 
         public void PostInitialise()
