@@ -27,9 +27,9 @@ Now the ModreX binaries have been placed in to opensim/bin and is ready to run.
 7. Copy directories Lib and PythonScript from opensim/modrex/ModularRex/RexParts/RexPython/Resources to opensim/bin/ScriptEngines
 8. Go back to OpenSim solution and right click the solution and select "Add -> Existing project...". Add these six projects:
   * opensim/modrex/ModularRex/ModularRex.csproj
-  * opensim/modrex/ModularRex/ModularRex.NHibernate.csproj
-  * opensim/modrex/ModularRex/ModularRex.RexFramework.csproj
-  * opensim/modrex/ModularRex/ModularRex.RexOdePlugin.csproj
-  * opensim/modrex/ModularRex/ModularRex.RexBot.csproj (optional)
+  * opensim/modrex/ModularRex/NHibernate/ModularRex.NHibernate.csproj
+  * opensim/modrex/ModularRex/RexFramework/ModularRex.RexFramework.csproj
+  * opensim/modrex/ModularRex/RexOdePlugin/ModularRex.RexOdePlugin.csproj
+  * opensim/modrex/ModularRex/RexBot/ModularRex.RexBot.csproj (optional)
   * opensim/modrex/ModularRex/Tools/MigrationTool/ModularRex.Tools.MigrationTool.csproj (optional)
 9. Compile and have fun
