@@ -137,7 +137,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 m_libraryRootFolder.AddChildFolder(m_worldAssets);
 
             //Rex-NG
-            m_scenes[0].CommsManager.HttpServer.AddHTTPHandler("/enable_client", CableBeachLoginMethod);
+            m_scenes[0].CommsManager.HttpServer.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
         }
 
         public void Close()
