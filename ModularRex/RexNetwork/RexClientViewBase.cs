@@ -15,6 +15,7 @@ using OpenSim.Region.ClientStack;
 using OpenSim.Region.ClientStack.LindenUDP;
 using ModularRex.RexNetwork.RexLogin;
 using System.Timers;
+using System.Text;
 
 namespace ModularRex.RexNetwork
 {
@@ -61,9 +62,6 @@ namespace ModularRex.RexNetwork
             // Rex communication now occurs via GenericMessage
             // We have a special handler here below.
             AddGenericPacketHandlers();
-
-            OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
-            OnGenericMessage += RealXtendClientView_OnGenericMessage;
         }
 
         public RexClientViewBase(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
@@ -77,14 +75,15 @@ namespace ModularRex.RexNetwork
 
             AddGenericPacketHandlers();
 
-            OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
-
             RexAvatarURL = rexAvatarURL;
             RexAuthURL = rexAuthURL;
         }
 
         private void AddGenericPacketHandlers()
         {
+            OnBinaryGenericMessage += RexClientView_BinaryGenericMessage;
+            OnGenericMessage += RealXtendClientView_OnGenericMessage;
+
             AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
@@ -99,10 +98,41 @@ namespace ModularRex.RexNetwork
             m_genericMessageHandlers.Add("rexfaceexpression", OnRexFaceExpression);
             m_genericMessageHandlers.Add("rexavatarprop", OnRexAvatarProperties);
             m_genericMessageHandlers.Add("rexmediaurl", TriggerOnReceivedRexMediaURL);
-            m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
+            //m_genericMessageHandlers.Add("rexdata", TriggerOnPrimFreeData);
         }
 
-        
+        /// <summary>
+        /// Converts the Generic Message byte data to UTF8 string List and triggers the OnPrimFreeData
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="method">The name of the method.</param>
+        /// <param name="args">Generic message data in bytes</param>
+        private void HandleRexPrimFreeData(object sender, string method, byte[][] args)
+        {
+            //parse byte data to strings
+            List<string> sargs = new List<string>();
+
+            foreach (byte[] arg in args)
+            {
+                string s = FieldToUTF8String(arg);
+                sargs.Add(s);
+            }
+
+            TriggerOnPrimFreeData(this, sargs);
+        }
+ 	  	 
+        /// <summary>
+ 	  	/// Convert a variable length field (byte array) to a UTF8 string
+ 	  	/// </summary>
+ 	  	/// <param name="bytes">The byte array to convert to a string</param>
+ 	  	/// <returns>A UTF8 string</returns>
+        protected static string FieldToUTF8String(byte[] bytes)
+        {
+            if (bytes.Length > 0 && bytes[bytes.Length - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes);
+        }
 
         /// <summary>
         /// Registers interfaces for IClientCore,
@@ -228,17 +258,26 @@ namespace ModularRex.RexNetwork
         }
 
         #endregion
-        
+
 
         protected void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
         {
-            if(method == "RexPrimData".ToLower())
+            if (method == "RexPrimData".ToLower())
             {
                 HandleRexPrimData(args);
                 return;
             }
+            else if (method == "rexdata")
+            {
+                HandleRexPrimFreeData(sender, method, args);
+                return;
+            }
         }
 
+        /// <summary>
+        /// Handles the rex prim byte data, converts it to RexObjectProperties and triggers OnRexObjectProperties
+        /// </summary>
+        /// <param name="args">Rex prim data as bytes.</param>
         private void HandleRexPrimData(byte[][] args)
         {
             int rpdLen = 0;
@@ -332,6 +371,8 @@ namespace ModularRex.RexNetwork
                 }
             }
             if (method == "rexprimdata")
+                return;
+            if (method == "rexdata")
                 return;
 
             m_log.Warn("[REXCLIENT] Unhandled GenericMessage (" + method + ") {");
