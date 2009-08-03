@@ -325,7 +325,7 @@ namespace OpenSim.Region.Communications.VoiceChat
             {
                 s.EventManager.OnNewClient += NewClient;
                 s.EventManager.OnRemovePresence += RemovePresence;
-                s.CommsManager.HttpServer.AddXmlRPCHandler("voice_chat_server_address_request", this.XmlRpcVoiceServerAddressRequestHandler);
+                MainServer.Instance.AddXmlRPCHandler("voice_chat_server_address_request", this.XmlRpcVoiceServerAddressRequestHandler);
             }
             
             try

@@ -62,9 +62,9 @@ namespace ModularRex.RexNetwork
         {
             RexCaps rexcaps = new RexCaps(
                 m_scene.AssetService,
-                m_scene.CommsManager.HttpServer,
+                MainServer.Instance,
                 m_scene.RegionInfo.ExternalHostName,
-                m_scene.CommsManager.HttpServer.Port,
+                MainServer.Instance.Port,
                 m_scene.DumpAssetsToFile);
             rexcaps.UUID = agentID;
             rexcaps.Caps = caps;

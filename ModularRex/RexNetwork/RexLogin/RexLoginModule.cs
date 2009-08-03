@@ -20,7 +20,7 @@ using System.Net;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
-    public class RexLoginModule : IRegionModule, IRexUDPPort
+    public class RexLoginModule : ISharedRegionModule, IRexUDPPort
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -44,50 +44,6 @@ namespace ModularRex.RexNetwork.RexLogin
         protected LibraryRootFolder m_libraryRootFolder;
 
         protected WorldAssetsFolder m_worldAssets;
-
-        public void Initialise(Scene scene, IConfigSource source)
-        {
-            m_config = source;
-
-            m_scenes.Add(scene);
-
-            scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
-            scene.RegisterModuleInterface<IRexUDPPort>(this);
-
-            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
-            {
-                if (m_scenes.Count == 1) //Listen very carefully, I will say this only once
-                {
-                    //Load OpenSim Library folder config
-                    string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
-                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
-
-                    m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
-
-                    m_primaryRegionInfo = m_scenes[0].RegionInfo;
-
-                    m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
-                }
-
-                m_log.Info("[REX] Initialising");
-
-                RexUDPServer udpserver = new RexUDPServer();
-                uint _udpport = (uint)m_nextUdpPort;
-                udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
-                    scene.AuthenticateHandler);
-                udpserver.AddScene(scene);
-
-                m_region_ports.Add(scene.RegionInfo.RegionHandle, m_nextUdpPort);
-                m_udpservers.Add(udpserver);
-                udpserver.Start();
-                m_nextUdpPort++;
-
-            }
-            else
-            {
-                m_log.Info("[REX] Not overloading Login_to_Simulator and not starting UDP server");
-            }
-        }
 
         /// <summary>
         /// Used to transmit in the Account Name to the new RexClientView
@@ -127,17 +83,6 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void PostInitialise()
         {
-            //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
-            m_log.Info("[REX] Overloading Login_to_Simulator");
-            default_login_to_simulator = m_scenes[0].CommsManager.HttpServer.GetXmlRPCHandler("login_to_simulator");
-            m_scenes[0].CommsManager.HttpServer.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
-
-            m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
-            if (m_worldAssets != null)
-                m_libraryRootFolder.AddChildFolder(m_worldAssets);
-
-            //Rex-NG
-            m_scenes[0].CommsManager.HttpServer.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
         }
 
         public void Close()
@@ -150,10 +95,6 @@ namespace ModularRex.RexNetwork.RexLogin
             get { return "RexLoginOverrider"; }
         }
 
-        public bool IsSharedModule
-        {
-            get { return true; }
-        }
 
         #region RexLoginHelper
 
@@ -551,7 +492,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 respdata["success"] = "TRUE";
 
                 OSDMap map = new OSDMap();
-                map.Add("seed_capability", new OSDURI(new Uri(seedcap)));
+                map.Add("seed_capability", new OSDUri(new Uri(seedcap)));
                 map.Add("sim_port", new OSDInteger(GetPort(m_primaryRegionInfo.RegionHandle)));
                 map.Add("sim_address", new OSDString(m_primaryRegionInfo.ExternalEndPoint.Address.ToString()));
                 string strBuffer = "";
@@ -678,6 +619,87 @@ namespace ModularRex.RexNetwork.RexLogin
             }
             m_log.WarnFormat("[IRexUDPPort]: Port not found for IP end point {0}", endPoint);
             return 0;
+        }
+
+        #endregion
+
+        #region IRegionModuleBase Members
+
+        public void AddRegion(Scene scene)
+        {
+            m_scenes.Add(scene);
+
+            scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
+            scene.RegisterModuleInterface<IRexUDPPort>(this);
+            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            {
+                if (m_scenes.Count == 1) //Listen very carefully, I will say this only once
+                {
+                    //Load OpenSim Library folder config
+                    string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
+                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
+
+                    m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
+
+                    m_primaryRegionInfo = m_scenes[0].RegionInfo;
+
+                    m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
+                }
+
+                RexUDPServer udpserver = new RexUDPServer();
+                uint _udpport = (uint)m_nextUdpPort;
+                udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
+                    scene.AuthenticateHandler);
+                udpserver.AddScene(scene);
+
+                m_region_ports.Add(scene.RegionInfo.RegionHandle, m_nextUdpPort);
+                m_udpservers.Add(udpserver);
+                udpserver.Start();
+                m_nextUdpPort++;
+            }
+        }
+
+        public void Initialise(IConfigSource source)
+        {
+            m_config = source;
+
+            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            {
+                m_log.Info("[REX] Initialising");
+            }
+            else
+            {
+                m_log.Info("[REX] Not overloading Login_to_Simulator and not starting UDP server");
+            }
+        }
+
+        public void RegionLoaded(Scene scene)
+        {
+            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            {
+                //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
+                m_log.Info("[REX] Overloading Login_to_Simulator");
+                default_login_to_simulator = MainServer.Instance.GetXmlRPCHandler("login_to_simulator");
+                MainServer.Instance.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
+
+                m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
+                if (m_worldAssets != null)
+                    m_libraryRootFolder.AddChildFolder(m_worldAssets);
+
+                //Rex-NG
+                MainServer.Instance.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
+            }
+        }
+
+        public void RemoveRegion(Scene scene)
+        {
+            m_scenes.Remove(scene);
+            scene.EventManager.OnClientConnect -= EventManager_OnClientConnect;
+        }
+
+        public Type ReplacableInterface
+        {
+            get { return null; }
         }
 
         #endregion

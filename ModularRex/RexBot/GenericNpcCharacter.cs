@@ -262,6 +262,8 @@ namespace OpenSim.Region.Examples.RexBot
 
         public event PlacesQuery OnPlacesQuery;
 
+        public event UpdatePrimSingleRotationPosition OnUpdatePrimSingleRotationPosition;
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();
@@ -1080,6 +1082,15 @@ namespace OpenSim.Region.Examples.RexBot
         {
             add { ;}
             remove { ; }
+        }
+
+        public EndPoint GetClientEP()
+        {
+            return null;
+        }
+
+        public void SendCameraConstraint(Vector4 ConstraintPlane)
+        {
         }
 
         #endregion

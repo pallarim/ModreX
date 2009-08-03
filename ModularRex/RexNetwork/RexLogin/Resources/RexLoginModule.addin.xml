@@ -1,0 +1,13 @@
+﻿<Addin id="ModularRex.RexNetwork.RexLogin" version="0.1">
+  <Runtime>
+    <Import assembly="ModularRex.dll"/>
+  </Runtime>
+
+  <Dependencies>
+    <Addin id="OpenSim" version="0.5" />
+  </Dependencies>
+
+  <Extension path = "/OpenSim/RegionModules">
+    <RegionModule id="RexLoginModule" type="ModularRex.RexNetwork.RexLogin.RexLoginModule" />
+  </Extension>
+</Addin>

@@ -80,7 +80,15 @@ namespace ModularRex.RexParts
                 avatar.ControllingClient.OnRezObject -= avatar.Scene.RezObject;
                 avatar.ControllingClient.OnDeRezObject -= avatar.Scene.DeRezObject;
                 avatar.ControllingClient.OnRezObject += ClientRezObject;
-                avatar.ControllingClient.OnDeRezObject += ClientDeRezObject;
+                avatar.ControllingClient.OnDeRezObject += DeRezObj;
+            }
+        }
+
+        private void DeRezObj(IClientAPI remoteClient, List<uint> localIDs, UUID groupID, DeRezAction action, UUID destinationID)
+        {
+            foreach (uint id in localIDs)
+            {
+                ClientDeRezObject(remoteClient, id, groupID, action, destinationID);
             }
         }
 

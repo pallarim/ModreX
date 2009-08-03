@@ -141,6 +141,7 @@
         <Match pattern="*.cs" recurse="false"/>
         <Match path="Properties" pattern="*.cs" recurse="false"/>
         <Match path="RexNetwork" pattern="*.cs" recurse="true"/>
+        <Match path="RexNetwork/RexLogin/Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
         <Match path="RexParts" pattern="*.cs" recurse="true"/>
         <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
       </Files>
