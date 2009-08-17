@@ -1,0 +1,215 @@
+<EmbeddedSolution name="ModularRex" path="./">
+    <Project name="ModularRex.RexFramework" path="./addon-modules/ModreX/ModularRex/RexFramework" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../../bin/</ReferencePath>
+	 <Reference name="log4net"/>
+	 <Reference name="OpenMetaverse"/>
+	 <Reference name="OpenMetaverseTypes"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project> 
+
+
+    <Project name="ModularRex.NHibernate" path="./addon-modules/ModreX/ModularRex/NHibernate" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../../bin/</ReferencePath>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="log4net.dll"/>
+	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverseTypes.dll"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+	 <Reference name="OpenSim.Framework"/>
+	 <Reference name="OpenSim.Data.NHibernate"/>
+	 <Reference name="NHibernate"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+        <Match pattern="*.addin.xml" path="Resources" buildAction="EmbeddedResource" recurse="true"/>
+        <!-- add more as you go -->
+        <Match path="Resources/MsSql2005Dialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match path="Resources/SQLiteDialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match path="Resources/MySQLDialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+      </Files>
+    </Project> 
+
+    <Project name="ModularRex" path="./addon-modules/ModreX/ModularRex/" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	 <ReferencePath>../../../bin/</ReferencePath>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="ModularRex.NHibernate"/>
+	 <Reference name="IronMath.dll" />
+	 <Reference name="IronPython.dll" />
+	 <Reference name="log4net.dll"/>
+	 <Reference name="Nini.dll" />
+	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverse.StructuredData.dll"/>
+	 <Reference name="OpenMetaverseTypes.dll"/>
+	 <Reference name="OpenSim"/>
+     <Reference name="OpenSim.Services.Interfaces"/>
+	 <Reference name="OpenSim.Framework.dll"/>
+	 <Reference name="OpenSim.Framework.Capabilities.dll"/>
+	 <Reference name="OpenSim.Framework.Communications.dll"/>
+	 <Reference name="OpenSim.Framework.Console.dll"/>
+	 <Reference name="OpenSim.Framework.Servers.dll"/>
+	 <Reference name="OpenSim.Framework.Servers.HttpServer.dll"/>
+	 <Reference name="OpenSim.Framework.Statistics.dll"/>
+	 <Reference name="OpenSim.Region.ClientStack.dll"/>
+	 <Reference name="OpenSim.Region.ClientStack.LindenUDP.dll"/>
+	 <Reference name="OpenSim.Region.Communications.Local.dll"/>
+	 <Reference name="OpenSim.Region.Framework.dll"/>
+	 <Reference name="OpenSim.Region.Physics.Manager.dll"/>
+	 <Reference name="OpenSim.Region.ScriptEngine.Shared.dll"/>
+	 <Reference name="OpenSim.Region.ScriptEngine.Shared.Api.dll"/>
+	 <Reference name="OpenSim.Region.CoreModules.dll"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="XMLRPC.dll"/>
+      <Files>
+        <Match pattern="*.cs" recurse="false"/>
+        <Match path="Properties" pattern="*.cs" recurse="false"/>
+        <Match path="RexNetwork" pattern="*.cs" recurse="true"/>
+        <Match path="RexNetwork/RexLogin/Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+        <Match path="RexParts" pattern="*.cs" recurse="true"/>
+        <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="ModularRex.RexOdePlugin" path="./addon-modules/ModreX/ModularRex/RexOdePlugin" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../ModularRex/bin/</ReferencePath>
+      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../../bin/Physics</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="Nini.dll" />
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Region.Physics.Manager"/>
+      <Reference name="OpenSim.Region.Physics.Meshing"/>
+      <Reference name="ModularRex"/>
+      <Reference name="Ode.NET.dll"/>
+      <Reference name="nunit.framework.dll"/>
+      <Reference name="log4net.dll"/>
+      <Reference name="RexDotMeshLoader.dll" localCopy="true"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+
+    <Project name="ModularRex.RexBot" path="./addon-modules/ModreX/ModularRex/RexBot" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="OpenMetaverse.dll" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
+      <Reference name="ModularRex"/>
+      <Reference name="ModularRex.RexFramework"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Region.Framework.dll"/>
+      <Reference name="Nini.dll" />
+      <Reference name="log4net.dll"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="ModularRex.Tools.MigrationTool" path="./addon-modules/ModreX/ModularRex/Tools/MigrationTool" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml" localCopy="false"/>
+      <Reference name="OpenMetaverse.dll" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
+      <Reference name="ModularRex"/>
+      <Reference name="ModularRex.RexFramework"/>
+      <Reference name="ModularRex.NHibernate"/>
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim"/>
+      <Reference name="Nini.dll" />
+      <Reference name="log4net.dll"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Data.SQLite.dll"/>
+      <Reference name="OpenSim.Data"/>
+      <Reference name="Mono.Data.SqliteClient"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources/" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match pattern="ModularRex.Tools.MigrationTool.exe.config" copyToOutput="PreserveNewest" buildAction="None"/>
+      </Files>
+    </Project>
+</EmbeddedSolution>
