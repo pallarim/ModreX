@@ -697,7 +697,7 @@ namespace ModularRex.RexNetwork.RexLogin
             scene.EventManager.OnClientConnect -= EventManager_OnClientConnect;
         }
 
-        public Type ReplacableInterface
+        public Type ReplaceableInterface
         {
             get { return null; }
         }

@@ -39,10 +39,10 @@ namespace ModularRex.RexNetwork
         }
 
 
-        public RexClientViewLegacy(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
+        public RexClientViewLegacy(EndPoint remoteEP, IScene scene,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
+            : base(remoteEP, scene, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
         {
             AddGenericPacketHandler("RexSkypeStore", HandleOnSkypeStore);

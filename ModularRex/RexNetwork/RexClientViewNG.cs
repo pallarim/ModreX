@@ -17,7 +17,7 @@ namespace ModularRex.RexNetwork
         public RexClientViewNG(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, assetCache, packServer, authenSessions, agentId,
+            : base(remoteEP, scene, packServer, authenSessions, agentId,
                    sessionId, circuitCode, proxyEP, userSettings)
         {
             OnBinaryGenericMessage -= base.RexClientView_BinaryGenericMessage;

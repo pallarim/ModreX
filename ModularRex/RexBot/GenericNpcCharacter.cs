@@ -264,6 +264,8 @@ namespace OpenSim.Region.Examples.RexBot
 
         public event UpdatePrimSingleRotationPosition OnUpdatePrimSingleRotationPosition;
 
+        public event ObjectRequest OnObjectRequest;
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();
