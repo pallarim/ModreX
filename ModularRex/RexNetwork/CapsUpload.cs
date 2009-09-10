@@ -25,7 +25,6 @@ namespace ModularRex.RexNetwork
 
         public void Close()
         {
-            m_scene.EventManager.OnNewClient -= OnNewClient;
             m_scene.EventManager.OnRegisterCaps -= OnClientRegisterCaps;
         }
 
@@ -47,16 +46,10 @@ namespace ModularRex.RexNetwork
         public void PostInitialise()
         {
             m_capsmodule = m_scene.RequestModuleInterface<ICapabilitiesModule>();
-            m_scene.EventManager.OnNewClient += OnNewClient;
             m_scene.EventManager.OnRegisterCaps += OnClientRegisterCaps;
         }
 
         #endregion
-
-        private void OnNewClient(IClientAPI client)
-        {
-            Caps clientCaps = m_capsmodule.GetCapsHandlerForUser(client.AgentId);
-        }
 
         private void OnClientRegisterCaps(OpenMetaverse.UUID agentID, Caps caps)
         {
