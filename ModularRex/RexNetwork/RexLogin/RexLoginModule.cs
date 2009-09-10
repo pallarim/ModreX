@@ -114,13 +114,30 @@ namespace ModularRex.RexNetwork.RexLogin
 
         private static LoginService.InventoryData GetInventorySkeleton(Scene any, UUID userID)
         {
-            List<InventoryFolderBase> folders = any.CommsManager.InterServiceInventoryService.GetInventorySkeleton(userID);
-
-            // If we have user auth but no inventory folders for some reason, create a new set of folders.
-            if (null == folders || 0 == folders.Count)
+            List<InventoryFolderBase> folders = null; 
+            if (any.InventoryService != null)
             {
-                any.CommsManager.InterServiceInventoryService.CreateNewUserInventory(userID);
+                // local service (standalone)
+                folders = any.InventoryService.GetInventorySkeleton(userID);
+
+                // If we have user auth but no inventory folders for some reason, create a new set of folders.
+                if (folders == null || 0 == folders.Count)
+                {
+                    any.InventoryService.CreateUserInventory(userID);
+                    folders = any.InventoryService.GetInventorySkeleton(userID);
+                }
+            }
+            else if (any.CommsManager.InterServiceInventoryService != null)
+            {
+                // used by the user server
                 folders = any.CommsManager.InterServiceInventoryService.GetInventorySkeleton(userID);
+
+                // If we have user auth but no inventory folders for some reason, create a new set of folders.
+                if (null == folders || 0 == folders.Count)
+                {
+                    any.CommsManager.InterServiceInventoryService.CreateNewUserInventory(userID);
+                    folders = any.CommsManager.InterServiceInventoryService.GetInventorySkeleton(userID);
+                }
             }
 
             UUID rootID = UUID.Zero;
@@ -293,30 +310,48 @@ namespace ModularRex.RexNetwork.RexLogin
                     logResponse.SecureSessionID = GetSecureID(account);
                 }
 
-                m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+                if (m_scenes[0].InventoryService != null)
+                {
+                    // local service (standalone)
+                    m_scenes[0].InventoryService.CreateUserInventory(agentID);
+
+                    //m_log.Debug("[USERSTORAGE]: using IInventoryService to create user's inventory");
+                    //m_InventoryService.CreateUserInventory(userProf.ID);
+                    //InventoryFolderBase rootfolder = m_InventoryService.GetRootFolder(userProf.ID);
+                    //if (rootfolder != null)
+                    //    userProf.RootInventoryFolderID = rootfolder.ID;
+                }
+                else if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+                {
+                    // used by the user server
+                    m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+
+                    //m_log.Debug("[USERSTORAGE]: using m_commsManager.InterServiceInventoryService to create user's inventory");
+                    //m_commsManager.InterServiceInventoryService.CreateNewUserInventory(userProf.ID);
+                }
+
+                    LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
+
+                    ArrayList AgentInventoryArray = inventData.InventoryArray;
+
+                    Hashtable InventoryRootHash = new Hashtable();
+                    InventoryRootHash["folder_id"] = inventData.RootFolderID.ToString();
+                    ArrayList InventoryRoot = new ArrayList();
+                    InventoryRoot.Add(InventoryRootHash);
+                    //userProfile.RootInventoryFolderID = inventData.RootFolderID;
+
+                    // Inventory Library Section
+                    Hashtable InventoryLibRootHash = new Hashtable();
+                    InventoryLibRootHash["folder_id"] = "00000112-000f-0000-0000-000100bba000";
+                    ArrayList InventoryLibRoot = new ArrayList();
+                    InventoryLibRoot.Add(InventoryLibRootHash);
+
+                    logResponse.InventoryLibRoot = InventoryLibRoot;
+                    logResponse.InventoryLibraryOwner = GetLibraryOwner();
+                    logResponse.InventoryRoot = InventoryRoot;
+                    logResponse.InventorySkeleton = AgentInventoryArray;
+                    logResponse.InventoryLibrary = GetInventoryLibrary();
                 
-                LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
-
-                ArrayList AgentInventoryArray = inventData.InventoryArray;
-
-                Hashtable InventoryRootHash = new Hashtable();
-                InventoryRootHash["folder_id"] = inventData.RootFolderID.ToString();
-                ArrayList InventoryRoot = new ArrayList();
-                InventoryRoot.Add(InventoryRootHash);
-                //userProfile.RootInventoryFolderID = inventData.RootFolderID;
-
-                // Inventory Library Section
-                Hashtable InventoryLibRootHash = new Hashtable();
-                InventoryLibRootHash["folder_id"] = "00000112-000f-0000-0000-000100bba000";
-                ArrayList InventoryLibRoot = new ArrayList();
-                InventoryLibRoot.Add(InventoryLibRootHash);
-
-                logResponse.InventoryLibRoot = InventoryLibRoot;
-                logResponse.InventoryLibraryOwner = GetLibraryOwner();
-                logResponse.InventoryRoot = InventoryRoot;
-                logResponse.InventorySkeleton = AgentInventoryArray;
-                logResponse.InventoryLibrary = GetInventoryLibrary();
-
                 foreach (Scene scene in m_scenes)
                 {
                     AgentCircuitData acd = new AgentCircuitData();
@@ -451,8 +486,14 @@ namespace ModularRex.RexNetwork.RexLogin
                     }
                 }
 
-                if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+                if (m_scenes[0].InventoryService != null)
                 {
+                    // local service (standalone)
+                    m_scenes[0].InventoryService.CreateUserInventory(agentData.AgentID);
+                }
+                else if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+                {
+                    // used by the user server
                     m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentData.AgentID);
                 }
 
