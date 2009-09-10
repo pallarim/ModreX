@@ -52,8 +52,8 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        private List<InventoryItemBase> HandleFetchInventoryDescendentsCAPS(UUID agentID, UUID folderID, UUID ownerID,
-                                                   bool fetchFolders, bool fetchItems, int sortOrder)
+        private InventoryCollection HandleFetchInventoryDescendentsCAPS(UUID agentID, UUID folderID, UUID ownerID,
+                                                   bool fetchFolders, bool fetchItems, int sortOrder, out int version)
         {
             //            m_log.DebugFormat(
             //                "[INVENTORY CACHE]: Fetching folders ({0}), items ({1}) from {2} for agent {3}",
@@ -61,82 +61,133 @@ namespace ModularRex.RexNetwork
 
             // FIXME MAYBE: We're not handling sortOrder!
 
-            // TODO: This code for looking in the folder for the library should be folded back into the
-            // CachedUserInfo so that this class doesn't have to know the details (and so that multiple libraries, etc.
-            // can be handled transparently).            
             InventoryFolderImpl fold;
 
             // rex
-            
-                if (folderID == this.ID)
-                {
-                    return this.RequestListOfItems();//libraryRoot.RequestListOfItems();
-                }
-                if ((fold = this.FindFolder(folderID)) != null)
-                {
-                    return fold.RequestListOfItems();
-                }
-            
+            if (folderID == this.ID)
+            {
+                version = 0;
+                InventoryCollection ret = new InventoryCollection();
+                ret.Folders = new List<InventoryFolderBase>();
+                ret.Items = this.RequestListOfItems();
+                return ret;
+            }
+            if ((fold = this.FindFolder(folderID)) != null)
+            {
+                version = 0;
+                InventoryCollection ret = new InventoryCollection();
+                ret.Folders = new List<InventoryFolderBase>();
+                ret.Items = fold.RequestListOfItems();
+                return ret;
+            }
             // rex-end 
-
-
+            
             if ((fold = m_scenes[0].CommsManager.UserProfileCacheService.LibraryRoot.FindFolder(folderID)) != null)
             {
-                return fold.RequestListOfItems();
+                version = 0;
+                InventoryCollection ret = new InventoryCollection();
+                ret.Folders = new List<InventoryFolderBase>();
+                ret.Items = fold.RequestListOfItems();
+
+                return ret;
             }
 
-            CachedUserInfo userProfile = m_scenes[0].CommsManager.UserProfileCacheService.GetUserDetails(agentID);
+            InventoryCollection contents = m_scenes[0].InventoryService.GetFolderContent(agentID, folderID);
 
-            if (null == userProfile)
+            if (folderID != UUID.Zero)
             {
-                m_log.ErrorFormat("[AGENT INVENTORY]: Could not find user profile for {0}", agentID);
-                return null;
-            }
-
-            // XXX: When a client crosses into a scene, their entire inventory is fetched
-            // asynchronously.  If the client makes a request before the inventory is received, we need
-            // to give the inventory a chance to come in.
-            //
-            // This is a crude way of dealing with that by retrying the lookup.  It's not quite as bad
-            // in CAPS as doing this with the udp request, since here it won't hold up other packets.
-            // In fact, here we'll be generous and try for longer.
-            if (!userProfile.HasReceivedInventory)
-            {
-                int attempts = 0;
-                while (attempts++ < 30)
-                {
-                    m_log.DebugFormat(
-                         "[INVENTORY CACHE]: Poll number {0} for inventory items in folder {1} for user {2}",
-                         attempts, folderID, agentID);
-
-                    System.Threading.Thread.Sleep(2000);
-
-                    if (userProfile.HasReceivedInventory)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (userProfile.HasReceivedInventory)
-            {
-                if ((fold = userProfile.RootFolder.FindFolder(folderID)) != null)
-                {
-                    return fold.RequestListOfItems();
-                }
-                else
-                {
-                    m_log.WarnFormat(
-                        "[AGENT INVENTORY]: Could not find folder {0} requested by user {1}",
-                        folderID, agentID);
-                    return null;
-                }
+                InventoryFolderBase containingFolder = new InventoryFolderBase();
+                containingFolder.ID = folderID;
+                containingFolder.Owner = agentID;
+                containingFolder = m_scenes[0].InventoryService.GetFolder(containingFolder);
+                version = containingFolder.Version;
             }
             else
             {
-                m_log.ErrorFormat("[INVENTORY CACHE]: Could not find root folder for user {0}", agentID);
-                return null;
+                // Lost itemsm don't really need a version
+                version = 1;
             }
+
+            return contents;
+
+            #region Old code. This is for reference for now. Remove when the method is properly tested and working.
+            // TODO: This code for looking in the folder for the library should be folded back into the
+            // CachedUserInfo so that this class doesn't have to know the details (and so that multiple libraries, etc.
+            // can be handled transparently).            
+            //InventoryFolderImpl fold;
+            //version = 0; //TODO: Set the actual correct version somewhere
+            //// rex
+            
+            //    if (folderID == this.ID)
+            //    {
+            //        return this.RequestListOfItems();//libraryRoot.RequestListOfItems();
+            //    }
+            //    if ((fold = this.FindFolder(folderID)) != null)
+            //    {
+            //        return fold.RequestListOfItems();
+            //    }
+            
+            //// rex-end 
+
+
+            //if ((fold = m_scenes[0].CommsManager.UserProfileCacheService.LibraryRoot.FindFolder(folderID)) != null)
+            //{
+            //    return fold.RequestListOfItems();
+            //}
+
+            //CachedUserInfo userProfile = m_scenes[0].CommsManager.UserProfileCacheService.GetUserDetails(agentID);
+
+            //if (null == userProfile)
+            //{
+            //    m_log.ErrorFormat("[AGENT INVENTORY]: Could not find user profile for {0}", agentID);
+            //    return null;
+            //}
+
+            //// XXX: When a client crosses into a scene, their entire inventory is fetched
+            //// asynchronously.  If the client makes a request before the inventory is received, we need
+            //// to give the inventory a chance to come in.
+            ////
+            //// This is a crude way of dealing with that by retrying the lookup.  It's not quite as bad
+            //// in CAPS as doing this with the udp request, since here it won't hold up other packets.
+            //// In fact, here we'll be generous and try for longer.
+            //if (!userProfile.HasReceivedInventory)
+            //{
+            //    int attempts = 0;
+            //    while (attempts++ < 30)
+            //    {
+            //        m_log.DebugFormat(
+            //             "[INVENTORY CACHE]: Poll number {0} for inventory items in folder {1} for user {2}",
+            //             attempts, folderID, agentID);
+
+            //        System.Threading.Thread.Sleep(2000);
+
+            //        if (userProfile.HasReceivedInventory)
+            //        {
+            //            break;
+            //        }
+            //    }
+            //}
+
+            //if (userProfile.HasReceivedInventory)
+            //{
+            //    if ((fold = userProfile.RootFolder.FindFolder(folderID)) != null)
+            //    {
+            //        return fold.RequestListOfItems();
+            //    }
+            //    else
+            //    {
+            //        m_log.WarnFormat(
+            //            "[AGENT INVENTORY]: Could not find folder {0} requested by user {1}",
+            //            folderID, agentID);
+            //        return null;
+            //    }
+            //}
+            //else
+            //{
+            //    m_log.ErrorFormat("[INVENTORY CACHE]: Could not find root folder for user {0}", agentID);
+            //    return null;
+            //}
+            #endregion
         }
 
         private void ControllingClient_OnFetchInventoryDescendents(IClientAPI remoteClient, UUID folderID, UUID ownerID, bool fetchFolders, bool fetchItems, int sortOrder)
