@@ -12,9 +12,9 @@ using OpenMetaverse.Packets;
 namespace ModularRex.RexNetwork
 {
     //TODO: RENAME!
-    public class RexClientViewNG : RexClientViewBase
+    public class NaaliClientView : RexClientViewBase
     {
-        public RexClientViewNG(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
+        public NaaliClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, packServer, authenSessions, agentId,
