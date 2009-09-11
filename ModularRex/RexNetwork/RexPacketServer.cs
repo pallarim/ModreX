@@ -20,10 +20,17 @@ namespace ModularRex.RexNetwork
     public class RexPacketServer : LLPacketServer 
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        protected string m_clientToSpawn = "default";
 
         public RexPacketServer(ILLClientStackNetworkHandler networkHandler, ClientStackUserSettings userSettings)
             : base(networkHandler, userSettings)
         {
+        }
+
+        public RexPacketServer(ILLClientStackNetworkHandler networkHandler, ClientStackUserSettings userSettings, string clientToSpawn)
+            : base(networkHandler, userSettings)
+        {
+            m_clientToSpawn = clientToSpawn;
         }
 
         protected override IClientAPI CreateNewCircuit(EndPoint remoteEP, 
@@ -31,12 +38,28 @@ namespace ModularRex.RexNetwork
             AuthenticateResponse sessionInfo, OpenMetaverse.UUID agentId, 
             OpenMetaverse.UUID sessionId, uint circuitCode, EndPoint proxyEP)
         {
-            //TODO: Make some way to identify which client view class is created
-            //      Uses now RexClientViewLegacy, because Bob can't connect to server anyway.
-            return
-                new RexClientViewLegacy(remoteEP, scene, packServer,
+            switch (m_clientToSpawn)
+            {
+                case "ng":
+                case "naali":
+                case "Naali":
+                    return new NaaliClientView(remoteEP, scene, packServer,
                                   sessionInfo, agentId, sessionId,
                                   circuitCode, proxyEP, new ClientStackUserSettings());
+                case "0.4":
+                case "0.40":
+                case "0.41":
+                case "legacy":
+                    return new RexClientViewLegacy(remoteEP, scene, packServer,
+                                  sessionInfo, agentId, sessionId,
+                                  circuitCode, proxyEP, new ClientStackUserSettings());
+                case "default":
+                case "compatible":
+                default:
+                    return new RexClientViewCompatible(remoteEP, scene, packServer,
+                                  sessionInfo, agentId, sessionId,
+                                  circuitCode, proxyEP, new ClientStackUserSettings());
+            }
         }
 
         public override bool AddNewClient(EndPoint epSender, UseCircuitCodePacket useCircuit,
