@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Assemblies Version="1073741836">
-  <Assembly Name="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821" Image="3f4d62cc-cd16-48cc-8b39-2700dd5e1006" Timestamp="633509075923420000" />
-  <Assembly Name="Nini, Version=1.1.0.0, Culture=neutral, PublicKeyToken=691faec150a7fa7b" Image="c9a18327-a864-4467-9b24-8cf62cdb2045" Timestamp="633509075931230000" />
-  <Assembly Name="OpenMetaverse, Version=1.0.0.28338, Culture=neutral" Image="13d6a626-3cd8-479b-a6de-82d5296717de" Timestamp="633583817418510000" />
-  <Assembly Name="OpenMetaverseTypes, Version=0.0.0.0, Culture=neutral" Image="4d2f3058-f34e-480b-b51a-5c236777786c" Timestamp="633583817419350000" />
-  <Assembly Name="XMLRPC, Version=0.0.0.0, Culture=neutral" Image="2a9c0084-0a58-4470-b8ac-2ca8c960e54f" Timestamp="633509075833710000" />
-  <Assembly Name="JetBrains.Annotations, Version=4.1.933.3, Culture=neutral, PublicKeyToken=1010a0d8d6380325" Image="311ca9eb-7ec6-4d4c-af4b-5123516e793c" Timestamp="633559994920000000" XmlDocIndexTimestamp="633559994920000000" />
-</Assemblies>
