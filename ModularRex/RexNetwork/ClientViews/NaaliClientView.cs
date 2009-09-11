@@ -11,10 +11,12 @@ using OpenMetaverse.Packets;
 
 namespace ModularRex.RexNetwork
 {
-    //TODO: RENAME!
+    /// <summary>
+    /// This client view is ment for realXtend Naali. This may not be compatible with LL client nor older realXtend clients.
+    /// </summary>
     public class NaaliClientView : RexClientViewBase
     {
-        public NaaliClientView(EndPoint remoteEP, IScene scene, IAssetCache assetCache,
+        public NaaliClientView(EndPoint remoteEP, IScene scene,
                              LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
                              UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
             : base(remoteEP, scene, packServer, authenSessions, agentId,
