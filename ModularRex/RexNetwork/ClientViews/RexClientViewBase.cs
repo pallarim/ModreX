@@ -1033,8 +1033,8 @@ namespace ModularRex.RexNetwork
             base.InitNewClient();
         }
 
-        private System.Timers.Timer m_avatarTerseUpdateTimer;
-        private List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock> m_avatarTerseUpdates = new List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock>();
+        protected System.Timers.Timer m_avatarTerseUpdateTimer;
+        protected List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock> m_avatarTerseUpdates = new List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock>();
 
         /// <summary>
         /// Send a terse positional/rotation/velocity update about an avatar
@@ -1071,7 +1071,7 @@ namespace ModularRex.RexNetwork
             }
         }
 
-        private void ProcessAvatarTerseUpdates(object sender, ElapsedEventArgs e)
+        protected void ProcessAvatarTerseUpdates(object sender, ElapsedEventArgs e)
         {
             lock (m_avatarTerseUpdates)
             {
