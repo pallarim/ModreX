@@ -113,6 +113,7 @@
         <Match path="RexParts" pattern="*.cs" recurse="true"/>
         <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
         <Match path="addon-modules/ModreX/config" pattern="modrex.ini" copyToOutput="PreserveNewest" buildAction="None" preservePath="true"/>
+        <Match path="ScriptEngines" pattern="*.*" recurse="true" copyToOutput="PreserveNewest" buildAction="None" preservePath="true"/>
       </Files>
     </Project>
 

@@ -1,1 +1,0 @@
-Copy these two folders to ../../../../../bin/ScriptEngines
