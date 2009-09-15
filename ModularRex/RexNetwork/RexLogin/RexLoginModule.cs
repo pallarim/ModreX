@@ -672,7 +672,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.RegisterModuleInterface<IRexUDPPort>(this);
-            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            if (m_config.Configs["realXtend"] != null && m_config.Configs["realXtend"].GetBoolean("enabled", false))
             {
                 if (m_scenes.Count == 1) //Listen very carefully, I will say this only once
                 {
@@ -704,7 +704,7 @@ namespace ModularRex.RexNetwork.RexLogin
         {
             m_config = source;
 
-            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            if (m_config.Configs["realXtend"] != null && m_config.Configs["realXtend"].GetBoolean("enabled", false))
             {
                 m_log.Info("[REX] Initialising");
             }
@@ -716,7 +716,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
         public void RegionLoaded(Scene scene)
         {
-            if (m_config.Configs["realXtend"].GetBoolean("enabled", true))
+            if (m_config.Configs["realXtend"] != null && m_config.Configs["realXtend"].GetBoolean("enabled", false))
             {
                 //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
                 m_log.Info("[REX] Overloading Login_to_Simulator");
