@@ -149,6 +149,34 @@
       </Files>
     </Project>
 
+   <Project name="ModularRex.WorldInventory" path="./addon-modules/ModreX/ModularRex/WorldInventory" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="OpenMetaverse.dll" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
+      <Reference name="ModularRex"/>
+      <Reference name="ModularRex.RexFramework"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Region.Framework.dll"/>
+      <Reference name="Nini.dll" />
+      <Reference name="log4net.dll"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <Project name="ModularRex.RexBot" path="./addon-modules/ModreX/ModularRex/RexBot" type="Library">
       <Configuration name="Debug">
