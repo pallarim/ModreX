@@ -76,7 +76,7 @@ namespace ModularRex.WorldInventory
             if(client is ModularRex.RexNetwork.RexClientViewBase)
             {
                 if (!client.AddGenericPacketHandler("wi_req", HandleWorldInventoryGenericMessage))
-                    m_log.Warn("[WORLDLIBRARY] Could not add generic message handler for user");
+                    m_log.Warn("[WORLDINVENTORY]: Could not add generic message handler for user");
             }
         }
 
