@@ -17,13 +17,13 @@ namespace ModularRex.WorldInventory
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        #region IRegionModule Members
-
         protected WorldInventoryServer m_server = null;
 
         private List<Scene> m_scenes = new List<Scene>();
         private int m_port = 6000;
         private bool enabled = false;
+
+        #region IRegionModule Members
 
         public void Initialise(Scene scene, IConfigSource source)
         {
@@ -34,6 +34,8 @@ namespace ModularRex.WorldInventory
                 enabled = config.GetBoolean("WorldInventoryOn", false);
                 m_port = config.GetInt("WorldInventoryPort", 6000);
             }
+
+            scene.EventManager.OnNewClient += OnNewClient;
         }
 
         public void PostInitialise()
@@ -48,6 +50,11 @@ namespace ModularRex.WorldInventory
 
         public void Close()
         {
+            foreach (Scene scene in m_scenes)
+            {
+                scene.EventManager.OnNewClient -= OnNewClient;
+            }
+
             if (m_server != null)
                 m_server.Stop();
         }
@@ -63,36 +70,68 @@ namespace ModularRex.WorldInventory
         }
 
         #endregion
+
+        void OnNewClient(IClientAPI client)
+        {
+            if(client is ModularRex.RexNetwork.RexClientViewBase)
+            {
+                if (!client.AddGenericPacketHandler("wi_req", HandleWorldInventoryGenericMessage))
+                    m_log.Warn("[WORLDLIBRARY] Could not add generic message handler for user");
+            }
+        }
+
+        void HandleWorldInventoryGenericMessage(Object sender, string method, List<String> args)
+        {
+            if (sender is IClientAPI)
+            {
+                IClientAPI client = (IClientAPI)sender;
+                //TODO: parse properties (and invent what they are if necessary)
+                List<string> response = new List<string>();
+                if (enabled) //send world inventory port (and/or address) ToBeDecided
+                {
+                    response.Add(m_port.ToString());
+                }
+                else //send not in use
+                {
+                    response.Add("-1");
+                }
+                client.SendGenericMessage("wi_resp", response);
+            }
+            else
+            {
+                m_log.Warn("[WORLDINVENTORY]: wi_req sender was not IClientAPI");
+            }
+        }
     }
 
     public class HttpServerLogWriter : ILogWriter
     {
-        //private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public void Write(object source, LogPrio priority, string message)
         {
-            /*
             switch (priority)
             {
-                case HttpServer.LogPrio.Debug:
-                    m_log.DebugFormat("[{0}]: {1}", source.ToString(), message);
+                case LogPrio.Trace:
+                case LogPrio.Debug:
+                    m_log.DebugFormat("[WORLDINVENTORY]: {0}: {1}", source.ToString(), message);
                     break;
-                case HttpServer.LogPrio.Error:
-                    m_log.ErrorFormat("[{0}]: {1}", source.ToString(), message);
+                case LogPrio.Error:
+                    m_log.ErrorFormat("[WORLDINVENTORY]: {0}: {1}", source.ToString(), message);
                     break;
-                case HttpServer.LogPrio.Info:
-                    m_log.InfoFormat("[{0}]: {1}", source.ToString(), message);
+                case LogPrio.Info:
+                    m_log.InfoFormat("[WORLDINVENTORY]: {0}: {1}", source.ToString(), message);
                     break;
-                case HttpServer.LogPrio.Warning:
-                    m_log.WarnFormat("[{0}]: {1}", source.ToString(), message);
+                case LogPrio.Warning:
+                    m_log.WarnFormat("[WORLDINVENTORY]: {0}: {1}", source.ToString(), message);
                     break;
-                case HttpServer.LogPrio.Fatal:
-                    m_log.ErrorFormat("[{0}]: FATAL! - {1}", source.ToString(), message);
+                case LogPrio.Fatal:
+                    m_log.FatalFormat("[WORLDINVENTORY]: {0}: FATAL! - {1}", source.ToString(), message);
                     break;
                 default:
+                    m_log.DebugFormat("[WORLDINVENTORY]: {0}: {1}", source.ToString(), message);
                     break;
             }
-            */
 
             return;
         }
