@@ -2814,17 +2814,20 @@ namespace ModularRex.RexOdePlugin
             m_BoundsMax.Y = tempBounds[4];
             m_BoundsMax.Z = tempBounds[5];
 
+            List<Vertex> vertlist = new List<Vertex>(); 
             for (int i = 0; i < tempVertexList.GetLength(0); i = i + 3)
             {
                 Vertex vert = new Vertex(tempVertexList[i], tempVertexList[i + 1], tempVertexList[i + 2]);
-                m_OriginalMesh.vertices.Add(vert);
+                vertlist.Add(vert); 
             }
 
             for (int i = 0; i < tempIndexList.GetLength(0); i = i + 3)
             {
-                Triangle tria = new Triangle(m_OriginalMesh.vertices[(tempIndexList[i])], m_OriginalMesh.vertices[(tempIndexList[i + 1])], m_OriginalMesh.vertices[(tempIndexList[i + 2])]);
-                m_OriginalMesh.triangles.Add(tria);
+                Triangle tria = new Triangle(vertlist[(tempIndexList[i])], vertlist[(tempIndexList[i + 1])], vertlist[(tempIndexList[i + 2])]);
+                m_OriginalMesh.Add(tria);
             }
+
+            vertlist.Clear();
             return true;
         }
 
@@ -2835,8 +2838,6 @@ namespace ModularRex.RexOdePlugin
 
             if (m_OriginalMesh != null)
             {
-                Mesh newmesh = m_OriginalMesh.Clone();
-
                 PhysicsVector scalingvector = new PhysicsVector(_size.X, _size.Y, _size.Z);
                 if (m_BoundsScaling)
                 {
@@ -2853,12 +2854,21 @@ namespace ModularRex.RexOdePlugin
                 scalefactor[1] = scalingvector.Z;
                 scalefactor[2] = scalingvector.Y;
 
-                for (int i = 0; i < newmesh.vertices.Count; i++)
+                Mesh newmesh = new Mesh();
+                List<PhysicsVector> vertlist = m_OriginalMesh.getVertexList();
+                int[] tempIndexList = m_OriginalMesh.getIndexListAsInt();
+                
+                for (int i = 0; i < tempIndexList.GetLength(0); i = i + 3)
                 {
-                    newmesh.vertices[i].X *= scalefactor[0];
-                    newmesh.vertices[i].Y *= scalefactor[1];
-                    newmesh.vertices[i].Z *= scalefactor[2];
+                    Vertex vertA = new Vertex(vertlist[(tempIndexList[i])].X * scalefactor[0], vertlist[(tempIndexList[i])].Y * scalefactor[1], vertlist[(tempIndexList[i])].Z * scalefactor[2]);
+                    Vertex vertB = new Vertex(vertlist[(tempIndexList[i + 1])].X * scalefactor[0], vertlist[(tempIndexList[i + 1])].Y * scalefactor[1], vertlist[(tempIndexList[i + 1])].Z * scalefactor[2]);
+                    Vertex vertC = new Vertex(vertlist[(tempIndexList[i + 2])].X * scalefactor[0], vertlist[(tempIndexList[i + 2])].Y * scalefactor[1], vertlist[(tempIndexList[i + 2])].Z * scalefactor[2]);
+
+                    Triangle tria = new Triangle(vertA, vertB,vertC);
+                    newmesh.Add(tria);
                 }
+
+                vertlist.Clear();                 
                 return newmesh;
             }
             else
