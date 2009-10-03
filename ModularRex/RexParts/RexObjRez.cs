@@ -308,17 +308,21 @@ namespace ModularRex.RexParts
 
                             //Get the item id of the asset so the RexObjectProperties can be changed to that id
                             CachedUserInfo userInfo = m_scene.CommsManager.UserProfileCacheService.GetUserDetails(x.remoteClient.AgentId);
-                            InventoryItemBase item = userInfo.RootFolder.FindAsset(assetId);
-
-                            //Clone the old properties 
-                            if (m_rexObjects != null)
+                            if (userInfo.RootFolder != null)
                             {
-                                RexObjectProperties origprops = m_rexObjects.GetObject(x.objectGroup.RootPart.UUID);
-                                RexObjectProperties cloneprops = m_rexObjects.GetObject(item.ID);
+                                InventoryItemBase item = userInfo.RootFolder.FindAsset(assetId);
 
-                                cloneprops.SetRexPrimDataFromObject(origprops);
+                                //Clone the old properties 
+                                if (m_rexObjects != null)
+                                {
+                                    RexObjectProperties origprops = m_rexObjects.GetObject(x.objectGroup.RootPart.UUID);
+                                    RexObjectProperties cloneprops = m_rexObjects.GetObject(item.ID);
+
+                                    cloneprops.SetRexPrimDataFromObject(origprops);
+                                }
                             }
-
+                            else
+                                m_log.Warn("[REXOBJECTS]: Could not find users root folder from cache. Did not clone rex object");
                             if (x.permissionToDelete)
                             {
                                 m_scene.DeleteSceneObject(x.objectGroup, false);

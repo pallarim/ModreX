@@ -202,7 +202,10 @@ namespace ModularRex.NHibernate
         public void RemoveObject(UUID obj)
         {
             RexObjectProperties g = LoadObject(obj);
-            manager.Delete(g);
+            if (g != null)
+                manager.Delete(g);
+            else
+                m_log.Warn("[NHIBERNATE]: Could not delete null object");
 
             m_log.InfoFormat("[REGION DB]: Removing obj: {0}", obj.Guid);
         }

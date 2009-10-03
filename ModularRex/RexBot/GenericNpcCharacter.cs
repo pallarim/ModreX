@@ -1095,6 +1095,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void SendRebakeAvatarTextures(UUID textureID)
+        {
+        }
+
         #endregion
     }
 }
