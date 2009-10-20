@@ -37,6 +37,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
         private int m_nextUdpPort = 7000;
         private bool m_checkSessionHash = true;
+        private bool firstScene = true;
 
         /// <summary>
         /// Used during login to send the skeleton of the OpenSim Library to the client.
@@ -718,17 +719,22 @@ namespace ModularRex.RexNetwork.RexLogin
         {
             if (m_config.Configs["realXtend"] != null && m_config.Configs["realXtend"].GetBoolean("enabled", false))
             {
-                //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
-                m_log.Info("[REX] Overloading Login_to_Simulator");
-                default_login_to_simulator = MainServer.Instance.GetXmlRPCHandler("login_to_simulator");
-                MainServer.Instance.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
+                if (firstScene)
+                {
+                    firstScene = false;
 
-                m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
-                if (m_worldAssets != null)
-                    m_libraryRootFolder.AddChildFolder(m_worldAssets);
+                    //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
+                    m_log.Info("[REX] Overloading Login_to_Simulator");
+                    default_login_to_simulator = MainServer.Instance.GetXmlRPCHandler("login_to_simulator");
+                    MainServer.Instance.AddXmlRPCHandler("login_to_simulator", XmlRpcLoginMethod);
 
-                //Rex-NG
-                MainServer.Instance.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
+                    m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
+                    if (m_worldAssets != null)
+                        m_libraryRootFolder.AddChildFolder(m_worldAssets);
+
+                    //Rex-NG
+                    MainServer.Instance.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
+                }  
             }
         }
 
