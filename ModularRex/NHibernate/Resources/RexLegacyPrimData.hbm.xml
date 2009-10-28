@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
     <class name="ModularRex.RexFramework.RexLegacyPrimData, ModularRex.RexFramework" table="rexprimdata" lazy="false">
-        <id name="UUID" column="UUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate"> 
+        <id name="UUID" column="UUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate"> 
             <generator class="assigned" /> 
         </id>
         <property name="DrawType" type="String" length="255" />
@@ -12,14 +12,14 @@
         <property name="ScaleToPrim" type="String" length="255" />
         <property name="DrawDistance" type="Single" />
         <property name="LODBias" type="Single" />
-        <property name="Mesh" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-        <property name="CollisionMesh" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-        <property name="ParticleScript" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-        <property name="AnimationPackage" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+        <property name="Mesh" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+        <property name="CollisionMesh" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+        <property name="ParticleScript" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+        <property name="AnimationPackage" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
         <property name="AnimationName" type="String" length="255" />
         <property name="AnimationRate" type="Single" />
         <property name="ClassName" type="String" length="64" />
-        <property name="Sound" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+        <property name="Sound" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
         <property name="SoundVolume" type="Single" />
         <property name="SoundRadius" type="Single" />
         <property name="RexExtraPrimData" type="BinaryBlob" />

@@ -5,6 +5,11 @@ using Nini.Config;
 using OpenSim.Framework;
 using log4net;
 using System.Reflection;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using System.Threading;
+using System;
+using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexNetwork
 {
@@ -17,71 +22,72 @@ namespace ModularRex.RexNetwork
     public class RexUDPServer : LLUDPServer 
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        public RexUDPServer() { }
+        private string m_clientToSpawn;
 
         public RexUDPServer(IPAddress _listenIP, ref uint port, int proxyPortOffset, bool allow_alternate_port, IConfigSource configSource,
-            AgentCircuitManager authenticateClass)
+            AgentCircuitManager authenticateClass) : base (_listenIP, ref port, proxyPortOffset, allow_alternate_port, configSource, authenticateClass)
         {
-            Init(_listenIP, ref port, proxyPortOffset, allow_alternate_port, configSource, authenticateClass);
+            Init(configSource);
         }
 
-        protected override void CreatePacketServer(ClientStackUserSettings userSettings)
+        protected void Init(IConfigSource configSource)
         {
-            new RexPacketServer(this, userSettings);
-        }
-
-        protected void CreatePacketServer(ClientStackUserSettings userSettings, string clientToSpawn)
-        {
-            new RexPacketServer(this, userSettings, clientToSpawn);
-        }
-
-        protected void Init(IPAddress _listenIP, ref uint port, int proxyPortOffsetParm, bool allow_alternate_port, IConfigSource configSource,
-            AgentCircuitManager circuitManager)
-        {
-            ClientStackUserSettings userSettings = new ClientStackUserSettings();
-
-            IConfig config = configSource.Configs["ClientStack.LindenUDP"];
-
-            if (config != null)
-            {
-                if (config.Contains("client_throttle_max_bps"))
-                {
-                    int maxBPS = config.GetInt("client_throttle_max_bps", 1500000);
-                    userSettings.TotalThrottleSettings = new ThrottleSettings(0, maxBPS,
-                    maxBPS > 28000 ? maxBPS : 28000);
-                }
-
-                if (config.Contains("client_throttle_multiplier"))
-                    userSettings.ClientThrottleMultipler = config.GetFloat("client_throttle_multiplier");
-                if (config.Contains("client_socket_rcvbuf_size"))
-                    m_clientSocketReceiveBuffer = config.GetInt("client_socket_rcvbuf_size");
-            }
-
-            m_log.DebugFormat("[CLIENT]: client_throttle_multiplier = {0}", userSettings.ClientThrottleMultipler);
-            m_log.DebugFormat("[CLIENT]: client_socket_rcvbuf_size  = {0}", (m_clientSocketReceiveBuffer != 0 ?
-                                                                             m_clientSocketReceiveBuffer.ToString() : "OS default"));
-            string clientToSpawn = "default";
+            m_clientToSpawn = "default";
             IConfig rexConfig = configSource.Configs["realXtend"];
             if (rexConfig != null)
             {
                 if (rexConfig.Contains("ClientView"))
                 {
-                    clientToSpawn = rexConfig.Get("ClientView", "default");
+                    m_clientToSpawn = rexConfig.Get("ClientView", "default");
                 }
             }
 
-            proxyPortOffset = proxyPortOffsetParm;
-            listenPort = (uint)(port + proxyPortOffsetParm);
-            listenIP = _listenIP;
-            Allow_Alternate_Port = allow_alternate_port;
-            m_circuitManager = circuitManager;
-            CreatePacketServer(userSettings, clientToSpawn);
+            //CreatePacketServer(userSettings, clientToSpawn);
+        }
 
-            // Return new port
-            // This because in Grid mode it is not really important what port the region listens to as long as it is correctly registered.
-            // So the option allow_alternate_ports="true" was added to default.xml
-            port = (uint)(listenPort - proxyPortOffsetParm);
+        protected override void AddClient(uint circuitCode, UUID agentID, UUID sessionID, IPEndPoint remoteEndPoint, AuthenticateResponse sessionInfo)
+        {
+            // Create the LLUDPClient
+            LLUDPClient udpClient = new LLUDPClient(this, m_throttleRates, m_throttle, circuitCode, agentID, remoteEndPoint);
+            IClientAPI existingClient;
+
+            if (!m_scene.TryGetClient(agentID, out existingClient))
+            {
+                // Create the LLClientView
+                LLClientView client = CreateNewClientView(remoteEndPoint, m_scene, this, udpClient, sessionInfo, agentID, sessionID, circuitCode);
+                client.OnLogout += LogoutHandler;
+
+                // Start the IClientAPI
+                client.Start();
+            }
+            else
+            {
+                m_log.WarnFormat("[LLUDPSERVER]: Ignoring a repeated UseCircuitCode from {0} at {1} for circuit {2}",
+                    udpClient.AgentID, remoteEndPoint, circuitCode);
+            }
+        }
+
+        protected LLClientView CreateNewClientView(EndPoint remoteEP, Scene scene, LLUDPServer udpServer, LLUDPClient udpClient,
+            AuthenticateResponse sessionInfo, OpenMetaverse.UUID agentId, OpenMetaverse.UUID sessionId, uint circuitCode)
+        {
+            switch (m_clientToSpawn.ToLower())
+            {
+                case "ng":
+                case "naali":
+                    return new NaaliClientView(remoteEP, scene, udpServer, udpClient,
+                                  sessionInfo, agentId, sessionId, circuitCode);
+                case "0.4":
+                case "0.40":
+                case "0.41":
+                case "legacy":
+                    return new RexClientViewLegacy(remoteEP, scene, udpServer, udpClient,
+                                  sessionInfo, agentId, sessionId, circuitCode);
+                case "default":
+                case "compatible":
+                default:
+                    return new RexClientViewCompatible(remoteEP, scene, udpServer, udpClient,
+                                  sessionInfo, agentId, sessionId, circuitCode);
+            }
         }
     }
 }

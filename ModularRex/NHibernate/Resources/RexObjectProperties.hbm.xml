@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
     <class name="ModularRex.RexFramework.RexObjectProperties, ModularRex.RexFramework" table="RexObjectProperties" lazy="false">
-        <id name="ParentObjectID" column="ID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate"> 
+        <id name="ParentObjectID" column="ID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate"> 
             <generator class="assigned" /> 
         </id>
       
@@ -18,14 +18,14 @@
       <property name="RexScaleToPrim" type="boolean" />
       <property name="RexDrawDistance" type="Single" />
 	    <property name="RexLOD" type="Single" />
-	    <property name="RexMeshUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-	    <property name="RexCollisionMeshUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-	    <property name="RexParticleScriptUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-	    <property name="RexAnimationPackageUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+	    <property name="RexMeshUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+	    <property name="RexCollisionMeshUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+	    <property name="RexParticleScriptUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+	    <property name="RexAnimationPackageUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
       <property name="RexAnimationName" type="String" length="64" />
       <property name="RexAnimationRate" type="Single" />
 	    <property name="RexClassName" type="String" length="64" />
-	    <property name="RexSoundUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+	    <property name="RexSoundUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
 	    <property name="RexSoundVolume" type="Single" />
 	    <property name="RexSoundRadius" type="Single" />
 	    <property name="RexData" type="String" length="3000" />

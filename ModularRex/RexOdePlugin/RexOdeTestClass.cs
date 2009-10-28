@@ -72,8 +72,8 @@ namespace ModularRex.RexOdePlugin
         public void CreateAndDropPhysicalCube()
         {
             PrimitiveBaseShape newcube = PrimitiveBaseShape.CreateBox();
-            PhysicsVector position = new PhysicsVector(128, 128, 128);
-            PhysicsVector size = new PhysicsVector(0.5f, 0.5f, 0.5f);
+            Vector3 position = new Vector3(128, 128, 128);
+            Vector3 size = new Vector3(0.5f, 0.5f, 0.5f);
             Quaternion rot = Quaternion.Identity;
             PhysicsActor prim = ps.AddPrimShape("CoolShape", newcube, position, size, rot, true);
             OdePrim oprim = (OdePrim)prim;

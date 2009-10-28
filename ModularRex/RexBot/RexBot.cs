@@ -781,7 +781,7 @@ namespace OpenSim.Region.Examples.RexBot
             set { m_circuitCode = value; }
         }
 
-        public override void Close(bool shutdownCircuit)
+        public override void Close()
         {
             // Pull Client out of Region
             m_log.Info("[RexBot]: Removing bot " + Name);
@@ -789,10 +789,7 @@ namespace OpenSim.Region.Examples.RexBot
             OnBotLogout();
 
             //raiseevent on the packet server to Shutdown the circuit
-            if (shutdownCircuit)
-            {
-                OnBotConnectionClosed();
-            }
+            OnBotConnectionClosed();
 
             m_frames.Stop();
             m_walkTime.Stop();

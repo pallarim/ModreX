@@ -9,7 +9,6 @@ using NHibernate.Criterion;
 using OpenSim.Framework;
 using Environment = NHibernate.Cfg.Environment;
 using ModularRex.RexFramework;
-using OpenSim.Data.NHibernate;
 
 namespace ModularRex.NHibernate
 {

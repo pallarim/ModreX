@@ -22,6 +22,7 @@ namespace ModularRex.WorldInventory
         private List<Scene> m_scenes = new List<Scene>();
         private int m_port = 6000;
         private bool enabled = false;
+        private IConfigSource m_configs = null;
 
         #region IRegionModule Members
 
@@ -34,7 +35,7 @@ namespace ModularRex.WorldInventory
                 enabled = config.GetBoolean("WorldInventoryOn", false);
                 m_port = config.GetInt("WorldInventoryPort", 6000);
             }
-
+            m_configs = source;
             scene.EventManager.OnNewClient += OnNewClient;
         }
 
@@ -43,8 +44,8 @@ namespace ModularRex.WorldInventory
             if (enabled)
             {
                 IPAddress ip = m_scenes[0].RegionInfo.ExternalEndPoint.Address;
-                m_server = new WorldInventoryServer(m_scenes);
-                m_server.Start(ip, m_port);
+                m_server = new WorldInventoryServer(m_scenes, m_configs);
+                bool started = m_server.Start(ip, m_port);
             }
         }
 

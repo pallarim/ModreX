@@ -688,10 +688,9 @@ namespace ModularRex.RexNetwork.RexLogin
                     m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
                 }
 
-                RexUDPServer udpserver = new RexUDPServer();
                 uint _udpport = (uint)m_nextUdpPort;
-                udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config,
-                    scene.AuthenticateHandler);
+                RexUDPServer udpserver = new RexUDPServer(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config, scene.AuthenticateHandler);
+                //udpserver.Initialise(scene.RegionInfo.InternalEndPoint.Address, ref _udpport, 0, false, m_config, scene.AuthenticateHandler);
                 udpserver.AddScene(scene);
 
                 m_region_ports.Add(scene.RegionInfo.RegionHandle, m_nextUdpPort);

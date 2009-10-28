@@ -416,7 +416,7 @@ namespace ModularRex.RexParts
                 tempignoreid = System.Convert.ToUInt32(vIgnoreId, 10);
 
             if(World.PhysicsScene is IRexPhysicsScene)
-                collid = ((IRexPhysicsScene)World.PhysicsScene).Raycast(new PhysicsVector((float)vPos.x, (float)vPos.y, (float)vPos.z), new PhysicsVector((float)vDir.x, (float)vDir.y, (float)vDir.z), vLength, tempignoreid);
+                collid = ((IRexPhysicsScene)World.PhysicsScene).Raycast(new Vector3((float)vPos.x, (float)vPos.y, (float)vPos.z), new Vector3((float)vDir.x, (float)vDir.y, (float)vDir.z), vLength, tempignoreid);
 
             return collid.ToString(); 
         }

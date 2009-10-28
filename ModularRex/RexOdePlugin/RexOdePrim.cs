@@ -52,33 +52,33 @@ namespace ModularRex.RexOdePlugin
         private bool m_ReCreateCollision = false; // rex
 
         private bool m_BoundsScaling = false; // rex
-        private PhysicsVector m_BoundsMin = new PhysicsVector(0, 0, 0); // rex
-        private PhysicsVector m_BoundsMax = new PhysicsVector(0, 0, 0); // rex   
+        private Vector3 m_BoundsMin = new Vector3(0, 0, 0); // rex
+        private Vector3 m_BoundsMax = new Vector3(0, 0, 0); // rex   
     
     
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private PhysicsVector _position;
-        private PhysicsVector _velocity;
-        private PhysicsVector _torque = new PhysicsVector(0,0,0);
-        private PhysicsVector m_lastVelocity = new PhysicsVector(0.0f, 0.0f, 0.0f);
-        private PhysicsVector m_lastposition = new PhysicsVector(0.0f, 0.0f, 0.0f);
+        private Vector3 _position;
+        private Vector3 _velocity;
+        private Vector3 _torque = new Vector3(0, 0, 0);
+        private Vector3 m_lastVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+        private Vector3 m_lastposition = new Vector3(0.0f, 0.0f, 0.0f);
         private Quaternion m_lastorientation = new Quaternion();
-        private PhysicsVector m_rotationalVelocity;
-        private PhysicsVector _size;
-        private PhysicsVector _acceleration;
+        private Vector3 m_rotationalVelocity;
+        private Vector3 _size;
+        private Vector3 _acceleration;
         // private d.Vector3 _zeroPosition = new d.Vector3(0.0f, 0.0f, 0.0f);
         private Quaternion _orientation;
-        private PhysicsVector m_taintposition;
-        private PhysicsVector m_taintsize;
-        private PhysicsVector m_taintVelocity = new PhysicsVector(0, 0, 0);
-        private PhysicsVector m_taintTorque = new PhysicsVector(0, 0, 0);
+        private Vector3 m_taintposition;
+        private Vector3 m_taintsize;
+        private Vector3 m_taintVelocity = new Vector3(0, 0, 0);
+        private Vector3 m_taintTorque = new Vector3(0, 0, 0);
         private Quaternion m_taintrot;
-        private PhysicsVector m_angularlock = new PhysicsVector(1f, 1f, 1f);
-        private PhysicsVector m_taintAngularLock = new PhysicsVector(1f, 1f, 1f);
+        private Vector3 m_angularlock = new Vector3(1f, 1f, 1f);
+        private Vector3 m_taintAngularLock = new Vector3(1f, 1f, 1f);
         private IntPtr Amotor = IntPtr.Zero;
 
-        private PhysicsVector m_PIDTarget = new PhysicsVector(0, 0, 0);
+        private Vector3 m_PIDTarget = new Vector3(0, 0, 0);
         private float m_PIDTau = 0f;
         private float PID_D = 35f;
         private float PID_G = 25f;
@@ -119,9 +119,9 @@ namespace ModularRex.RexOdePlugin
 
         private bool m_taintforce = false;
         private bool m_taintaddangularforce = false;
-        private PhysicsVector m_force = new PhysicsVector(0.0f, 0.0f, 0.0f);
-        private List<PhysicsVector> m_forcelist = new List<PhysicsVector>();
-        private List<PhysicsVector> m_angularforcelist = new List<PhysicsVector>();
+        private Vector3 m_force = new Vector3(0.0f, 0.0f, 0.0f);
+        private List<Vector3> m_forcelist = new List<Vector3>();
+        private List<Vector3> m_angularforcelist = new List<Vector3>();
 
         private IMesh _mesh;
         private PrimitiveBaseShape _pbs;
@@ -160,7 +160,7 @@ namespace ModularRex.RexOdePlugin
 
         public IntPtr Body = (IntPtr) 0;
         private String m_primName;
-        private PhysicsVector _target_velocity;
+        private Vector3 _target_velocity;
         public d.Mass pMass;
 
         public int m_eventsubscription = 0;
@@ -170,13 +170,13 @@ namespace ModularRex.RexOdePlugin
 
         public volatile bool childPrim = false;
 
-        public OdePrim(String primName, OdeScene parent_scene, PhysicsVector pos, PhysicsVector size,
+        public OdePrim(String primName, OdeScene parent_scene, Vector3 pos, Vector3 size,
                        Quaternion rotation, IMesh mesh, PrimitiveBaseShape pbs, bool pisPhysical, CollisionLocker dode)
         {
-            _target_velocity = new PhysicsVector(0, 0, 0);
+            _target_velocity = new Vector3(0, 0, 0);
             //gc = GCHandle.Alloc(prim_geom, GCHandleType.Pinned);
             ode = dode;
-            _velocity = new PhysicsVector();
+            _velocity = new Vector3();
             _position = pos;
             m_taintposition = pos;
             PID_D = parent_scene.bodyPIDD;
@@ -195,8 +195,8 @@ namespace ModularRex.RexOdePlugin
 
             _size = size;
             m_taintsize = _size;
-            _acceleration = new PhysicsVector();
-            m_rotationalVelocity = PhysicsVector.Zero;
+            _acceleration = new Vector3();
+            m_rotationalVelocity = Vector3.Zero;
             _orientation = rotation;
             m_taintrot = _orientation;
             _mesh = mesh;
@@ -340,7 +340,7 @@ namespace ModularRex.RexOdePlugin
                 m_disabled = false;
 
                 // The body doesn't already have a finite rotation mode set here
-                if ((!m_angularlock.IsIdentical(PhysicsVector.Zero, 0)) && _parent == null)
+                if ((!m_angularlock.ApproxEquals(Vector3.Zero, 0)) && _parent == null)
                 {
                     createAMotor(m_angularlock);
                 }
@@ -836,7 +836,7 @@ namespace ModularRex.RexOdePlugin
             }
             if (prim_geom != IntPtr.Zero)
             {
-                if (!_position.IsIdentical(m_taintposition, 0f))
+                if (!_position.ApproxEquals(m_taintposition, 0f))
                     changemove(timestep);
 
                 if (m_taintrot != _orientation)
@@ -852,7 +852,7 @@ namespace ModularRex.RexOdePlugin
                     changePhysicsStatus(timestep);
                 //
 
-                if (!_size.IsIdentical(m_taintsize, 0))
+                if (!_size.ApproxEquals(m_taintsize, 0))
                 {
                     if (m_DotMeshCollision)
                         changesizeogremesh(timestep);
@@ -878,7 +878,7 @@ namespace ModularRex.RexOdePlugin
                 if (m_taintaddangularforce)
                     changeAddAngularForce(timestep);
 
-                if (!m_taintTorque.IsIdentical(PhysicsVector.Zero, 0.001f))
+                if (!m_taintTorque.ApproxEquals(Vector3.Zero, 0.001f))
                     changeSetTorque(timestep);
 
                 if (m_taintdisable)
@@ -887,7 +887,7 @@ namespace ModularRex.RexOdePlugin
                 if (m_taintselected != m_isSelected)
                     changeSelectedStatus(timestep);
 
-                if (!m_taintVelocity.IsIdentical(PhysicsVector.Zero, 0.001f))
+                if (!m_taintVelocity.ApproxEquals(Vector3.Zero, 0.001f))
                     changevelocity(timestep);
 
                 if (m_taintparent != _parent)
@@ -896,7 +896,7 @@ namespace ModularRex.RexOdePlugin
                 if (m_taintCollidesWater != m_collidesWater)
                     changefloatonwater(timestep);
 
-                if (!m_angularlock.IsIdentical(m_taintAngularLock, 0))
+                if (!m_angularlock.ApproxEquals(m_taintAngularLock, 0))
                     changeAngularLock(timestep);
             }
             else
@@ -914,7 +914,7 @@ namespace ModularRex.RexOdePlugin
                 //If we have a parent then we're not authorative here
                 if (_parent == null)
                 {
-                    if (!m_taintAngularLock.IsIdentical(new PhysicsVector(1f,1f,1f), 0))
+                    if (!m_taintAngularLock.ApproxEquals(new Vector3(1f, 1f, 1f), 0))
                     {
                         //d.BodySetFiniteRotationMode(Body, 0);
                         //d.BodySetFiniteRotationAxis(Body,m_taintAngularLock.X,m_taintAngularLock.Y,m_taintAngularLock.Z);
@@ -931,7 +931,7 @@ namespace ModularRex.RexOdePlugin
                 }
             }
             // Store this for later in case we get turned into a separate body
-            m_angularlock = new PhysicsVector(m_taintAngularLock.X, m_taintAngularLock.Y, m_taintAngularLock.Z);
+            m_angularlock = new Vector3(m_taintAngularLock.X, m_taintAngularLock.Y, m_taintAngularLock.Z);
         }
 
         private void changelink(float timestep)
@@ -1069,7 +1069,7 @@ namespace ModularRex.RexOdePlugin
                                 prm.m_disabled = false;
 
                                 // The body doesn't already have a finite rotation mode set here
-                                if ((!m_angularlock.IsIdentical(PhysicsVector.Zero, 0)) && _parent == null)
+                                if ((!m_angularlock.ApproxEquals(Vector3.Zero, 0)) && _parent == null)
                                 {
                                     prm.createAMotor(m_angularlock);
                                 }
@@ -1111,7 +1111,7 @@ namespace ModularRex.RexOdePlugin
                             m_disabled = false;
 
                             // The body doesn't already have a finite rotation mode set here
-                            if ((!m_angularlock.IsIdentical(PhysicsVector.Zero, 0)) && _parent == null)
+                            if ((!m_angularlock.ApproxEquals(Vector3.Zero, 0)) && _parent == null)
                             {
                                 createAMotor(m_angularlock);
                             }
@@ -1292,7 +1292,7 @@ namespace ModularRex.RexOdePlugin
             m_taintshape = false;
             m_taintforce = false;
             m_taintdisable = false;
-            m_taintVelocity = PhysicsVector.Zero;
+            m_taintVelocity = Vector3.Zero;
         }
 
         public void CreateGeom(IntPtr m_targetSpace, IMesh _mesh)
@@ -1545,7 +1545,7 @@ namespace ModularRex.RexOdePlugin
 
                     d.Vector3 pos = d.BodyGetPosition(Body);
                     _target_velocity =
-                        new PhysicsVector(
+                        new Vector3(
                             (m_PIDTarget.X - pos.X) * ((PID_G - m_PIDTau) * timestep),
                             (m_PIDTarget.Y - pos.Y) * ((PID_G - m_PIDTau) * timestep),
                             (m_PIDTarget.Z - pos.Z) * ((PID_G - m_PIDTau) * timestep)
@@ -1553,7 +1553,7 @@ namespace ModularRex.RexOdePlugin
 
                     //  if velocity is zero, use position control; otherwise, velocity control
 
-                    if (_target_velocity.IsIdentical(PhysicsVector.Zero,0.1f))
+                    if (_target_velocity.ApproxEquals(Vector3.Zero, 0.1f))
                     {
                         //  keep track of where we stopped.  No more slippin' & slidin'
 
@@ -1625,7 +1625,7 @@ namespace ModularRex.RexOdePlugin
             if (m_isphysical && Body != IntPtr.Zero)
             {
                 d.BodySetQuaternion(Body, ref myrot);
-                if (!m_angularlock.IsIdentical(new PhysicsVector(1, 1, 1), 0))
+                if (!m_angularlock.ApproxEquals(new Vector3(1, 1, 1), 0))
                     createAMotor(m_angularlock);
             }
 
@@ -2100,7 +2100,7 @@ namespace ModularRex.RexOdePlugin
                     //m_log.Info("[PHYSICS]: dequeing forcelist");
                     if (IsPhysical)
                     {
-                        PhysicsVector iforce = new PhysicsVector();
+                        Vector3 iforce = new Vector3();
                         for (int i = 0; i < m_forcelist.Count; i++)
                         {
                             iforce = iforce + (m_forcelist[i] * 100);
@@ -2130,8 +2130,8 @@ namespace ModularRex.RexOdePlugin
                     d.BodySetTorque(Body, m_taintTorque.X, m_taintTorque.Y, m_taintTorque.Z);
                 }
             }
-            
-            m_taintTorque = new PhysicsVector(0, 0, 0);
+
+            m_taintTorque = new Vector3(0, 0, 0);
         }
 
         public void changeAddAngularForce(float timestamp)
@@ -2143,7 +2143,7 @@ namespace ModularRex.RexOdePlugin
                     //m_log.Info("[PHYSICS]: dequeing forcelist");
                     if (IsPhysical)
                     {
-                        PhysicsVector iforce = new PhysicsVector();
+                        Vector3 iforce = new Vector3();
                         for (int i = 0; i < m_angularforcelist.Count; i++)
                         {
                             iforce = iforce + (m_angularforcelist[i] * 100);
@@ -2177,7 +2177,7 @@ namespace ModularRex.RexOdePlugin
                 
                 //resetCollisionAccounting();
             }
-            m_taintVelocity = PhysicsVector.Zero;
+            m_taintVelocity = Vector3.Zero;
         }
 
         public override bool IsPhysical
@@ -2227,7 +2227,7 @@ namespace ModularRex.RexOdePlugin
             get { return _zeroFlag; }
         }
 
-        public override PhysicsVector Position
+        public override Vector3 Position
         {
             get { return _position; }
 
@@ -2236,7 +2236,7 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector Size
+        public override Vector3 Size
         {
             get { return _size; }
             set { _size = value; }
@@ -2247,7 +2247,7 @@ namespace ModularRex.RexOdePlugin
             get { return CalculateMass(); }
         }
 
-        public override PhysicsVector Force
+        public override Vector3 Force
         {
             //get { return PhysicsVector.Zero; }
             get { return m_force; }
@@ -2265,7 +2265,7 @@ namespace ModularRex.RexOdePlugin
 
         }
 
-        public override void VehicleVectorParam(int param, PhysicsVector value)
+        public override void VehicleVectorParam(int param, Vector3 value)
         {
 
         }
@@ -2283,14 +2283,14 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector CenterOfMass
+        public override Vector3 CenterOfMass
         {
-            get { return PhysicsVector.Zero; }
+            get { return Vector3.Zero; }
         }
 
-        public override PhysicsVector GeometricCenter
+        public override Vector3 GeometricCenter
         {
-            get { return PhysicsVector.Zero; }
+            get { return Vector3.Zero; }
         }
 
         public override PrimitiveBaseShape Shape
@@ -2302,13 +2302,13 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector Velocity
+        public override Vector3 Velocity
         {
             get
             {
                 // Averate previous velocity with the new one so
                 // client object interpolation works a 'little' better
-                PhysicsVector returnVelocity = new PhysicsVector();
+                Vector3 returnVelocity = new Vector3();
                 returnVelocity.X = (m_lastVelocity.X + _velocity.X)/2;
                 returnVelocity.Y = (m_lastVelocity.Y + _velocity.Y)/2;
                 returnVelocity.Z = (m_lastVelocity.Z + _velocity.Z)/2;
@@ -2323,12 +2323,12 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector Torque
+        public override Vector3 Torque
         {
             get
             {
                 if (!m_isphysical || Body == IntPtr.Zero)
-                    return new PhysicsVector(0,0,0);
+                    return new Vector3(0, 0, 0);
 
                 return _torque;
             }
@@ -2358,40 +2358,40 @@ namespace ModularRex.RexOdePlugin
             set { _orientation = value; }
         }
 
-        public override PhysicsVector Acceleration
+        public override Vector3 Acceleration
         {
             get { return _acceleration; }
         }
 
 
-        public void SetAcceleration(PhysicsVector accel)
+        public void SetAcceleration(Vector3 accel)
         {
             _acceleration = accel;
         }
 
-        public override void AddForce(PhysicsVector force, bool pushforce)
+        public override void AddForce(Vector3 force, bool pushforce)
         {
             m_forcelist.Add(force);
             m_taintforce = true;
             //m_log.Info("[PHYSICS]: Added Force:" + force.ToString() +  " to prim at " + Position.ToString());
         }
 
-        public override void AddAngularForce(PhysicsVector force, bool pushforce)
+        public override void AddAngularForce(Vector3 force, bool pushforce)
         {
             m_angularforcelist.Add(force);
             m_taintaddangularforce = true;
         }
 
-        public override PhysicsVector RotationalVelocity
+        public override Vector3 RotationalVelocity
         {
             get
             {
-                PhysicsVector pv = new PhysicsVector(0, 0, 0);
+                Vector3 pv = new Vector3(0, 0, 0);
                 if (_zeroFlag)
                     return pv;
                 m_lastUpdateSent = false;
 
-                if (m_rotationalVelocity.IsIdentical(pv, 0.2f))
+                if (m_rotationalVelocity.ApproxEquals(pv, 0.2f))
                     return pv;
 
                 return m_rotationalVelocity;
@@ -2429,7 +2429,7 @@ namespace ModularRex.RexOdePlugin
             m_taintparent = null;
         }
 
-        public override void LockAngularMotion(PhysicsVector axis)
+        public override void LockAngularMotion(Vector3 axis)
         {
             // reverse the zero/non zero values for ODE.
 
@@ -2437,7 +2437,7 @@ namespace ModularRex.RexOdePlugin
             axis.Y = (axis.Y > 0) ? 1f : 0f;
             axis.Z = (axis.Z > 0) ? 1f : 0f;
             m_log.DebugFormat("[axislock]: <{0},{1},{2}>", axis.X, axis.Y, axis.Z);
-            m_taintAngularLock = new PhysicsVector(axis.X, axis.Y, axis.Z); ;
+            m_taintAngularLock = new Vector3(axis.X, axis.Y, axis.Z); ;
         }
 
         public void UpdatePositionAndVelocity()
@@ -2445,7 +2445,7 @@ namespace ModularRex.RexOdePlugin
             //  no lock; called from Simulate() -- if you call this from elsewhere, gotta lock or do Monitor.Enter/Exit!
             if (_parent == null)
             {
-                PhysicsVector pv = new PhysicsVector(0, 0, 0);
+                Vector3 pv = new Vector3(0, 0, 0);
                 bool lastZeroFlag = _zeroFlag;
                 if (Body != (IntPtr)0) // FIXME -> or if it is a joint
                 {
@@ -2454,8 +2454,10 @@ namespace ModularRex.RexOdePlugin
                     d.Vector3 vel = d.BodyGetLinearVel(Body);
                     d.Vector3 rotvel = d.BodyGetAngularVel(Body);
                     d.Vector3 torque = d.BodyGetTorque(Body);
-                    _torque.setValues(torque.X, torque.Y, torque.Z);
-                    PhysicsVector l_position = new PhysicsVector();
+                    _torque.X = torque.X;
+                    _torque.Y = torque.Y;
+                    _torque.Z = torque.Z;
+                    Vector3 l_position = new Vector3();
                     Quaternion l_orientation = new Quaternion();
 
                     //  kluge to keep things in bounds.  ODE lets dead avatars drift away (they should be removed!)
@@ -2587,16 +2589,18 @@ namespace ModularRex.RexOdePlugin
                         _velocity.Z = vel.Z;
 
                         _acceleration = ((_velocity - m_lastVelocity) / 0.1f);
-                        _acceleration = new PhysicsVector(_velocity.X - m_lastVelocity.X / 0.1f, _velocity.Y - m_lastVelocity.Y / 0.1f, _velocity.Z - m_lastVelocity.Z / 0.1f);
+                        _acceleration = new Vector3(_velocity.X - m_lastVelocity.X / 0.1f, _velocity.Y - m_lastVelocity.Y / 0.1f, _velocity.Z - m_lastVelocity.Z / 0.1f);
                         //m_log.Info("[PHYSICS]: V1: " + _velocity + " V2: " + m_lastVelocity + " Acceleration: " + _acceleration.ToString());
 
-                        if (_velocity.IsIdentical(pv, 0.5f))
+                        if (_velocity.ApproxEquals(pv, 0.5f))
                         {
                             m_rotationalVelocity = pv;
                         }
                         else
                         {
-                            m_rotationalVelocity.setValues(rotvel.X, rotvel.Y, rotvel.Z);
+                            m_rotationalVelocity.X = rotvel.X;
+                            m_rotationalVelocity.Y = rotvel.Y;
+                            m_rotationalVelocity.Z = rotvel.Z;
                         }
 
                         //System.Console.WriteLine("ODE: " + m_rotationalVelocity.ToString());
@@ -2644,15 +2648,15 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override void SetMomentum(PhysicsVector momentum)
+        public override void SetMomentum(Vector3 momentum)
         {
         }
 
-        public override PhysicsVector PIDTarget { set { m_PIDTarget = value; ; } }
+        public override Vector3 PIDTarget { set { m_PIDTarget = value; ; } }
         public override bool PIDActive { set { m_usePID = value; } }
         public override float PIDTau { set { m_PIDTau = value; } }
 
-        private void createAMotor(PhysicsVector axis)
+        private void createAMotor(Vector3 axis)
         {
             if (Body == IntPtr.Zero)
                 return;
@@ -2838,10 +2842,10 @@ namespace ModularRex.RexOdePlugin
 
             if (m_OriginalMesh != null)
             {
-                PhysicsVector scalingvector = new PhysicsVector(_size.X, _size.Y, _size.Z);
+                Vector3 scalingvector = new Vector3(_size.X, _size.Y, _size.Z);
                 if (m_BoundsScaling)
                 {
-                    PhysicsVector boundssize = m_BoundsMax - m_BoundsMin;
+                    Vector3 boundssize = m_BoundsMax - m_BoundsMin;
                     if (boundssize.X != 0)
                         scalingvector.X /= boundssize.X;
                     if (boundssize.Y != 0)
@@ -2855,7 +2859,7 @@ namespace ModularRex.RexOdePlugin
                 scalefactor[2] = scalingvector.Y;
 
                 Mesh newmesh = new Mesh();
-                List<PhysicsVector> vertlist = m_OriginalMesh.getVertexList();
+                List<Vector3> vertlist = m_OriginalMesh.getVertexList();
                 int[] tempIndexList = m_OriginalMesh.getIndexListAsInt();
                 
                 for (int i = 0; i < tempIndexList.GetLength(0); i = i + 3)
@@ -2893,7 +2897,7 @@ namespace ModularRex.RexOdePlugin
             if (m_isphysical && Body != IntPtr.Zero)
             {
                 d.BodySetQuaternion(Body, ref myrot);
-                if (!m_angularlock.IsIdentical(new PhysicsVector(1, 1, 1), 0))
+                if (!m_angularlock.ApproxEquals(new Vector3(1, 1, 1), 0))
                     createAMotor(m_angularlock);
             }
 

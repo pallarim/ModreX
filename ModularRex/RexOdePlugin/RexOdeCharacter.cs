@@ -59,15 +59,15 @@ namespace ModularRex.RexOdePlugin
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private PhysicsVector _position;
+        private Vector3 _position;
         private d.Vector3 _zeroPosition;
         // private d.Matrix3 m_StandUpRotation;
         private bool _zeroFlag = false;
         private bool m_lastUpdateSent = false;
-        private PhysicsVector _velocity;
-        private PhysicsVector _target_velocity;
-        private PhysicsVector _acceleration;
-        private PhysicsVector m_rotationalVelocity;
+        private Vector3 _velocity;
+        private Vector3 _target_velocity;
+        private Vector3 _acceleration;
+        private Vector3 m_rotationalVelocity;
         private float m_mass = 80f;
         public float m_density = 60f;
         private bool m_pidControllerActive = true;
@@ -89,7 +89,7 @@ namespace ModularRex.RexOdePlugin
         private bool m_alwaysRun = false;
         private bool m_hackSentFall = false;
         private bool m_hackSentFly = false;
-        private PhysicsVector m_taintPosition = new PhysicsVector(0, 0, 0);
+        private Vector3 m_taintPosition = new Vector3(0, 0, 0);
         public uint m_localID = 0;
         public bool m_returnCollisions = false;
         // taints and their non-tainted counterparts
@@ -125,18 +125,18 @@ namespace ModularRex.RexOdePlugin
         public int m_eventsubscription = 0;
         private CollisionEventUpdate CollisionEventsThisFrame = new CollisionEventUpdate();
 
-        public OdeCharacter(String avName, OdeScene parent_scene, PhysicsVector pos, CollisionLocker dode, PhysicsVector size, float pid_d, float pid_p, float capsule_radius, float tensor, float density, float height_fudge_factor, float walk_divisor, float rundivisor)
+        public OdeCharacter(String avName, OdeScene parent_scene, Vector3 pos, CollisionLocker dode, Vector3 size, float pid_d, float pid_p, float capsule_radius, float tensor, float density, float height_fudge_factor, float walk_divisor, float rundivisor)
         {
             // ode = dode;
-            _velocity = new PhysicsVector();
-            _target_velocity = new PhysicsVector();
+            _velocity = new Vector3();
+            _target_velocity = new Vector3();
             _position = pos;
 
             m_taintPosition.X = pos.X;
             m_taintPosition.Y = pos.Y;
             m_taintPosition.Z = pos.Z;
 
-            _acceleration = new PhysicsVector();
+            _acceleration = new Vector3();
             _parent_scene = parent_scene;
 
             PID_D = pid_d;
@@ -371,7 +371,7 @@ namespace ModularRex.RexOdePlugin
         /// Not really a good choice unless you 'know' it's a good
         /// spot otherwise you're likely to orbit the avatar.
         /// </summary>
-        public override PhysicsVector Position
+        public override Vector3 Position
         {
             get { return _position; }
             set
@@ -384,7 +384,7 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector RotationalVelocity
+        public override Vector3 RotationalVelocity
         {
             get { return m_rotationalVelocity; }
             set { m_rotationalVelocity = value; }
@@ -394,18 +394,18 @@ namespace ModularRex.RexOdePlugin
         /// This property sets the height of the avatar only.  We use the height to make sure the avatar stands up straight
         /// and use it to offset landings properly
         /// </summary>
-        public override PhysicsVector Size
+        public override Vector3 Size
         {
-            get { return new PhysicsVector(CAPSULE_RADIUS*2, CAPSULE_RADIUS*2, CAPSULE_LENGTH); }
+            get { return new Vector3(CAPSULE_RADIUS * 2, CAPSULE_RADIUS * 2, CAPSULE_LENGTH); }
             set
             {
                 m_pidControllerActive = true;
-               
-                    PhysicsVector SetSize = value;
+
+                Vector3 SetSize = value;
                     m_tainted_CAPSULE_LENGTH = (SetSize.Z * 1.15f) - CAPSULE_RADIUS * 2.0f;
                     //m_log.Info("[SIZE]: " + CAPSULE_LENGTH.ToString());
 
-                    Velocity = new PhysicsVector(0f, 0f, 0f);
+                    Velocity = new Vector3(0f, 0f, 0f);
                
                 _parent_scene.AddPhysicsActorTaint(this);
             }
@@ -527,7 +527,7 @@ namespace ModularRex.RexOdePlugin
 
         }
 
-        public override void LockAngularMotion(PhysicsVector axis)
+        public override void LockAngularMotion(Vector3 axis)
         {
 
         }
@@ -555,9 +555,9 @@ namespace ModularRex.RexOdePlugin
 //             //m_log.Info("[PHYSICSAV]: Rotation: " + bodyrotation.M00 + " : " + bodyrotation.M01 + " : " + bodyrotation.M02 + " : " + bodyrotation.M10 + " : " + bodyrotation.M11 + " : " + bodyrotation.M12 + " : " + bodyrotation.M20 + " : " + bodyrotation.M21 + " : " + bodyrotation.M22);
 //         }
 
-        public override PhysicsVector Force
+        public override Vector3 Force
         {
-            get { return new PhysicsVector(_target_velocity.X, _target_velocity.Y, _target_velocity.Z); }
+            get { return new Vector3(_target_velocity.X, _target_velocity.Y, _target_velocity.Z); }
             set { return; }
         }
 
@@ -572,7 +572,7 @@ namespace ModularRex.RexOdePlugin
 
         }
 
-        public override void VehicleVectorParam(int param, PhysicsVector value)
+        public override void VehicleVectorParam(int param, Vector3 value)
         {
 
         }
@@ -587,14 +587,14 @@ namespace ModularRex.RexOdePlugin
 
         }
 
-        public override PhysicsVector CenterOfMass
+        public override Vector3 CenterOfMass
         {
-            get { return PhysicsVector.Zero; }
+            get { return Vector3.Zero; }
         }
 
-        public override PhysicsVector GeometricCenter
+        public override Vector3 GeometricCenter
         {
-            get { return PhysicsVector.Zero; }
+            get { return Vector3.Zero; }
         }
 
         public override PrimitiveBaseShape Shape
@@ -602,12 +602,12 @@ namespace ModularRex.RexOdePlugin
             set { return; }
         }
 
-        public override PhysicsVector Velocity
+        public override Vector3 Velocity
         {
             get {
                 // There's a problem with PhysicsVector.Zero! Don't Use it Here!
                 if (_zeroFlag)
-                    return new PhysicsVector(0f, 0f, 0f);
+                    return new Vector3(0f, 0f, 0f);
                 m_lastUpdateSent = false;
                 return _velocity;
             }
@@ -618,9 +618,9 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector Torque
+        public override Vector3 Torque
         {
-            get { return PhysicsVector.Zero; }
+            get { return Vector3.Zero; }
             set { return; }
         }
 
@@ -646,12 +646,12 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsVector Acceleration
+        public override Vector3 Acceleration
         {
             get { return _acceleration; }
         }
 
-        public void SetAcceleration(PhysicsVector accel)
+        public void SetAcceleration(Vector3 accel)
         {
             m_pidControllerActive = true;
             _acceleration = accel;
@@ -662,7 +662,7 @@ namespace ModularRex.RexOdePlugin
         /// The PID controller takes this target velocity and tries to make it a reality
         /// </summary>
         /// <param name="force"></param>
-        public override void AddForce(PhysicsVector force, bool pushforce)
+        public override void AddForce(Vector3 force, bool pushforce)
         {
             if (pushforce)
             {
@@ -684,7 +684,7 @@ namespace ModularRex.RexOdePlugin
             //m_lastUpdateSent = false;
         }
 
-        public override void AddAngularForce(PhysicsVector force, bool pushforce)
+        public override void AddAngularForce(Vector3 force, bool pushforce)
         {
 
         }
@@ -693,7 +693,7 @@ namespace ModularRex.RexOdePlugin
         /// After all of the forces add up with 'add force' we apply them with doForce
         /// </summary>
         /// <param name="force"></param>
-        public void doForce(PhysicsVector force)
+        public void doForce(Vector3 force)
         {
             if (!collidelock)
             {
@@ -704,7 +704,7 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override void SetMomentum(PhysicsVector momentum)
+        public override void SetMomentum(Vector3 momentum)
         {
         }
 
@@ -747,7 +747,7 @@ namespace ModularRex.RexOdePlugin
             }
             // endrex
 
-            PhysicsVector vec = new PhysicsVector();
+            Vector3 vec = new Vector3();
             d.Vector3 vel = d.BodyGetLinearVel(Body);
             float movementdivisor = 1f;
 
@@ -929,7 +929,7 @@ namespace ModularRex.RexOdePlugin
         public override void CrossingFailure()
         {
         }
-        public override PhysicsVector PIDTarget { set { return; } }
+        public override Vector3 PIDTarget { set { return; } }
         public override bool PIDActive { set { return; } }
         public override float PIDTau { set { return; } }
         public override void SubscribeEvents(int ms)
@@ -1021,7 +1021,7 @@ namespace ModularRex.RexOdePlugin
                     d.GeomDestroy(Shell);
                     AvatarGeomAndBodyCreation(_position.X, _position.Y,
                                       _position.Z + (Math.Abs(CAPSULE_LENGTH - prevCapsule) * 2), m_tensor);
-                    Velocity = new PhysicsVector(0f, 0f, 0f);
+                    Velocity = new Vector3(0f, 0f, 0f);
 
                     _parent_scene.geom_name_map[Shell] = m_name;
                     _parent_scene.actor_name_map[Shell] = (PhysicsActor)this;
@@ -1035,7 +1035,7 @@ namespace ModularRex.RexOdePlugin
                 }
             }
 
-            if (!m_taintPosition.IsIdentical(_position, 0.05f))
+            if (!m_taintPosition.ApproxEquals(_position, 0.05f))
             {
                 if (Body != IntPtr.Zero)
                 {

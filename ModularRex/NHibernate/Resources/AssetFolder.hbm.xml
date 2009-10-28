@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+  <class name="ModularRex.RexFramework.AssetFolder, ModularRex.RexFramework" discriminator-value="Folder">
+    <id name="Id">
+      <generator class="identity"/>
+    </id>
+    <discriminator column="Discriminator" not-null="true" type="System.String"/>
+    <property name="ParentPath"/>
+    <property name="Name"/>
+    <subclass name="ModularRex.RexFramework.AssetFolderItem, ModularRex.RexFramework" discriminator-value="Item">
+      <property name="AssetID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate"/>
+    </subclass>
+  </class>
+</hibernate-mapping>

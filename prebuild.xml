@@ -39,6 +39,7 @@
       </Configuration>
 
 	<ReferencePath>../../../../bin/</ReferencePath>
+	<ReferencePath>../../ModularRex/bin/</ReferencePath>
 	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="log4net.dll"/>
 	 <Reference name="OpenMetaverse.dll"/>
@@ -49,8 +50,8 @@
 	 <Reference name="System.Xml"/>
 	 <Reference name="System.Xml.Linq"/>
 	 <Reference name="OpenSim.Framework"/>
-	 <Reference name="OpenSim.Data.NHibernate"/>
-	 <Reference name="NHibernate"/>
+	 <Reference name="OpenSim.Data"/>
+	 <Reference name="NHibernate" localCopy="true"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
         <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
@@ -173,6 +174,32 @@
       </Files>
     </Project>
 	
+    <Project name="WebDAVSharp.NHibernateStorage" path="./addon-modules/ModreX/ModularRex/lib/WebDAVSharp.NHibernateStorage" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../../bin/</ReferencePath>
+      <ReferencePath>../../../ModularRex/bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="log4net"/>
+      <Reference name="NHibernate"/>
+      <Reference name="WebDAVSharp"/>
+      
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+      </Files>
+    </Project>
+	
    <Project name="ModularRex.WorldInventory" path="./addon-modules/ModreX/ModularRex/WorldInventory" type="Library">
       <Configuration name="Debug">
         <Options>
@@ -193,6 +220,7 @@
       <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
       <Reference name="ModularRex"/>
       <Reference name="ModularRex.RexFramework"/>
+	  <Reference name="ModularRex.NHibernate"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Communications"/>
@@ -200,6 +228,7 @@
 	  <Reference name="OpenSim.Region.ClientStack.LindenUDP.dll"/>
 	  <Reference name="OpenSim.Framework.Statistics.dll"/>
 	  <Reference name="WebDAVSharp"/>
+	  <Reference name="WebDAVSharp.NHibernateStorage"/>
 	  <Reference name="HttpServer"/>
       <Reference name="Nini.dll" />
       <Reference name="log4net.dll"/>

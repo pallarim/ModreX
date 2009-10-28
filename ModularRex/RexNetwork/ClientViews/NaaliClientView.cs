@@ -8,6 +8,7 @@ using OpenSim.Framework;
 using OpenSim.Region.ClientStack.LindenUDP;
 using OpenSim.Region.ClientStack;
 using OpenMetaverse.Packets;
+using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexNetwork
 {
@@ -16,11 +17,11 @@ namespace ModularRex.RexNetwork
     /// </summary>
     public class NaaliClientView : RexClientViewBase
     {
-        public NaaliClientView(EndPoint remoteEP, IScene scene,
-                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP, userSettings)
+        public NaaliClientView(EndPoint remoteEP, Scene scene,
+                             LLUDPServer udpServer, LLUDPClient udpClient, AuthenticateResponse authenSessions, UUID agentId,
+                             UUID sessionId, uint circuitCode)
+            : base(remoteEP, scene, udpServer, udpClient, authenSessions, agentId,
+                   sessionId, circuitCode)
         {
             OnBinaryGenericMessage -= base.RexClientView_BinaryGenericMessage;
             OnBinaryGenericMessage += ng_BinaryGenericMessage;

@@ -35,18 +35,18 @@ namespace ModularRex.RexParts.RexPython
                 if (sm is IScriptEngine)
                 {
                     IScriptEngine ise = (IScriptEngine)sm;
-                    if (ise.ScriptEngineName == "ScriptEngine.DotNetEngine")
+                    if (ise.ScriptEngineName == "XEngine")
                     {
                         m_ScriptEngine = ise;
-                        m_log.Info("[REXSCRIPT]: Found DotNetEngine");
+                        m_log.Info("[REXSCRIPT]: Found XEngine");
                     }
                 }
             }
 
             if (m_ScriptEngine == null)
             {
-                m_log.Error("[REXSCRIPT]: Could not find DotNetEngine");
-                throw new Exception("Could not find DotNetEngine");
+                m_log.Error("[REXSCRIPT]: Could not find XEngine");
+                throw new Exception("Could not find XEngine");
             }
             //this was causing lots of errors. instead of creating a new instance of .Net script engine, check for an existing one and use that
             //this requires of using .NET scripting engine when using the python engine.

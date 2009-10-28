@@ -16,6 +16,7 @@ using OpenSim.Region.ClientStack.LindenUDP;
 using ModularRex.RexNetwork.RexLogin;
 using System.Timers;
 using System.Text;
+using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexNetwork
 {
@@ -53,27 +54,29 @@ namespace ModularRex.RexNetwork
         public event ReceiveRexMediaURL OnReceiveRexMediaURL;
         public event RexGenericMessageDelegate OnPrimFreeData;
 
-        public RexClientViewBase(EndPoint remoteEP, IScene scene,
-                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP, userSettings)
+        public RexClientViewBase(EndPoint remoteEP, Scene scene,
+                             LLUDPServer udpServer, LLUDPClient udpClient, AuthenticateResponse authenSessions, UUID agentId,
+                             UUID sessionId, uint circuitCode)
+            : base(remoteEP, scene, udpServer, udpClient, authenSessions, agentId,
+                   sessionId, circuitCode)
         {
             // Rex communication now occurs via GenericMessage
             // We have a special handler here below.
             AddGenericPacketHandlers();
+            RegisterInterfaces();
         }
 
-        public RexClientViewBase(EndPoint remoteEP, IScene scene,
-                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP, string rexAvatarURL, string rexAuthURL, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP, userSettings)
+        public RexClientViewBase(EndPoint remoteEP, Scene scene,
+                             LLUDPServer udpServer, LLUDPClient udpClient, AuthenticateResponse authenSessions, UUID agentId,
+                             UUID sessionId, uint circuitCode, string rexAvatarURL, string rexAuthURL)
+            : base(remoteEP, scene, udpServer, udpClient, authenSessions, agentId,
+                   sessionId, circuitCode)
         {
             // Rex communication now occurs via GenericMessage
             // We need to register GenericMessage handlers
 
             AddGenericPacketHandlers();
+            RegisterInterfaces();
 
             RexAvatarURL = rexAvatarURL;
             RexAuthURL = rexAuthURL;
@@ -139,7 +142,7 @@ namespace ModularRex.RexNetwork
         /// every time you make a new Rex-specific
         /// Interface. Make sure to register it here.
         /// </summary>
-        protected override void RegisterInterfaces()
+        protected void RegisterInterfaces()
         {
             RegisterInterface<IClientRexAppearance>(this);
             RegisterInterface<IClientRexFaceExpression>(this);
@@ -149,8 +152,6 @@ namespace ModularRex.RexNetwork
             // Register our own class 'as-is' so it can be
             // used via IClientCore.Get<RexClientView>()...
             RegisterInterface(this);
-
-            base.RegisterInterfaces();
         }
 
         #region Properties
@@ -1024,101 +1025,226 @@ namespace ModularRex.RexNetwork
 
         #region Avatar terse update
 
-        protected override void InitNewClient()
+        public override void Start()
         {
-            m_avatarTerseUpdateTimer = new System.Timers.Timer(m_avatarTerseUpdateRate);
-            m_avatarTerseUpdateTimer.Elapsed += new ElapsedEventHandler(ProcessAvatarTerseUpdates);
-            m_avatarTerseUpdateTimer.AutoReset = false;
-
-            base.InitNewClient();
+            base.Start();
         }
 
-        protected System.Timers.Timer m_avatarTerseUpdateTimer;
-        protected List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock> m_avatarTerseUpdates = new List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock>();
+        //protected List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock> m_avatarTerseUpdates = new List<ImprovedTerseObjectUpdatePacket.ObjectDataBlock>();
 
         /// <summary>
         /// Send a terse positional/rotation/velocity update about an avatar
         /// to the client.  This avatar can be that of the client itself.
         /// </summary>
-        public override void SendAvatarTerseUpdate(ulong regionHandle,
-                ushort timeDilation, uint localID, Vector3 position,
-                Vector3 velocity, Quaternion rotation, UUID agentid)
+        public override void SendAvatarTerseUpdate(SendAvatarTerseData data)
         {
-            if (rotation.X == rotation.Y &&
-                rotation.Y == rotation.Z &&
-                rotation.Z == rotation.W && rotation.W == 0)
+            if (data.Priority == double.NaN)
+            {
+                m_log.Error("[LLClientView] SendAvatarTerseUpdate received a NaN priority, dropping update");
+                return;
+            }
+
+            Quaternion rotation = data.Rotation;
+            if (rotation.W == 0.0f && rotation.X == 0.0f && rotation.Y == 0.0f && rotation.Z == 0.0f)
                 rotation = Quaternion.Identity;
 
-            position.Z = (float)(position.Z - 0.15);
+            ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock = RexCreateImprovedTerseBlock(data);
 
-            ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock =
-                RexCreateAvatarImprovedBlock(localID, position, velocity, rotation);
-                //CreateAvatarImprovedBlock(localID, position, velocity, rotation);
+            lock (m_avatarTerseUpdates.SyncRoot)
+                m_avatarTerseUpdates.Enqueue(data.Priority, terseBlock, data.LocalID);
 
-            lock (m_avatarTerseUpdates)
-            {
-                m_avatarTerseUpdates.Add(terseBlock);
-
-                // If packet is full or own movement packet, send it.
-                if (m_avatarTerseUpdates.Count >= m_avatarTerseUpdatesPerPacket)
-                {
-                    ProcessAvatarTerseUpdates(this, null);
-                }
-                else if (m_avatarTerseUpdates.Count == 1)
-                {
-                    m_avatarTerseUpdateTimer.Start();
-                }
-            }
+            // If we received an update about our own avatar, process the avatar update priority queue immediately
+            if (data.AgentID == m_agentId)
+                ProcessAvatarTerseUpdates();
         }
 
-        protected void ProcessAvatarTerseUpdates(object sender, ElapsedEventArgs e)
+        protected ImprovedTerseObjectUpdatePacket.ObjectDataBlock RexCreateImprovedTerseBlock(SendAvatarTerseData data)
         {
-            lock (m_avatarTerseUpdates)
-            {
-                ImprovedTerseObjectUpdatePacket terse = (ImprovedTerseObjectUpdatePacket)PacketPool.Instance.GetPacket(PacketType.ImprovedTerseObjectUpdate);
-
-                terse.RegionData = new ImprovedTerseObjectUpdatePacket.RegionDataBlock();
-
-                terse.RegionData.RegionHandle = Scene.RegionInfo.RegionHandle;
-                terse.RegionData.TimeDilation =
-                        (ushort)(Scene.TimeDilation * ushort.MaxValue);
-
-                int max = m_avatarTerseUpdatesPerPacket;
-                if (max > m_avatarTerseUpdates.Count)
-                    max = m_avatarTerseUpdates.Count;
-
-                int count = 0;
-                int size = 0;
-
-                byte[] zerobuffer = new byte[1024];
-                byte[] blockbuffer = new byte[1024];
-
-                for (count = 0; count < max; count++)
-                {
-                    int length = 0;
-                    m_avatarTerseUpdates[count].ToBytes(blockbuffer, ref length);
-                    length = Helpers.ZeroEncode(blockbuffer, length, zerobuffer);
-                    if (size + length > m_packetMTU)
-                        break;
-                    size += length;
-                }
-
-                terse.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[count];
-
-                for (int i = 0; i < count; i++)
-                {
-                    terse.ObjectData[i] = m_avatarTerseUpdates[0];
-                    m_avatarTerseUpdates.RemoveAt(0);
-                }
-
-                terse.Header.Reliable = false;
-                terse.Header.Zerocoded = true;
-                OutPacket(terse, ThrottleOutPacketType.Task);
-
-                if (m_avatarTerseUpdates.Count == 0)
-                    m_avatarTerseUpdateTimer.Stop();
-            }
+            return RexCreateAvatarImprovedBlock(true, data.LocalID, 0, data.CollisionPlane, data.Position, data.Velocity,
+                data.Acceleration, data.Rotation, Vector3.Zero, data.TextureEntry);
         }
+
+        private ImprovedTerseObjectUpdatePacket.ObjectDataBlock RexCreateAvatarImprovedBlock(bool avatar, uint localID, byte state,
+            Vector4 collisionPlane, Vector3 position, Vector3 velocity, Vector3 acceleration, Quaternion rotation,
+            Vector3 angularVelocity, byte[] textureEntry)
+        {
+            int pos = 0;
+            byte[] data = new byte[30];
+
+            // LocalID
+            Utils.UIntToBytes(localID, data, pos);
+            pos += 4;
+
+            // Avatar/CollisionPlane
+            //data[pos++] = state;
+            //if (avatar)
+            //{
+            //    data[pos++] = 1;
+
+            //    if (collisionPlane == Vector4.Zero)
+            //        collisionPlane = Vector4.UnitW;
+
+            //    collisionPlane.ToBytes(data, pos);
+            //    pos += 16;
+            //}
+            //else
+            //{
+            //    ++pos;
+            //}
+            
+            // Position
+            byte[] pb = position.GetBytes();
+            Array.Copy(pb, 0, data, pos, pb.Length);
+            pos += 12;
+            //position.ToBytes(data, pos);
+            //pos += 12;
+
+            // Velocity
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(velocity.X, -128.0f, 128.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(velocity.Y, -128.0f, 128.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(velocity.Z, -128.0f, 128.0f), data, pos); pos += 2;
+            velocity = velocity / 128.0f;
+            velocity.X += 1;
+            velocity.Y += 1;
+            velocity.Z += 1;
+
+            ushort InternVelocityX = (ushort)(32768 * velocity.X);
+            ushort InternVelocityY = (ushort)(32768 * velocity.Y);
+            ushort InternVelocityZ = (ushort)(32768 * velocity.Z);
+            data[pos++] = (byte)(InternVelocityX % 256);
+            data[pos++] = (byte)((InternVelocityX >> 8) % 256);
+            data[pos++] = (byte)(InternVelocityY % 256);
+            data[pos++] = (byte)((InternVelocityY >> 8) % 256);
+            data[pos++] = (byte)(InternVelocityZ % 256);
+            data[pos++] = (byte)((InternVelocityZ >> 8) % 256);
+
+            // Acceleration
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(acceleration.X, -64.0f, 64.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(acceleration.Y, -64.0f, 64.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(acceleration.Z, -64.0f, 64.0f), data, pos); pos += 2;
+
+            // Rotation
+            ushort rw = (ushort)(32768 * (rotation.W + 1));
+            ushort rx = (ushort)(32768 * (rotation.X + 1));
+            ushort ry = (ushort)(32768 * (rotation.Y + 1));
+            ushort rz = (ushort)(32768 * (rotation.Z + 1));
+            data[pos++] = (byte)(rx % 256);
+            data[pos++] = (byte)((rx >> 8) % 256);
+            data[pos++] = (byte)(ry % 256);
+            data[pos++] = (byte)((ry >> 8) % 256);
+            data[pos++] = (byte)(rz % 256);
+            data[pos++] = (byte)((rz >> 8) % 256);
+            data[pos++] = (byte)(rw % 256);
+            data[pos++] = (byte)((rw >> 8) % 256);
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(rotation.X, -1.0f, 1.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(rotation.Y, -1.0f, 1.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(rotation.Z, -1.0f, 1.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(rotation.W, -1.0f, 1.0f), data, pos); pos += 2;
+
+            // Angular Velocity
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(angularVelocity.X, -64.0f, 64.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(angularVelocity.Y, -64.0f, 64.0f), data, pos); pos += 2;
+            //Utils.UInt16ToBytes(Utils.FloatToUInt16(angularVelocity.Z, -64.0f, 64.0f), data, pos); pos += 2;
+
+            ImprovedTerseObjectUpdatePacket.ObjectDataBlock block = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
+            block.Data = data;
+
+            block.TextureEntry = new byte[0];
+            //if (textureEntry != null && textureEntry.Length > 0)
+            //{
+            //    byte[] teBytesFinal = new byte[textureEntry.Length + 4];
+
+            //    // Texture Length
+            //    Utils.IntToBytes(textureEntry.Length, textureEntry, 0);
+            //    // Texture
+            //    Buffer.BlockCopy(textureEntry, 0, teBytesFinal, 4, textureEntry.Length);
+
+            //    block.TextureEntry = teBytesFinal;
+            //}
+            //else
+            //{
+            //    block.TextureEntry = Utils.EmptyBytes;
+            //}
+
+            return block;
+        }
+
+        //public override void SendAvatarTerseUpdate(ulong regionHandle,
+        //        ushort timeDilation, uint localID, Vector3 position,
+        //        Vector3 velocity, Quaternion rotation, UUID agentid)
+        //{
+        //    if (rotation.X == rotation.Y &&
+        //        rotation.Y == rotation.Z &&
+        //        rotation.Z == rotation.W && rotation.W == 0)
+        //        rotation = Quaternion.Identity;
+
+        //    position.Z = (float)(position.Z - 0.15);
+
+        //    ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock =
+        //        RexCreateAvatarImprovedBlock(localID, position, velocity, rotation);
+        //        //CreateAvatarImprovedBlock(localID, position, velocity, rotation);
+
+        //    lock (m_avatarTerseUpdates)
+        //    {
+        //        m_avatarTerseUpdates.Add(terseBlock);
+
+        //        // If packet is full or own movement packet, send it.
+        //        if (m_avatarTerseUpdates.Count >= m_avatarTerseUpdatesPerPacket)
+        //        {
+        //            ProcessAvatarTerseUpdates(this, null);
+        //        }
+        //        else if (m_avatarTerseUpdates.Count == 1)
+        //        {
+        //            m_avatarTerseUpdateTimer.Start();
+        //        }
+        //    }
+        //}
+
+        //protected void ProcessAvatarTerseUpdates(object sender, ElapsedEventArgs e)
+        //{
+        //    lock (m_avatarTerseUpdates)
+        //    {
+        //        ImprovedTerseObjectUpdatePacket terse = (ImprovedTerseObjectUpdatePacket)PacketPool.Instance.GetPacket(PacketType.ImprovedTerseObjectUpdate);
+
+        //        terse.RegionData = new ImprovedTerseObjectUpdatePacket.RegionDataBlock();
+
+        //        terse.RegionData.RegionHandle = Scene.RegionInfo.RegionHandle;
+        //        terse.RegionData.TimeDilation =
+        //                (ushort)(Scene.TimeDilation * ushort.MaxValue);
+
+        //        int max = m_avatarTerseUpdatesPerPacket;
+        //        if (max > m_avatarTerseUpdates.Count)
+        //            max = m_avatarTerseUpdates.Count;
+
+        //        int count = 0;
+        //        int size = 0;
+
+        //        byte[] zerobuffer = new byte[1024];
+        //        byte[] blockbuffer = new byte[1024];
+
+        //        for (count = 0; count < max; count++)
+        //        {
+        //            int length = 0;
+        //            m_avatarTerseUpdates[count].ToBytes(blockbuffer, ref length);
+        //            length = Helpers.ZeroEncode(blockbuffer, length, zerobuffer);
+        //            if (size + length > Packet.MTU)
+        //                break;
+        //            size += length;
+        //        }
+
+        //        terse.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[count];
+
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            terse.ObjectData[i] = m_avatarTerseUpdates[0];
+        //            m_avatarTerseUpdates.RemoveAt(0);
+        //        }
+
+        //        terse.Header.Reliable = false;
+        //        terse.Header.Zerocoded = true;
+        //        OutPacket(terse, ThrottleOutPacketType.Task);
+        //    }
+        //}
 
         /// <summary>
         /// Creates compressed avatar terse update block. This is about half smaller than the orginal SL

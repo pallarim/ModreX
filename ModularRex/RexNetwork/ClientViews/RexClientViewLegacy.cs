@@ -6,6 +6,7 @@ using OpenSim.Framework;
 using OpenMetaverse;
 using OpenSim.Region.ClientStack.LindenUDP;
 using OpenSim.Region.ClientStack;
+using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexNetwork
 {
@@ -39,11 +40,11 @@ namespace ModularRex.RexNetwork
         }
 
 
-        public RexClientViewLegacy(EndPoint remoteEP, IScene scene,
-                             LLPacketServer packServer, AuthenticateResponse authenSessions, UUID agentId,
-                             UUID sessionId, uint circuitCode, EndPoint proxyEP, ClientStackUserSettings userSettings)
-            : base(remoteEP, scene, packServer, authenSessions, agentId,
-                   sessionId, circuitCode, proxyEP, userSettings)
+        public RexClientViewLegacy(EndPoint remoteEP, Scene scene,
+                             LLUDPServer udpServer, LLUDPClient udpClient, AuthenticateResponse authenSessions, UUID agentId,
+                             UUID sessionId, uint circuitCode)
+            : base(remoteEP, scene, udpServer, udpClient, authenSessions, agentId,
+                   sessionId, circuitCode)
         {
             AddGenericPacketHandler("RexSkypeStore", HandleOnSkypeStore);
         }

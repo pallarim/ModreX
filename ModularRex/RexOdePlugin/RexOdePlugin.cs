@@ -512,7 +512,7 @@ namespace ModularRex.RexOdePlugin
         /// </summary>
         /// <param name="pos"></param>
         /// <returns>Returns which split up space the given position is in.</returns>
-        public string whichspaceamIin(PhysicsVector pos)
+        public string whichspaceamIin(Vector3 pos)
         {
             return calculateSpaceForGeom(pos).ToString();
         }
@@ -823,7 +823,7 @@ namespace ModularRex.RexOdePlugin
 
                                 //p2.CollidingObj = true;
                                 contacts[i].depth = 0.00000003f;
-                                p2.Velocity = p2.Velocity + new PhysicsVector(0, 0, 0.5f);
+                                p2.Velocity = p2.Velocity + new Vector3(0, 0, 0.5f);
                                 contacts[i].pos =
                                     new d.Vector3(contacts[i].pos.X + (p1.Size.X/2),
                                                   contacts[i].pos.Y + (p1.Size.Y/2),
@@ -840,7 +840,7 @@ namespace ModularRex.RexOdePlugin
 
                                 //p2.CollidingObj = true;
                                 contacts[i].depth = 0.00000003f;
-                                p1.Velocity = p1.Velocity + new PhysicsVector(0, 0, 0.5f);
+                                p1.Velocity = p1.Velocity + new Vector3(0, 0, 0.5f);
                                 contacts[i].pos =
                                     new d.Vector3(contacts[i].pos.X + (p1.Size.X/2),
                                                   contacts[i].pos.Y + (p1.Size.Y/2),
@@ -1320,9 +1320,9 @@ namespace ModularRex.RexOdePlugin
 
         #region Add/Remove Entities
 
-        public override PhysicsActor AddAvatar(string avName, PhysicsVector position, PhysicsVector size, bool isFlying)
+        public override PhysicsActor AddAvatar(string avName, Vector3 position, Vector3 size, bool isFlying)
         {
-            PhysicsVector pos = new PhysicsVector();
+            Vector3 pos = new Vector3();
             pos.X = position.X;
             pos.Y = position.Y;
             pos.Z = position.Z;
@@ -1342,14 +1342,14 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        private PhysicsActor AddPrim(String name, PhysicsVector position, PhysicsVector size, Quaternion rotation,
+        private PhysicsActor AddPrim(String name, Vector3 position, Vector3 size, Quaternion rotation,
                                      IMesh mesh, PrimitiveBaseShape pbs, bool isphysical)
         {
-            PhysicsVector pos = new PhysicsVector(position.X, position.Y, position.Z);
+            Vector3 pos = new Vector3(position.X, position.Y, position.Z);
             //pos.X = position.X;
             //pos.Y = position.Y;
             //pos.Z = position.Z;
-            PhysicsVector siz = new PhysicsVector();
+            Vector3 siz = new Vector3();
             siz.X = size.X;
             siz.Y = size.Y;
             siz.Z = size.Z;
@@ -1379,14 +1379,14 @@ namespace ModularRex.RexOdePlugin
             }
         }
 
-        public override PhysicsActor AddPrimShape(string primName, PrimitiveBaseShape pbs, PhysicsVector position,
-                                                  PhysicsVector size, Quaternion rotation) //To be removed
+        public override PhysicsActor AddPrimShape(string primName, PrimitiveBaseShape pbs, Vector3 position,
+                                                  Vector3 size, Quaternion rotation) //To be removed
         {
             return AddPrimShape(primName, pbs, position, size, rotation, false);
         }
 
-        public override PhysicsActor AddPrimShape(string primName, PrimitiveBaseShape pbs, PhysicsVector position,
-                                                  PhysicsVector size, Quaternion rotation, bool isPhysical)
+        public override PhysicsActor AddPrimShape(string primName, PrimitiveBaseShape pbs, Vector3 position,
+                                                  Vector3 size, Quaternion rotation, bool isPhysical)
         {
             PhysicsActor result;
             IMesh mesh = null;
@@ -1631,7 +1631,7 @@ namespace ModularRex.RexOdePlugin
         // this joint will just be added to a waiting list that is NOT processed during the main
         // Simulate() loop (to avoid deadlocks). After Simulate() is finished, we handle unprocessed joint requests.
 
-        public override PhysicsJoint RequestJointCreation(string objectNameInScene, PhysicsJointType jointType, PhysicsVector position,
+        public override PhysicsJoint RequestJointCreation(string objectNameInScene, PhysicsJointType jointType, Vector3 position,
                                             Quaternion rotation, string parms, List<string> bodyNames, string trackedBodyName, Quaternion localRotation)
 
         {
@@ -1639,7 +1639,7 @@ namespace ModularRex.RexOdePlugin
             OdePhysicsJoint joint = new OdePhysicsJoint();
             joint.ObjectNameInScene = objectNameInScene;
             joint.Type = jointType;
-            joint.Position = new PhysicsVector(position.X, position.Y, position.Z);
+            joint.Position = new Vector3(position.X, position.Y, position.Z);
             joint.Rotation = rotation;
             joint.RawParams = parms;
             joint.BodyNames = new List<string>(bodyNames);
@@ -1691,7 +1691,7 @@ namespace ModularRex.RexOdePlugin
         }
 
         // normally called from within OnJointMoved, which is called from within a lock (OdeLock)
-        public override PhysicsVector GetJointAnchor(PhysicsJoint joint)
+        public override Vector3 GetJointAnchor(PhysicsJoint joint)
         {
             Debug.Assert(joint.IsInPhysicsEngine);
             d.Vector3 pos = new d.Vector3();
@@ -1713,14 +1713,14 @@ namespace ModularRex.RexOdePlugin
                         break;
                 }
             }
-            return new PhysicsVector(pos.X, pos.Y, pos.Z);
+            return new Vector3(pos.X, pos.Y, pos.Z);
         }
 
         // normally called from within OnJointMoved, which is called from within a lock (OdeLock)
         // WARNING: ODE sometimes returns <0,0,0> as the joint axis! Therefore this function
         // appears to be unreliable. Fortunately we can compute the joint axis ourselves by
         // keeping track of the joint's original orientation relative to one of the involved bodies.
-        public override PhysicsVector GetJointAxis(PhysicsJoint joint)
+        public override Vector3 GetJointAxis(PhysicsJoint joint)
         {
             Debug.Assert(joint.IsInPhysicsEngine);
             d.Vector3 axis = new d.Vector3();
@@ -1742,7 +1742,7 @@ namespace ModularRex.RexOdePlugin
                         break;
                 }
             }
-            return new PhysicsVector(axis.X, axis.Y, axis.Z);
+            return new Vector3(axis.X, axis.Y, axis.Z);
         }
 
 
@@ -1909,7 +1909,7 @@ namespace ModularRex.RexOdePlugin
         /// <param name="pos">the position that the geom moved to</param>
         /// <param name="currentspace">a pointer to the space it was in before it was moved.</param>
         /// <returns>a pointer to the new space it's in</returns>
-        public IntPtr recalculateSpaceForGeom(IntPtr geom, PhysicsVector pos, IntPtr currentspace)
+        public IntPtr recalculateSpaceForGeom(IntPtr geom, Vector3 pos, IntPtr currentspace)
         {
             // Called from setting the Position and Size of an ODEPrim so
             // it's already in locked space.
@@ -2056,7 +2056,7 @@ namespace ModularRex.RexOdePlugin
         /// </summary>
         /// <param name="pos"></param>
         /// <returns>a pointer to the space. This could be a new space or reused space.</returns>
-        public IntPtr calculateSpaceForGeom(PhysicsVector pos)
+        public IntPtr calculateSpaceForGeom(Vector3 pos)
         {
             int[] xyspace = calculateSpaceArrayItemFromPos(pos);
             //m_log.Info("[Physics]: Attempting to use arrayItem: " + xyspace[0].ToString() + "," + xyspace[1].ToString());
@@ -2068,7 +2068,7 @@ namespace ModularRex.RexOdePlugin
         /// </summary>
         /// <param name="pos"></param>
         /// <returns>an array item based on the position</returns>
-        public int[] calculateSpaceArrayItemFromPos(PhysicsVector pos)
+        public int[] calculateSpaceArrayItemFromPos(Vector3 pos)
         {
             int[] returnint = new int[2];
 
@@ -3273,7 +3273,7 @@ namespace ModularRex.RexOdePlugin
 #endif
 
         // rex, new function
-        public uint Raycast(PhysicsVector pos, PhysicsVector dir, float raylength, uint ignoreId)
+        public uint Raycast(Vector3 pos, Vector3 dir, float raylength, uint ignoreId)
         {
             try
             {
@@ -3307,7 +3307,5 @@ namespace ModularRex.RexOdePlugin
         {
             m_flightCeilingHeight = maxheight;
         }
-
-
     }
 }

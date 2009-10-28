@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
   <class name="ModularRex.RexFramework.RexAssetData, ModularRex.RexFramework" table="RexAssetData" lazy="false">
-    <id name="AssetID" column="ID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate">
+    <id name="AssetID" column="ID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate">
       <generator class="assigned" />
     </id>
 

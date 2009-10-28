@@ -4,9 +4,9 @@
       <id name="ID" column="ID" type="int" unsaved-value="0">
         <generator class="identity" />
       </id>
-      <property name="AssetID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
-			<property name="Num" type="OpenSim.Data.NHibernate.UInt32Type, OpenSim.Data.NHibernate" />
-      <property name="RexObjectUUID" type="OpenSim.Data.NHibernate.UUIDUserType, OpenSim.Data.NHibernate" />
+      <property name="AssetID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+			<property name="Num" type="ModularRex.NHibernate.UInt32Type, ModularRex.NHibernate" />
+      <property name="RexObjectUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
       <property name="AssetURI" type="String" length="512" />
 	</class>
 </hibernate-mapping>

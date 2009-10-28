@@ -266,6 +266,8 @@ namespace OpenSim.Region.Examples.RexBot
 
         public event ObjectRequest OnObjectRequest;
 
+        public event AvatarInterestUpdate OnAvatarInterestUpdate;
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();
@@ -778,10 +780,6 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
-        public virtual void Close(bool ShutdownCircuit)
-        {
-        }
-
         public void Start()
         {
         }
@@ -1096,6 +1094,35 @@ namespace OpenSim.Region.Examples.RexBot
         }
 
         public void SendRebakeAvatarTextures(UUID textureID)
+        {
+        }
+
+        public virtual IPEndPoint RemoteEndPoint
+        {
+            get { return new IPEndPoint(IPAddress.Loopback, (int)CircuitCode); }
+        }
+
+        public virtual void Close()
+        {
+        }
+
+        public void SendAvatarData(SendAvatarData data)
+        {
+        }
+
+        public void SendAvatarTerseUpdate(SendAvatarTerseData data)
+        {
+        }
+
+        public void SendPrimitiveToClient(SendPrimitiveData data)
+        {
+        }
+
+        public void SendPrimTerseUpdate(SendPrimitiveTerseData data)
+        {
+        }
+
+        public void ReprioritizeUpdates(StateUpdateTypes type, UpdatePriorityHandler handler)
         {
         }
 
