@@ -665,7 +665,7 @@ namespace ModularRex.RexOdePlugin
                 }
             } // endrex
 
-            float max_collision_depth = 0f;
+            ContactPoint maxDepthContact = new ContactPoint();
             if (p1.CollisionScore + count >= float.MaxValue)
                 p1.CollisionScore = 0;
             p1.CollisionScore += count;
@@ -676,9 +676,17 @@ namespace ModularRex.RexOdePlugin
 
             for (int i = 0; i < count; i++)
             {
+                d.ContactGeom curContact = contacts[i];
 
+                if (curContact.depth > maxDepthContact.PenetrationDepth)
+                {
+                    maxDepthContact = new ContactPoint(
+                        new Vector3(curContact.pos.X, curContact.pos.Y, curContact.pos.Z),
+                        new Vector3(curContact.normal.X, curContact.normal.Y, curContact.normal.Z),
+                        curContact.depth
+                    );
+                }
 
-                max_collision_depth = (contacts[i].depth > max_collision_depth) ? contacts[i].depth : max_collision_depth;
                 //m_log.Warn("[CCOUNT]: " + count);
                 IntPtr joint;
                 // If we're colliding with terrain, use 'TerrainContact' instead of contact.
@@ -710,12 +718,12 @@ namespace ModularRex.RexOdePlugin
 
                 #region InterPenetration Handling - Unintended physics explosions
 
-                if (contacts[i].depth >= 0.08f)
+                if (curContact.depth >= 0.08f)
                 {
                     //This is disabled at the moment only because it needs more tweaking
                     //It will eventually be uncommented
 
-                    if (contacts[i].depth >= 1.00f)
+                    if (curContact.depth >= 1.00f)
                     {
                         //m_log.Debug("[PHYSICS]: " + contacts[i].depth.ToString());
                     }
@@ -809,7 +817,7 @@ namespace ModularRex.RexOdePlugin
                         #endregion
                     }
 
-                    if (contacts[i].depth >= 1.00f)
+                    if (curContact.depth >= 1.00f)
                     {
                         //m_log.Info("[P]: " + contacts[i].depth.ToString());
                         if ((p2.PhysicsActorType == (int) ActorTypes.Agent &&
@@ -822,12 +830,12 @@ namespace ModularRex.RexOdePlugin
                                 OdeCharacter character = (OdeCharacter) p2;
 
                                 //p2.CollidingObj = true;
-                                contacts[i].depth = 0.00000003f;
+                                curContact.depth = 0.00000003f;
                                 p2.Velocity = p2.Velocity + new Vector3(0, 0, 0.5f);
-                                contacts[i].pos =
-                                    new d.Vector3(contacts[i].pos.X + (p1.Size.X/2),
-                                                  contacts[i].pos.Y + (p1.Size.Y/2),
-                                                  contacts[i].pos.Z + (p1.Size.Z/2));
+                                curContact.pos =
+                                    new d.Vector3(curContact.pos.X + (p1.Size.X / 2),
+                                                  curContact.pos.Y + (p1.Size.Y / 2),
+                                                  curContact.pos.Z + (p1.Size.Z / 2));
                                 character.SetPidStatus(true);
                             }
                             else
@@ -839,12 +847,12 @@ namespace ModularRex.RexOdePlugin
                                 OdeCharacter character = (OdeCharacter)p1;
 
                                 //p2.CollidingObj = true;
-                                contacts[i].depth = 0.00000003f;
+                                curContact.depth = 0.00000003f;
                                 p1.Velocity = p1.Velocity + new Vector3(0, 0, 0.5f);
-                                contacts[i].pos =
-                                    new d.Vector3(contacts[i].pos.X + (p1.Size.X/2),
-                                                  contacts[i].pos.Y + (p1.Size.Y/2),
-                                                  contacts[i].pos.Z + (p1.Size.Z/2));
+                                curContact.pos =
+                                    new d.Vector3(curContact.pos.X + (p1.Size.X / 2),
+                                                  curContact.pos.Y + (p1.Size.Y / 2),
+                                                  curContact.pos.Z + (p1.Size.Z / 2));
                                 character.SetPidStatus(true);
                             }
                             else
@@ -869,10 +877,10 @@ namespace ModularRex.RexOdePlugin
                 if (!skipThisContact && (p2 is OdePrim) && (((OdePrim)p2).m_isVolumeDetect))
                     skipThisContact = true;   // No collision on volume detect prims
 
-                if (!skipThisContact && contacts[i].depth < 0f)
+                if (!skipThisContact && curContact.depth < 0f)
                     skipThisContact = true;
 
-                if (!skipThisContact && checkDupe(contacts[i], p2.PhysicsActorType))
+                if (!skipThisContact && checkDupe(curContact, p2.PhysicsActorType))
                     skipThisContact = true;
 
                 if (!skipThisContact)
@@ -885,15 +893,15 @@ namespace ModularRex.RexOdePlugin
                             (Math.Abs(p2.Velocity.X) > 0.01f || Math.Abs(p2.Velocity.Y) > 0.01f))
                         {
                             // Use the movement terrain contact
-                            AvatarMovementTerrainContact.geom = contacts[i];
-                            _perloopContact.Add(contacts[i]);
+                            AvatarMovementTerrainContact.geom = curContact;
+                            _perloopContact.Add(curContact);
                             joint = d.JointCreateContact(world, contactgroup, ref AvatarMovementTerrainContact);
                         }
                         else
                         {
                             // Use the non moving terrain contact
-                            TerrainContact.geom = contacts[i];
-                            _perloopContact.Add(contacts[i]);
+                            TerrainContact.geom = curContact;
+                            _perloopContact.Add(curContact);
                             joint = d.JointCreateContact(world, contactgroup, ref TerrainContact);
                         }
                         //if (p2.PhysicsActorType == (int)ActorTypes.Prim)
@@ -912,14 +920,14 @@ namespace ModularRex.RexOdePlugin
 
                         //WaterContact.surface.soft_cfm = 0.0000f;
                         //WaterContact.surface.soft_erp = 0.00000f;
-                        if (contacts[i].depth > 0.1f)
+                        if (curContact.depth > 0.1f)
                         {
-                            contacts[i].depth *= 52;
+                            curContact.depth *= 52;
                             //contacts[i].normal = new d.Vector3(0, 0, 1);
                             //contacts[i].pos = new d.Vector3(0, 0, contacts[i].pos.Z - 5f);
                         }
-                        WaterContact.geom = contacts[i];
-                        _perloopContact.Add(contacts[i]);
+                        WaterContact.geom = curContact;
+                        _perloopContact.Add(curContact);
                         joint = d.JointCreateContact(world, contactgroup, ref WaterContact);
 
                         //m_log.Info("[PHYSICS]: Prim Water Contact" + contacts[i].depth);
@@ -931,20 +939,20 @@ namespace ModularRex.RexOdePlugin
                             (Math.Abs(p2.Velocity.X) > 0.01f || Math.Abs(p2.Velocity.Y) > 0.01f))
                         {
                             // Use the Movement prim contact
-                            AvatarMovementprimContact.geom = contacts[i];
-                            _perloopContact.Add(contacts[i]);
+                            AvatarMovementprimContact.geom = curContact;
+                            _perloopContact.Add(curContact);
                             joint = d.JointCreateContact(world, contactgroup, ref AvatarMovementprimContact);
                         }
                         else
                         {   // Use the non movement contact
-                            contact.geom = contacts[i];
+                            contact.geom = curContact;
                             _perloopContact.Add(contacts[i]);
                             joint = d.JointCreateContact(world, contactgroup, ref contact);
                         }
                     }
                     d.JointAttach(joint, b1, b2);
                 }
-                collision_accounting_events(p1, p2, max_collision_depth);
+                collision_accounting_events(p1, p2, maxDepthContact);
                 if (count > geomContactPointsStartthrottle)
                 {
                     // If there are more then 3 contact points, it's likely
@@ -1028,7 +1036,7 @@ namespace ModularRex.RexOdePlugin
             return result;
         }
 
-        private void collision_accounting_events(PhysicsActor p1, PhysicsActor p2, float collisiondepth)
+        private void collision_accounting_events(PhysicsActor p1, PhysicsActor p2, ContactPoint contact)
         {
             // obj1LocalID = 0;
             //returncollisions = false;
@@ -1049,7 +1057,7 @@ namespace ModularRex.RexOdePlugin
                         case ActorTypes.Agent:
                             cc1 = (OdeCharacter)p1;
                             obj2LocalID = cc1.m_localID;
-                            cc1.AddCollisionEvent(cc2.m_localID, collisiondepth);
+                            cc1.AddCollisionEvent(cc2.m_localID, contact);
                             //ctype = (int)CollisionCategories.Character;
 
                             //if (cc1.CollidingObj)
@@ -1062,7 +1070,7 @@ namespace ModularRex.RexOdePlugin
                         case ActorTypes.Prim:
                             cp1 = (OdePrim)p1;
                             obj2LocalID = cp1.m_localID;
-                            cp1.AddCollisionEvent(cc2.m_localID, collisiondepth);
+                            cp1.AddCollisionEvent(cc2.m_localID, contact);
                             //ctype = (int)CollisionCategories.Geom;
 
                             //if (cp1.CollidingObj)
@@ -1081,7 +1089,7 @@ namespace ModularRex.RexOdePlugin
                             break;
                     }
 
-                    cc2.AddCollisionEvent(obj2LocalID, collisiondepth);
+                    cc2.AddCollisionEvent(obj2LocalID, contact);
                     break;
                 case ActorTypes.Prim:
                     cp2 = (OdePrim)p2;
@@ -1092,7 +1100,7 @@ namespace ModularRex.RexOdePlugin
                         case ActorTypes.Agent:
                             cc1 = (OdeCharacter)p1;
                             obj2LocalID = cc1.m_localID;
-                            cc1.AddCollisionEvent(cp2.m_localID, collisiondepth);
+                            cc1.AddCollisionEvent(cp2.m_localID, contact);
                             //ctype = (int)CollisionCategories.Character;
 
                             //if (cc1.CollidingObj)
@@ -1105,7 +1113,7 @@ namespace ModularRex.RexOdePlugin
                         case ActorTypes.Prim:
                             cp1 = (OdePrim)p1;
                             obj2LocalID = cp1.m_localID;
-                            cp1.AddCollisionEvent(cp2.m_localID, collisiondepth);
+                            cp1.AddCollisionEvent(cp2.m_localID, contact);
                             //ctype = (int)CollisionCategories.Geom;
 
                             //if (cp1.CollidingObj)
@@ -1125,7 +1133,7 @@ namespace ModularRex.RexOdePlugin
                             break;
                     }
 
-                    cp2.AddCollisionEvent(obj2LocalID, collisiondepth);
+                    cp2.AddCollisionEvent(obj2LocalID, contact);
                     break;
             }
             //if (returncollisions)
