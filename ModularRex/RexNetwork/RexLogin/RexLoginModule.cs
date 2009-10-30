@@ -220,7 +220,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     XmlRpcResponse rep = default_login_to_simulator(request, client);
                     Hashtable val = (Hashtable)rep.Value;
                     val["rex"] = "running rex mode";
-                    val["sim_port"] = GetPort(m_primaryRegionInfo.RegionHandle);                    
+                    val["sim_port"] = GetPort(m_primaryRegionInfo.RegionHandle);
                     val["region_x"] = (Int32)(m_primaryRegionInfo.RegionLocX * 256);
                     val["region_y"] = (Int32)(m_primaryRegionInfo.RegionLocY * 256);
                     return rep;
@@ -269,7 +269,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.AgentID = agentID;
 
-                logResponse.Message = "Welcome to ModularRex";
+                logResponse.Message = m_config.Configs["StandAlone"].GetString("welcome_message", "Welcome to ModularRex");
 
                 logResponse.SimAddress = m_primaryRegionInfo.ExternalEndPoint.Address.ToString();
                 logResponse.SimPort = (uint)GetPort(m_primaryRegionInfo.RegionHandle);
@@ -287,12 +287,16 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 logResponse.SeedCapability = seedcap;
 
-
-                //UserAdminService is null in grid mode
-                m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
-                                                                      account, 1000, 1000, agentID);
-
+                bool newUser = false;
                 UserProfileData user = m_scenes[0].CommsManager.UserService.GetUserProfile(agentID);
+                if (user == null)
+                {
+                    m_scenes[0].CommsManager.UserAdminService.AddUser(logResponse.Firstname, logResponse.Lastname, "",
+                                                                      account, 1000, 1000, agentID);
+                    user = m_scenes[0].CommsManager.UserService.GetUserProfile(agentID);
+                    newUser = true;
+                }
+
                 if (m_scenes[0].CommsManager.UserService is UserManagerBase)
                 {
                     ((UserManagerBase)m_scenes[0].CommsManager.UserService).CreateAgent(user, request);
@@ -311,48 +315,51 @@ namespace ModularRex.RexNetwork.RexLogin
                     logResponse.SecureSessionID = GetSecureID(account);
                 }
 
-                if (m_scenes[0].InventoryService != null)
+                if (newUser)
                 {
-                    // local service (standalone)
-                    m_scenes[0].InventoryService.CreateUserInventory(agentID);
+                    if (m_scenes[0].InventoryService != null)
+                    {
+                        // local service (standalone)
+                        m_scenes[0].InventoryService.CreateUserInventory(agentID);
 
-                    //m_log.Debug("[USERSTORAGE]: using IInventoryService to create user's inventory");
-                    //m_InventoryService.CreateUserInventory(userProf.ID);
-                    //InventoryFolderBase rootfolder = m_InventoryService.GetRootFolder(userProf.ID);
-                    //if (rootfolder != null)
-                    //    userProf.RootInventoryFolderID = rootfolder.ID;
+                        //m_log.Debug("[USERSTORAGE]: using IInventoryService to create user's inventory");
+                        //m_InventoryService.CreateUserInventory(userProf.ID);
+                        //InventoryFolderBase rootfolder = m_InventoryService.GetRootFolder(userProf.ID);
+                        //if (rootfolder != null)
+                        //    userProf.RootInventoryFolderID = rootfolder.ID;
+                    }
+                    else if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
+                    {
+                        // used by the user server
+                        m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
+
+                        //m_log.Debug("[USERSTORAGE]: using m_commsManager.InterServiceInventoryService to create user's inventory");
+                        //m_commsManager.InterServiceInventoryService.CreateNewUserInventory(userProf.ID);
+                    }
                 }
-                else if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
-                {
-                    // used by the user server
-                    m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentID);
 
-                    //m_log.Debug("[USERSTORAGE]: using m_commsManager.InterServiceInventoryService to create user's inventory");
-                    //m_commsManager.InterServiceInventoryService.CreateNewUserInventory(userProf.ID);
-                }
+                LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
 
-                    LoginService.InventoryData inventData = GetInventorySkeleton(m_scenes[0], agentID);
+                ArrayList AgentInventoryArray = inventData.InventoryArray;
 
-                    ArrayList AgentInventoryArray = inventData.InventoryArray;
+                Hashtable InventoryRootHash = new Hashtable();
+                InventoryRootHash["folder_id"] = inventData.RootFolderID.ToString();
+                ArrayList InventoryRoot = new ArrayList();
+                InventoryRoot.Add(InventoryRootHash);
+                //userProfile.RootInventoryFolderID = inventData.RootFolderID;
 
-                    Hashtable InventoryRootHash = new Hashtable();
-                    InventoryRootHash["folder_id"] = inventData.RootFolderID.ToString();
-                    ArrayList InventoryRoot = new ArrayList();
-                    InventoryRoot.Add(InventoryRootHash);
-                    //userProfile.RootInventoryFolderID = inventData.RootFolderID;
+                // Inventory Library Section
+                Hashtable InventoryLibRootHash = new Hashtable();
+                InventoryLibRootHash["folder_id"] = "00000112-000f-0000-0000-000100bba000";
+                ArrayList InventoryLibRoot = new ArrayList();
+                InventoryLibRoot.Add(InventoryLibRootHash);
 
-                    // Inventory Library Section
-                    Hashtable InventoryLibRootHash = new Hashtable();
-                    InventoryLibRootHash["folder_id"] = "00000112-000f-0000-0000-000100bba000";
-                    ArrayList InventoryLibRoot = new ArrayList();
-                    InventoryLibRoot.Add(InventoryLibRootHash);
+                logResponse.InventoryLibRoot = InventoryLibRoot;
+                logResponse.InventoryLibraryOwner = GetLibraryOwner();
+                logResponse.InventoryRoot = InventoryRoot;
+                logResponse.InventorySkeleton = AgentInventoryArray;
+                logResponse.InventoryLibrary = GetInventoryLibrary();
 
-                    logResponse.InventoryLibRoot = InventoryLibRoot;
-                    logResponse.InventoryLibraryOwner = GetLibraryOwner();
-                    logResponse.InventoryRoot = InventoryRoot;
-                    logResponse.InventorySkeleton = AgentInventoryArray;
-                    logResponse.InventoryLibrary = GetInventoryLibrary();
-                
                 foreach (Scene scene in m_scenes)
                 {
                     AgentCircuitData acd = new AgentCircuitData();
@@ -389,7 +396,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
                 XmlRpcResponse rep = logResponse.ToXmlRpcResponse();
 
-                Hashtable val = (Hashtable) rep.Value;
+                Hashtable val = (Hashtable)rep.Value;
                 val["rex"] = "running rex mode";
 
                 //m_log.Debug(rep.ToString());
