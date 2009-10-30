@@ -20,7 +20,7 @@ using System.Net;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
-    public class RexLoginModule : ISharedRegionModule, IRexUDPPort
+    public class RexLoginModule : INonSharedRegionModule, IRexUDPPort
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
