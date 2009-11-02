@@ -24,6 +24,9 @@ namespace ModularRex.RexNetwork
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private string m_clientToSpawn;
 
+        private int m_defaultRTO = 0;
+        private int m_maxRTO = 0;
+
         public RexUDPServer(IPAddress _listenIP, ref uint port, int proxyPortOffset, bool allow_alternate_port, IConfigSource configSource,
             AgentCircuitManager authenticateClass) : base (_listenIP, ref port, proxyPortOffset, allow_alternate_port, configSource, authenticateClass)
         {
@@ -42,13 +45,20 @@ namespace ModularRex.RexNetwork
                 }
             }
 
+            IConfig config = configSource.Configs["ClientStack.LindenUDP"];
+            if (config != null)
+            {
+                m_defaultRTO = config.GetInt("DefaultRTO", 0);
+                m_maxRTO = config.GetInt("MaxRTO", 0);
+            }
+
             //CreatePacketServer(userSettings, clientToSpawn);
         }
 
         protected override void AddClient(uint circuitCode, UUID agentID, UUID sessionID, IPEndPoint remoteEndPoint, AuthenticateResponse sessionInfo)
         {
             // Create the LLUDPClient
-            LLUDPClient udpClient = new LLUDPClient(this, m_throttleRates, m_throttle, circuitCode, agentID, remoteEndPoint);
+            LLUDPClient udpClient = new LLUDPClient(this, m_throttleRates, m_throttle, circuitCode, agentID, remoteEndPoint, m_defaultRTO, m_maxRTO);
             IClientAPI existingClient;
 
             if (!m_scene.TryGetClient(agentID, out existingClient))
