@@ -62,3 +62,19 @@ See: http://opensimulator.org/wiki/Dependencies#Linux and http://opensimulator.o
 
  5. After successful build, some dependency files should have been automaticly copied to bin/ScriptEngines/Lib and bin/ScriptEngines/PythonScript directories. If they however do not exist, manually copy them from addon-modules/ModreX/ModularRex/ScriptEngines/.
 
+==Configuring ModreX==
+===ModreX configurations===
+Configurations should be copied to bin/addon-modules/ModreX/config/modrex.ini during during the build. If the file doesn't exist, manually copy file from ModreX/ModularRex/addon-modules/ModreX/config/modrex.ini. See the modrex.ini for all the configs.
+
+===Remove NHibernate debug info from logger===
+To remove NHibernate debug infromation from console and file logs, edit file OpenSim.exe.config or  OpenSim.32BitLaunch.exe.config depending which binary do you run. Add these lines to file before root element:
+    <!-- if you'd like to know what NHibernate is doing more set value="DEBUG" -->
+
+    <logger name="NHibernate" additivity="false">
+
+      <level value="INFO"/>
+
+      <appender-ref ref="NHibernateFileLog"/>
+
+    </logger>
+
