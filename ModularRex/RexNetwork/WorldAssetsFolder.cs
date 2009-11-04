@@ -208,7 +208,7 @@ namespace ModularRex.RexNetwork
                 remoteClient.SendInventoryFolderDetails(
                     //worldlibraryRoot.agentID, worldlibraryRoot.ID, worldlibraryRoot.RequestListOfItems(),
                     this.Owner, this.ID, this.RequestListOfItems(),
-                    this.RequestListOfFolders(), fetchFolders, fetchItems);
+                    this.RequestListOfFolders(), this.Version, fetchFolders, fetchItems);
                 return;
             }
             if ((fold = this.FindFolder(folderID)) != null)
@@ -217,7 +217,7 @@ namespace ModularRex.RexNetwork
                 remoteClient.SendInventoryFolderDetails(
                     //worldlibraryRoot.agentID, folderID, fold.RequestListOfItems(),
                     this.Owner, folderID, fold.RequestListOfItems(),
-                    fold.RequestListOfFolders(), fetchFolders, fetchItems);
+                    fold.RequestListOfFolders(), this.Version, fetchFolders, fetchItems);
 
                 return;
             }
@@ -226,7 +226,7 @@ namespace ModularRex.RexNetwork
             {
                 remoteClient.SendInventoryFolderDetails(
                     fold.Owner, folderID, fold.RequestListOfItems(),
-                    fold.RequestListOfFolders(), fetchFolders, fetchItems);
+                    fold.RequestListOfFolders(), this.Version, fetchFolders, fetchItems);
                 return;
             }
 
@@ -240,7 +240,7 @@ namespace ModularRex.RexNetwork
                 return;
             }
 
-            userProfile.SendInventoryDecendents(remoteClient, folderID, fetchFolders, fetchItems);
+            userProfile.SendInventoryDecendents(remoteClient, folderID, this.Version, fetchFolders, fetchItems);
         }
 
         public InventoryItemBase CreateItem(UUID inventoryID, UUID assetID, string name, string description,
