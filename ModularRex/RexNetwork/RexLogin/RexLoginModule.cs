@@ -39,6 +39,10 @@ namespace ModularRex.RexNetwork.RexLogin
         private bool m_checkSessionHash = true;
         private bool firstScene = true;
 
+        private Type cb_ws_connector = null;
+        private MethodInfo cb_ws_method = null;
+        private bool cb_ws_try_load = true;
+
         /// <summary>
         /// Used during login to send the skeleton of the OpenSim Library to the client.
         /// </summary>
@@ -76,7 +80,49 @@ namespace ModularRex.RexNetwork.RexLogin
                 }
                 else
                 {
-                    m_log.WarnFormat("[REX] Client {0} does not have realXtend acccount", rex.AgentId);
+                    //ok, no userdata found
+                    //maybe client logged in with cb_connector
+                    //let's try to find that information
+                    IRegionModuleBase cb_module = m_scenes[0].RegionModules["CableBeachWorldServiceConnector"];
+                    if (cb_module != null)
+                    {
+                        //yes, user logged with cb connector
+                        //let's check if we have already reference for the assembly
+                        if (cb_ws_connector == null && cb_ws_try_load)
+                        {
+                            //we haven't loaded the assembly, let's do that now
+                            try
+                            {
+                                cb_ws_connector = System.Reflection.Assembly.Load("ModCableBeach.dll").GetType("ModCableBeach.WorldServiceConnector");
+                                Type[] parameterTypes = new Type[3];
+                                parameterTypes[0] = typeof(UUID);
+                                parameterTypes[1] = typeof(Uri);
+                                parameterTypes[2] = typeof(Uri);
+                                cb_ws_method = cb_ws_connector.GetMethod("GetServiceCapability", parameterTypes);
+                            }
+                            catch (Exception e)
+                            {
+                                //could not load assembly. don't try to load it anymore until restart
+                                m_log.WarnFormat("[REX] Client {0} does not have realXtend acccount", rex.AgentId);
+                                cb_ws_try_load = false;
+                                return;
+                            }
+                        }
+                        object[] parameters = new object[3];
+                        parameters[0] = rex.AgentId;
+                        parameters[1] = new Uri("http://www.realxtend.org/attributes/avatarStorageUri");
+                        parameters[2] = new Uri("http://www.realxtend.org/attributes/avatarStorageUri");
+                        object returnObject = cb_ws_method.Invoke(cb_module, parameters);
+
+                        if (returnObject is Uri)
+                        {
+                            rex.RexAvatarURL = ((Uri)returnObject).ToString();
+                        }
+                    }
+                    else
+                    {
+                        m_log.WarnFormat("[REX] Client {0} does not have realXtend acccount", rex.AgentId);
+                    }
                 }
             }
         }
@@ -412,168 +458,7 @@ namespace ModularRex.RexNetwork.RexLogin
             return response;
         }
 
-        //Rex-NG
-        /// <summary>
-        /// Received from the user server when a user starts logging in.  This call allows
-        /// the region to prepare for direct communication from the client.  Sends back an empty
-        /// xmlrpc response on completion.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        /// 
 
-        public Hashtable CableBeachLoginMethod(Hashtable requestData)
-        {
-
-            OSDMap args = OpenSim.Framework.Communications.Clients.RegionClient.GetOSDMap((string)requestData["body"]);            
-            string clientVersion = "Unknown";
-            XmlRpcResponse response = new XmlRpcResponse();
-            Hashtable respdata = new Hashtable();
-
-            AgentCircuitData agentData = new AgentCircuitData();
-            agentData.SessionID = new UUID((string)args["session_id"].AsString());
-            agentData.SecureSessionID = new UUID((string)args["secure_session_id"].AsString());
-            agentData.AgentID = new UUID((string)args["agent_id"].AsString());
-            agentData.circuitcode = Convert.ToUInt32(args["circuit_code"].AsString());
-            agentData.CapsPath = args["caps_path"].AsString();            
-            OSDMap attributes = (OSDMap)args["attributes"];
-            OSDArray regionHandleArray = (OSDArray)args["region_handle"];
-
-            if (args["attributes"] != null)
-                agentData.firstname = attributes["http://axschema.org/namePerson/first"].AsString();
-                agentData.lastname = attributes["http://axschema.org/namePerson/last"].AsString();
-
-
-            if (args["client_version"] != null)
-            {
-                clientVersion = args["client_version"].AsString();
-            }
-
-
-            try
-            {
-
-                RexUserProfileData rap = new RexUserProfileData();
-                rap.ID = agentData.AgentID;
-                rap.CurrentAgent = new UserAgentData();
-                rap.CurrentAgent.ProfileID = agentData.AgentID;
-
-                //Added to fix OnClientConnect event above. 
-                rap.AuthUrl = "http://localhost:8002";
-                rap.Account = agentData.firstname + "_" + agentData.lastname;
-
-
-                rap.FirstName = agentData.firstname;                
-                rap.SurName = agentData.lastname;                
-                rap.CurrentAgent.SecureSessionID = agentData.SecureSessionID;
-                rap.CurrentAgent.SessionID = agentData.SessionID;
-                rap.CurrentAgent.Position = agentData.startpos;
-
-                //TODO RexUserProfileData is not complete. Do we actually need it? 
-                //In case we do, the cable beach enable_client must provide all needed data
-
-                // Used to transmit the login URL to the 
-                // RexAvatar class when it connects.
-                m_userData[agentData.AgentID] = rap;
-
-                string capsPath = OpenSim.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath();
-                string httpServerURI = "http://" + m_primaryRegionInfo.ExternalHostName + ":" + m_primaryRegionInfo.HttpPort;
-                string seedcap = httpServerURI + OpenSim.Framework.Capabilities.CapsUtil.GetCapsSeedPath(capsPath);//capsPath;// + "0000/";
-
-                //UserAdminService is null in grid mode
-                //m_scenes[0].CommsManager.UserAdminService.AddUser(agentData.firstname, agentData.lastname, "",
-                //                                                      "", 1000, 1000, agentData.AgentID);
-
-                if (m_scenes[0].CommsManager.UserService != null)
-                {
-                    UserProfileData user = m_scenes[0].CommsManager.UserService.GetUserProfile(agentData.AgentID);
-                    if (m_scenes[0].CommsManager.UserService is UserManagerBase)
-                    {
-                        ((UserManagerBase)m_scenes[0].CommsManager.UserService).CreateAgent(user, args);
-                        ((UserManagerBase)m_scenes[0].CommsManager.UserService).CommitAgent(ref user);
-                    }
-                }
-
-                if (m_scenes[0].InventoryService != null)
-                {
-                    // local service (standalone)
-                    m_scenes[0].InventoryService.CreateUserInventory(agentData.AgentID);
-                }
-                else if (m_scenes[0].CommsManager.InterServiceInventoryService != null)
-                {
-                    // used by the user server
-                    m_scenes[0].CommsManager.InterServiceInventoryService.CreateNewUserInventory(agentData.AgentID);
-                }
-
-                foreach (Scene scene in m_scenes)
-                {
-                    AgentCircuitData acd = new AgentCircuitData();
-
-                    acd.AgentID = agentData.AgentID;
-                    acd.BaseFolder = UUID.Zero;
-                    acd.CapsPath = capsPath;
-                    acd.child = scene == m_scenes[0];                    
-                    acd.circuitcode = (uint)agentData.circuitcode;
-                    acd.firstname = agentData.firstname;
-                    acd.InventoryFolder = UUID.Zero;
-                    acd.lastname = agentData.lastname;
-                    acd.SecureSessionID = agentData.SecureSessionID;
-                    acd.SessionID = agentData.SessionID;
-                    acd.startpos = new Vector3(128, 128, 128);
-
-                    string reason;
-
-                    if (!scene.NewUserConnection(acd, out reason))
-                    {
-                        //Login failed                        
-                        respdata["content_type"] = "application/json";
-                        respdata["int_response_code"] = 500;
-                        respdata["success"] = "FALSE";
-                        respdata["reason"] = "Error adding new agent to scene.";
-                        respdata["str_response_string"] = "Error adding new agent to scene.";
-                        return respdata;
-                    }
-
-                }
-
-                respdata["content_type"] = "application/json";
-                respdata["int_response_code"] = 200;
-                respdata["success"] = "TRUE";
-
-                OSDMap map = new OSDMap();
-                map.Add("seed_capability", new OSDUri(new Uri(seedcap)));
-                map.Add("sim_port", new OSDInteger(GetPort(m_primaryRegionInfo.RegionHandle)));
-                map.Add("sim_address", new OSDString(m_primaryRegionInfo.ExternalEndPoint.Address.ToString()));
-                string strBuffer = "";
-                try
-                {
-                    strBuffer = OSDParser.SerializeJsonString(map);
-                }
-                catch (Exception e)
-                {
-                    m_log.WarnFormat("[CABLE BEACH REX LOGIN]: Exception thrown on serialization of CreateObject: {0}", e.Message);                    
-                }
-
-                respdata["str_response_string"] = strBuffer;
-
-                return respdata;
-            }
-            catch (Exception e)
-            {
-                m_log.Info("[CABLE BEACH REXLOGIN END]:  Cable Beach Login failed, " + e);
-            }
-
-            m_log.Info("[CABLE BEACH REXLOGIN END]:  Cable Beach login failed.");
-
-            respdata["content_type"] = "application/json";
-            respdata["int_response_code"] = 500;
-            respdata["success"] = "FALSE";
-            respdata["reason"] = "region login currently disabled";
-            respdata["str_response_string"] = "region login currently disabled";
-
-            return respdata;
-
-        }
 
         private static UUID GetAgentID(string account)
         {
@@ -737,9 +622,6 @@ namespace ModularRex.RexNetwork.RexLogin
                     m_worldAssets = m_scenes[0].RequestModuleInterface<WorldAssetsFolder>();
                     if (m_worldAssets != null)
                         m_libraryRootFolder.AddChildFolder(m_worldAssets);
-
-                    //Rex-NG
-                    MainServer.Instance.AddHTTPHandler("/enable_rexclient", CableBeachLoginMethod);
                 }  
             }
         }
