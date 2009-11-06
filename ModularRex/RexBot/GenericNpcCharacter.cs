@@ -267,6 +267,7 @@ namespace OpenSim.Region.Examples.RexBot
         public event ObjectRequest OnObjectRequest;
 
         public event AvatarInterestUpdate OnAvatarInterestUpdate;
+        public event GrantUserFriendRights OnGrantUserRights;
 
 #pragma warning restore 67
 
