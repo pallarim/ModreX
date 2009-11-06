@@ -482,8 +482,7 @@ namespace ModularRex.RexNetwork
             // Flash anims
             List<AssetBase> allFlashs = GetAssetList(scene, 42);
             m_WorldFlashFolder.Purge();
-            AssetBase ass = new AssetBase(UUID.Random(), "README");
-            ass.Type = (sbyte)AssetType.Notecard;
+            AssetBase ass = new AssetBase(UUID.Random(), "README", (sbyte)AssetType.Notecard);
             ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");
             scene.AssetService.Store(ass);
             item = CreateItem(UUID.Random(), ass.FullID, ass.Name, ass.Description, (int)AssetType.Notecard, (int)InventoryType.Notecard, m_WorldFlashFolder.ID);
