@@ -314,6 +314,11 @@ namespace ModularRex.RexNetwork
                 inType = 42;
                 assType = 49;
             }
+            if (assetType == "g.avatar")
+            {
+                assType = 46;
+                inType = 18;
+            }
         }
     }
 }
