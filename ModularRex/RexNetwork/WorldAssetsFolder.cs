@@ -9,6 +9,7 @@ using OpenSim.Region.Framework.Interfaces;
 using Nini.Config;
 using ModularRex.RexParts;
 using ModularRex.RexFramework;
+using ModularRex.RexParts.Helpers;
 
 namespace ModularRex.RexNetwork
 {
@@ -275,145 +276,11 @@ namespace ModularRex.RexNetwork
             return item;
         }
 
-        //this is very slow
-        private List<AssetBase> GetAssetList(Scene scene, int assetType)
-        {
-            Dictionary<UUID, int> assetUuids = new Dictionary<UUID, int>();
-
-            List<EntityBase> entities = scene.GetEntities();
-            List<SceneObjectGroup> sceneObjects = new List<SceneObjectGroup>();
-
-            List<AssetBase> foundObjects = new List<AssetBase>();
-
-            foreach (EntityBase entity in entities)
-            {
-                if (entity is SceneObjectGroup)
-                {
-                    SceneObjectGroup sceneObject = (SceneObjectGroup)entity;
-
-                    if (!sceneObject.IsDeleted && !sceneObject.IsAttachment)
-                        sceneObjects.Add((SceneObjectGroup)entity);
-                }
-            }
-
-            UuidGatherer assetGatherer = new UuidGatherer(scene.AssetService);
-
-
-            if (assetType == 0 || assetType == 1) //do this only for textures and sounds
-            {
-                foreach (SceneObjectGroup sceneObject in sceneObjects)
-                {
-                    assetGatherer.GatherAssetUuids(sceneObject, assetUuids);
-                }
-            }
-
-            ModrexObjects module = scene.RequestModuleInterface<ModrexObjects>();
-            if (module != null)
-            {
-                foreach (SceneObjectGroup sceneObject in sceneObjects)
-                {
-                    RexObjectProperties rop = module.GetObject(sceneObject.RootPart.UUID);
-                    AssetBase asset;
-                    switch (assetType)
-                    {
-                        case 1: //sound
-                            if (rop.RexSoundUUID != UUID.Zero)
-                            {
-                                asset = scene.AssetService.Get(rop.RexSoundUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            break;
-                        case 6: //3d
-                            if (rop.RexMeshUUID != UUID.Zero)
-                            {
-                                asset = scene.AssetService.Get(rop.RexMeshUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            if (rop.RexCollisionMeshUUID != UUID.Zero)
-                            {
-                                asset = scene.AssetService.Get(rop.RexCollisionMeshUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            break;
-                        case 0: //texture
-                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
-                            {
-                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
-                                if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            break;
-                        case 41: //Material && Particle, WTF??!
-                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
-                            {
-                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
-                                if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            if (rop.RexParticleScriptUUID != UUID.Zero)
-                            {
-                                asset = scene.AssetService.Get(rop.RexParticleScriptUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            break;
-                        case 19: //3d anim
-                            if (rop.RexAnimationPackageUUID != UUID.Zero)
-                            {
-                                asset = scene.AssetService.Get(rop.RexAnimationPackageUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
-                            break;
-                            
-                        case 42: //flash
-                            //No way to fetch flash animation from scene, since no reference to it is kept in scene
-                            break;
-                        default:
-                            m_log.Warn("[WORLDLIBRARY]: Requested unknown asset type");
-                            break;
-                    }
-                }
-            }
-
-
-            foreach (KeyValuePair<UUID, int> kvp in assetUuids)
-            {
-                if (kvp.Value == assetType)
-                {
-                    AssetBase asset = scene.AssetService.Get(kvp.Key.ToString());
-                    if (asset != null)
-                    {
-                        foundObjects.Add(asset);
-                    }
-                }
-            }
-
-            return foundObjects;
-        }
-
 
         public void UpdateWorldAssetFolders(Scene scene)
         {
             // Textures
-            List<AssetBase> allTex = GetAssetList(scene, 0);
+            List<AssetBase> allTex = AssetsHelper.GetAssetList(scene, 0);
             m_WorldTexturesFolder.Purge();
             InventoryItemBase item;
             foreach (AssetBase asset in allTex)
@@ -423,7 +290,7 @@ namespace ModularRex.RexNetwork
             }
 
             // 3D Models
-            List<AssetBase> allModels = GetAssetList(scene, 6);
+            List<AssetBase> allModels = AssetsHelper.GetAssetList(scene, 6);
             m_World3DModelsFolder.Purge();
             foreach (AssetBase asset in allModels)
             {
@@ -435,7 +302,7 @@ namespace ModularRex.RexNetwork
             }
 
             // Material scripts
-            List<AssetBase> allMaterials = GetAssetList(scene, 41);
+            List<AssetBase> allMaterials = AssetsHelper.GetAssetList(scene, 41);
             m_WorldMaterialScriptsFolder.Purge();
             foreach (AssetBase asset in allMaterials)
             {
@@ -447,7 +314,7 @@ namespace ModularRex.RexNetwork
             }
 
             // 3D Model animations
-            List<AssetBase> allAnims = GetAssetList(scene, 19);
+            List<AssetBase> allAnims = AssetsHelper.GetAssetList(scene, 19);
             m_World3DModelAnimationsFolder.Purge();
             foreach (AssetBase asset in allAnims)
             {
@@ -459,7 +326,7 @@ namespace ModularRex.RexNetwork
             }
 
             // Particles
-            List<AssetBase> allParticles = GetAssetList(scene, 41);
+            List<AssetBase> allParticles = AssetsHelper.GetAssetList(scene, 41);
             m_WorldParticleScriptsFolder.Purge();
             foreach (AssetBase asset in allParticles)
             {
@@ -471,7 +338,7 @@ namespace ModularRex.RexNetwork
             }
 
             // Sounds
-            List<AssetBase> allSounds = GetAssetList(scene, 1);
+            List<AssetBase> allSounds = AssetsHelper.GetAssetList(scene, 1);
             m_WorldSoundsFolder.Purge();
             foreach (AssetBase asset in allSounds)
             {
@@ -480,7 +347,7 @@ namespace ModularRex.RexNetwork
             }
 
             // Flash anims
-            List<AssetBase> allFlashs = GetAssetList(scene, 42);
+            List<AssetBase> allFlashs = AssetsHelper.GetAssetList(scene, 42);
             m_WorldFlashFolder.Purge();
             AssetBase ass = new AssetBase(UUID.Random(), "README", (sbyte)AssetType.Notecard);
             ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");
