@@ -12,7 +12,6 @@ using ModularRex.NHibernate;
 using ModularRex.RexFramework;
 using ModularRex.RexParts.Helpers;
 using OpenSim.Framework;
-using OpenMetaverse;
 
 namespace ModularRex.WorldInventory
 {
@@ -76,6 +75,12 @@ namespace ModularRex.WorldInventory
             return true;
         }
 
+        public void Stop()
+        {
+            m_webdav.OnPropFind -= PropFindHandler;
+            m_listener.Stop();
+        }
+
         private void AddRootFolders()
         {
             //check if we already have the required folders
@@ -101,12 +106,6 @@ namespace ModularRex.WorldInventory
                 m_assetFolderStrg.Save(new AssetFolder("/inventory/", "textures"));
                 m_assetFolderStrg.Save(new AssetFolder("/inventory/", "sounds"));
             }
-        }
-
-        public void Stop()
-        {
-            m_webdav.OnPropFind -= PropFindHandler;
-            m_listener.Stop();
         }
 
         public void LoadAssetsFromScene(Scene scene)
@@ -174,10 +173,13 @@ namespace ModularRex.WorldInventory
                             {
                                 AssetFolderItem item = (AssetFolderItem)folder;
                                 AssetBase asset = m_scenes[0].AssetService.Get(item.AssetID.ToString());
-                                string contentType = GetContentType(asset.Type);
+                                string contentType = MimeTypeConverter.GetContentType((int)asset.Type);
                                 WebDAVFile file = new WebDAVFile(folder.ParentPath + folder.Name,
                                     contentType, asset.Data.Length,
                                     asset.Metadata.CreationDate, DateTime.Now, DateTime.Now, false, false);
+
+                                //add asset id to custom properties
+                                file.AddProperty(new WebDAVProperty("AssetID", "http://www.realxtend.org/", item.AssetID.ToString()));
                                 m_propertyMngr.SaveResource(file);
                                 resources.Add(file);
                             }
@@ -215,71 +217,6 @@ namespace ModularRex.WorldInventory
             }
 
             return null;
-        }
-
-        private string GetContentType(sbyte assetType)
-        {
-            switch ((AssetType)(int)assetType)
-            {
-                case AssetType.Texture:
-                    return "image/x-j2c";
-                case AssetType.Sound:
-                    return "application/ogg";
-                case AssetType.CallingCard:
-                    return "application/vnd.ll.callingcard";
-                case AssetType.Landmark:
-                    return "application/vnd.ll.landmark";
-                case AssetType.Clothing:
-                    return "application/vnd.ll.clothing";
-                case AssetType.Object:
-                    return "application/vnd.ll.primitive";
-                case AssetType.Notecard:
-                    return "application/vnd.ll.notecard";
-                case AssetType.Folder:
-                    return "application/vnd.ll.folder";
-                case AssetType.RootFolder:
-                    return "application/vnd.ll.rootfolder";
-                case AssetType.LSLText:
-                    return "application/vnd.ll.lsltext";
-                case AssetType.LSLBytecode:
-                    return "application/vnd.ll.lslbyte";
-                case AssetType.TextureTGA:
-                case AssetType.ImageTGA:
-                    return "image/tga";
-                case AssetType.Bodypart:
-                    return "application/vnd.ll.bodypart";
-                case AssetType.TrashFolder:
-                    return "application/vnd.ll.trashfolder";
-                case AssetType.SnapshotFolder:
-                    return "application/vnd.ll.snapshotfolder";
-                case AssetType.LostAndFoundFolder:
-                    return "application/vnd.ll.lostandfoundfolder";
-                case AssetType.SoundWAV:
-                    return "audio/x-wav";
-                case AssetType.ImageJPEG:
-                    return "image/jpeg";
-                case AssetType.Animation:
-                    return "application/vnd.ll.animation";
-                case AssetType.Gesture:
-                    return "application/vnd.ll.gesture";
-                case (AssetType)45:
-                    return "application/vnd.rex.ogremate";
-                case (AssetType)43:
-                    return "application/vnd.rex.ogremesh";
-                case (AssetType)47:
-                    return "application/vnd.rex.ogrepart";
-                case (AssetType)44:
-                    return "application/vnd.rex.ogreskel";
-                case (AssetType)49:
-                    return "application/x-shockwave-flash";
-                case AssetType.Simstate:
-                    return "application/x-metaverse-simstate";
-                case (AssetType)46:
-                    return "application/xml";
-                case AssetType.Unknown:
-                default:
-                    return "application/octet-stream";
-            }
         }
     }
 }
