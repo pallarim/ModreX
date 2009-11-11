@@ -225,9 +225,11 @@
       <Reference name="System.Xml"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Communications"/>
+	  <Reference name="OpenSim.Framework.Console.dll"/>
       <Reference name="OpenSim.Region.Framework.dll"/>
 	  <Reference name="OpenSim.Region.ClientStack.LindenUDP.dll"/>
 	  <Reference name="OpenSim.Framework.Statistics.dll"/>
+	  <Reference name="OpenSim.Services.Interfaces.dll"/>
 	  <Reference name="WebDAVSharp"/>
 	  <Reference name="WebDAVSharp.NHibernateStorage"/>
 	  <Reference name="HttpServer"/>

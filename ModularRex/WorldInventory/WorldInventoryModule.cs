@@ -37,6 +37,11 @@ namespace ModularRex.WorldInventory
             }
             m_configs = source;
             scene.EventManager.OnNewClient += OnNewClient;
+            scene.AddCommand(this,
+                "worldinventory load assets",
+                "worldinventory load assets",
+                "Loads assets from scene to world inventory. If no scene is selected, load from all scenes.",
+                consoleHandleLoadAssets);
         }
 
         public void PostInitialise()
@@ -71,6 +76,25 @@ namespace ModularRex.WorldInventory
         }
 
         #endregion
+
+        internal void consoleHandleLoadAssets(string module, string[] args)
+        {
+            Scene scene = m_scenes[0].ConsoleScene();
+            if (scene != null)
+            {
+                //load assets from selected scene
+                m_server.LoadAssetsFromScene(scene);
+            }
+            else
+            {
+                //no console scene selected
+                //load assets from all scenes
+                foreach (Scene s in m_scenes)
+                {
+                    m_server.LoadAssetsFromScene(s);
+                }
+            }
+        }
 
         void OnNewClient(IClientAPI client)
         {
