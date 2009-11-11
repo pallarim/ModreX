@@ -12,6 +12,8 @@ using ModularRex.NHibernate;
 using ModularRex.RexFramework;
 using ModularRex.RexParts.Helpers;
 using OpenSim.Framework;
+using System.Net;
+using HttpListener = HttpServer.HttpListener;
 
 namespace ModularRex.WorldInventory
 {
@@ -28,6 +30,7 @@ namespace ModularRex.WorldInventory
         private List<Scene> m_scenes = null;
         private IConfigSource m_configs = null;
         private List<IWebDAVResource> m_rootFolders = new List<IWebDAVResource>();
+        private bool m_giveFolderContentOnGet = false;
 
         public WorldInventoryServer()
         {
@@ -59,6 +62,7 @@ namespace ModularRex.WorldInventory
             if (config != null)
             {
                 webdavPropertyStrgConnectionString = config.GetString("WebDAVProperyStorageConnectionString");
+                m_giveFolderContentOnGet = config.GetBoolean("WorldInventoryGetFolderContent", false);
             }
 
             if (webdavPropertyStrgConnectionString == null || webdavPropertyStrgConnectionString == String.Empty)
@@ -71,6 +75,7 @@ namespace ModularRex.WorldInventory
             AddRootFolders();
 
             m_webdav.OnPropFind += PropFindHandler;
+            m_webdav.OnGet += GetHandler;
 
             return true;
         }
@@ -217,6 +222,75 @@ namespace ModularRex.WorldInventory
             }
 
             return null;
+        }
+
+        HttpStatusCode GetHandler(IHttpResponse response, string path, string username)
+        {
+            try
+            {
+                string[] pathParts = path.Split('/');
+                string parentPath = String.Empty;
+                for (int i = 0; i < pathParts.Length - 1; i++)
+                {
+                    parentPath += pathParts[i];
+                    parentPath += "/";
+                }
+                AssetFolder resource = m_assetFolderStrg.GetItem(parentPath, pathParts[pathParts.Length - 1]);
+                if (resource is AssetFolderItem)
+                {
+                    AssetFolderItem item = resource as AssetFolderItem;
+                    AssetBase asset = m_scenes[0].AssetService.Get(item.AssetID.ToString());
+                    response.ContentType = MimeTypeConverter.GetContentType((int)asset.Type);
+                    response.AddHeader("Content-Disposition", "attachment; filename=" + item.Name);
+                    response.ContentLength = asset.Data.Length;
+                    response.Body.Write(asset.Data, 0, asset.Data.Length);
+                    return HttpStatusCode.OK;
+                }
+                else
+                {
+                    //check if we give out asset list with get
+                    if (m_giveFolderContentOnGet)
+                    {
+                        string body = String.Empty;
+                        // HTML
+                        body += "<html>" +
+                                "<head>" +
+                                "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
+                                "<title>" + pathParts[pathParts.Length - 1] + "</title>" +
+                                "</head>" +
+                                "<body>" +
+                                "<p>";
+
+                        IList<AssetFolder> items = m_assetFolderStrg.GetSubItems(path);
+                        foreach (AssetFolder item in items)
+                        {
+                            string itemName = item.Name;
+                            if (!(item is AssetFolderItem))
+                                itemName += "/";
+                            body += "<a href=\"" + path + itemName + "\">" + itemName;
+                            body += "</a><br>";
+                        }
+
+                        body += "</p></body></html>";
+
+                        UTF8Encoding ecoding = new UTF8Encoding();
+                        response.ContentType = "text/html";
+                        byte[] bytes = Encoding.UTF8.GetBytes(body);
+                        response.ContentLength = bytes.Length;
+                        response.Body.Write(bytes, 0, bytes.Length);
+                        return HttpStatusCode.OK;
+                    }
+                    else
+                    {
+                        return HttpStatusCode.Forbidden;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[WORLDINVENTORY]: Failed to get resource for request to {0}. Exception {1} occurred.", path, e.ToString());
+                return HttpStatusCode.InternalServerError;
+            }
         }
     }
 }
