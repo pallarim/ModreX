@@ -36,12 +36,12 @@ namespace ModularRex.NHibernate
                 AssetFolder old = (AssetFolder)manager.Get(typeof(AssetFolder), obj.Id);
                 if (old != null)
                 {
-                    m_log.InfoFormat("[NHIBERNATE] updating RexAssetFolder {0} {1]", obj.ParentPath, obj.Name);
+                    m_log.InfoFormat("[NHIBERNATE] updating RexAssetFolder {0} {1}", obj.ParentPath, obj.Name);
                     manager.Update(obj);
                 }
                 else
                 {
-                    m_log.InfoFormat("[NHIBERNATE] saving RexAssetFolder {0} {1]", obj.ParentPath, obj.Name);
+                    m_log.InfoFormat("[NHIBERNATE] saving RexAssetFolder {0} {1}", obj.ParentPath, obj.Name);
                     manager.Insert(obj);
                 }
             }
