@@ -216,6 +216,7 @@
       <ReferencePath>../../../../bin/</ReferencePath>
 	  <ReferencePath>../../ModularRex/bin/</ReferencePath>
       <Reference name="System" localCopy="false"/>
+      <Reference name="System.Drawing" localCopy="false"/>
       <Reference name="OpenMetaverse.dll" localCopy="false"/>
       <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
       <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>

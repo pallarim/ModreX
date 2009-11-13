@@ -14,6 +14,8 @@ using ModularRex.RexParts.Helpers;
 using OpenSim.Framework;
 using System.Net;
 using HttpListener = HttpServer.HttpListener;
+using OpenMetaverse;
+using OpenSim.Region.Framework.Interfaces;
 
 namespace ModularRex.WorldInventory
 {
@@ -31,6 +33,7 @@ namespace ModularRex.WorldInventory
         private IConfigSource m_configs = null;
         private List<IWebDAVResource> m_rootFolders = new List<IWebDAVResource>();
         private bool m_giveFolderContentOnGet = false;
+        private bool m_autoconvertJpgToJ2k = false;
 
         public WorldInventoryServer()
         {
@@ -63,6 +66,7 @@ namespace ModularRex.WorldInventory
             {
                 webdavPropertyStrgConnectionString = config.GetString("WebDAVProperyStorageConnectionString");
                 m_giveFolderContentOnGet = config.GetBoolean("WorldInventoryGetFolderContent", false);
+                m_autoconvertJpgToJ2k = config.GetBoolean("WorldInventoryAutoConvertJpegToJ2K", false);
             }
 
             if (webdavPropertyStrgConnectionString == null || webdavPropertyStrgConnectionString == String.Empty)
@@ -76,6 +80,7 @@ namespace ModularRex.WorldInventory
 
             m_webdav.OnPropFind += PropFindHandler;
             m_webdav.OnGet += GetHandler;
+            m_webdav.OnPut += PutHandler;
 
             return true;
         }
@@ -83,6 +88,8 @@ namespace ModularRex.WorldInventory
         public void Stop()
         {
             m_webdav.OnPropFind -= PropFindHandler;
+            m_webdav.OnGet -= GetHandler;
+            m_webdav.OnPut -= PutHandler;
             m_listener.Stop();
         }
 
@@ -145,6 +152,8 @@ namespace ModularRex.WorldInventory
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/3d_animations/", animation.Name, animation.FullID));
             }
         }
+
+        #region WebDAV method handlers
 
         IList<IWebDAVResource> PropFindHandler(string username, string path, DepthHeader depth)
         {
@@ -292,5 +301,94 @@ namespace ModularRex.WorldInventory
                 return HttpStatusCode.InternalServerError;
             }
         }
+
+        HttpStatusCode PutHandler(IHttpRequest request, string path, string username)
+        {
+            try
+            {
+                byte[] assetData = request.GetBody();
+
+                string[] pathParts = path.Split('/');
+                string parentPath = String.Empty;
+                for (int i = 0; i < pathParts.Length - 1; i++)
+                {
+                    parentPath += pathParts[i];
+                    parentPath += "/";
+                }
+
+                string contentType = request.Headers["Content-type"];
+                int assetType = -1; //unknown
+                if (contentType != null && contentType != String.Empty)
+                {
+                    m_log.DebugFormat("[WORLDINVENTORY]: Found content-type {0} for put request to {1}", contentType, path);
+                    assetType = MimeTypeConverter.GetAssetTypeFromMimeType(contentType);
+                }
+                else
+                {
+                    //missing content type
+                    m_log.WarnFormat("[WORLDINVENTORY]: Could not find content-type from request {0} headers. Trying to parse from file extension", path);
+                    string[] fileParts = pathParts[pathParts.Length - 1].Split('.');
+                    if (fileParts.Length > 1)
+                    {
+                        string fileExtension = fileParts[fileParts.Length - 1];
+                        assetType = MimeTypeConverter.GetAssetTypeFromFileExtension(fileExtension);
+                    }
+                    contentType = MimeTypeConverter.GetContentType(assetType);
+                }
+
+                AssetBase asset = new AssetBase(UUID.Random(), pathParts[pathParts.Length - 1], (sbyte)assetType);
+                asset.Local = false;
+
+                if (m_autoconvertJpgToJ2k && assetType == (int)AssetType.ImageJPEG)
+                {
+                    System.IO.MemoryStream ms = new System.IO.MemoryStream(assetData);
+                    System.Drawing.Bitmap bitmap = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(ms);
+                    assetData = OpenMetaverse.Imaging.OpenJPEG.EncodeFromImage(bitmap, false);
+                    asset.Type = (int)AssetType.Texture;
+                    asset.Name = ReplaceFileExtension(asset.Name, "jp2");
+                }
+
+                asset.Data = assetData;
+                m_scenes[0].AssetService.Store(asset);
+
+                m_assetFolderStrg.Save(new AssetFolderItem(parentPath, asset.Name, asset.FullID));
+                return HttpStatusCode.Created;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[WORLDINVENTORY]: Failed to put resource to {0}. Exception {1} occurred.", path, e.ToString());
+                return HttpStatusCode.InternalServerError;
+            }
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private string ReplaceFileExtension(string filename, string newExtension)
+        {
+            string[] fileParts = filename.Split('.');
+            if (fileParts.Length > 1)
+            {
+                fileParts[fileParts.Length - 1] = newExtension;
+                string newFileName = String.Empty;
+                foreach (string s in fileParts)
+                {
+                    newFileName += s;
+                    newFileName += ".";
+                }
+                return newFileName;
+            }
+            else if (fileParts.Length == 1)
+            {
+                return filename + "." + newExtension;
+            }
+            else
+            {
+                throw new FormatException("Could not change file extension");
+            }
+        }
+
+        #endregion
     }
 }
