@@ -81,6 +81,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnPropFind += PropFindHandler;
             m_webdav.OnGet += GetHandler;
             m_webdav.OnPut += PutHandler;
+            m_webdav.OnNewCol += MkcolHandler;
 
             return true;
         }
@@ -90,6 +91,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnPropFind -= PropFindHandler;
             m_webdav.OnGet -= GetHandler;
             m_webdav.OnPut -= PutHandler;
+            m_webdav.OnNewCol -= MkcolHandler;
             m_listener.Stop();
         }
 
@@ -224,6 +226,26 @@ namespace ModularRex.WorldInventory
                         else
                         {
                             //create new props, save them and add them to response
+                            if (folder is AssetFolderItem)
+                            {
+                                AssetFolderItem item = (AssetFolderItem)folder;
+                                AssetBase asset = m_scenes[0].AssetService.Get(item.AssetID.ToString());
+                                string contentType = MimeTypeConverter.GetContentType((int)asset.Type);
+                                WebDAVFile file = new WebDAVFile(folder.ParentPath + folder.Name,
+                                    contentType, asset.Data.Length,
+                                    asset.Metadata.CreationDate, DateTime.Now, DateTime.Now, false, false);
+
+                                //add asset id to custom properties
+                                file.AddProperty(new WebDAVProperty("AssetID", "http://www.realxtend.org/", item.AssetID.ToString()));
+                                m_propertyMngr.SaveResource(file);
+                                resources.Add(file);
+                            }
+                            else
+                            {
+                                WebDAVFolder resource = new WebDAVFolder(folder.ParentPath + folder.Name, DateTime.Now, DateTime.Now, DateTime.Now, false);
+                                m_propertyMngr.SaveResource(resource);
+                                resources.Add(resource);
+                            }
                         }
                     }
                     return resources;
@@ -392,6 +414,45 @@ namespace ModularRex.WorldInventory
             }
         }
 
+        HttpStatusCode MkcolHandler(string path, string username)
+        {
+            if (path.EndsWith("/"))
+                path = path.TrimEnd('/');
+            string[] pathParts = path.Split('/');
+            string parentPath = String.Empty;
+            for (int i = 0; i < pathParts.Length - 1; i++)
+            {
+                parentPath += pathParts[i];
+                parentPath += "/";
+            }
+
+            AssetFolder parent = GetAssetFolder(parentPath);
+            if (parent == null)
+            {
+                return HttpStatusCode.Conflict;
+            }
+            if (parent is AssetFolderItem)
+            {
+                return HttpStatusCode.Conflict;
+            }
+
+            AssetFolder folder = GetAssetFolder(path);
+            if (folder != null)
+            {
+                return HttpStatusCode.MethodNotAllowed;
+            }
+            else
+            {
+                folder = new AssetFolder(parentPath, pathParts[pathParts.Length - 1]);
+                m_assetFolderStrg.Save(folder);
+                if (!path.EndsWith("/"))
+                    path += "/";
+                m_propertyMngr.SaveResource(new WebDAVFolder(path, DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_log.DebugFormat("[WORLDINVENTORY]: Created folder {0} to {1}", folder.Name, folder.ParentPath);
+                return HttpStatusCode.Created;
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -418,6 +479,20 @@ namespace ModularRex.WorldInventory
             {
                 throw new FormatException("Could not change file extension");
             }
+        }
+
+        private AssetFolder GetAssetFolder(string path)
+        {
+            if (path.EndsWith("/"))
+                path = path.TrimEnd('/');
+            string[] pathParts = path.Split('/');
+            string parentPath = String.Empty;
+            for (int i = 0; i < pathParts.Length - 1; i++)
+            {
+                parentPath += pathParts[i];
+                parentPath += "/";
+            }
+            return m_assetFolderStrg.GetItem(parentPath, pathParts[pathParts.Length - 1]);
         }
 
         #endregion
