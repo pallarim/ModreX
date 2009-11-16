@@ -351,7 +351,38 @@ namespace ModularRex.WorldInventory
                 asset.Data = assetData;
                 m_scenes[0].AssetService.Store(asset);
 
+                AssetFolder oldAsset = m_assetFolderStrg.GetItem(parentPath, asset.Name);
+                if (oldAsset != null)
+                {
+                    m_log.InfoFormat("[WORLDINVENTORY]: Replacing old asset {0} with new", oldAsset.Name);
+                    if (!m_assetFolderStrg.RemoveItem(oldAsset))
+                    {
+                        return HttpStatusCode.Conflict;
+                    }
+                }
                 m_assetFolderStrg.Save(new AssetFolderItem(parentPath, asset.Name, asset.FullID));
+
+                IWebDAVResource oldProp = m_propertyMngr.GetResource(path);
+                if (oldProp == null)
+                {
+                    WebDAVFile prop = new WebDAVFile(path, contentType, asset.Data.Length, asset.Metadata.CreationDate, asset.Metadata.CreationDate, DateTime.Now, false, false);
+                    prop.AddProperty(new WebDAVProperty("AssetID", "http://www.realxtend.org/", asset.FullID.ToString()));
+                    m_propertyMngr.SaveResource(prop);
+                }
+                else
+                {
+                    WebDAVProperty assetIdProp = null;
+                    foreach (WebDAVProperty prop in oldProp.CustomProperties)
+                    {
+                        if (prop.Name == "AssetID" && prop.Namespace == "http://www.realxtend.org/")
+                            assetIdProp = prop;
+                    }
+                    if (assetIdProp != null)
+                        oldProp.CustomProperties.Remove(assetIdProp);
+                    oldProp.AddProperty(new WebDAVProperty("AssetID", "http://www.realxtend.org/", asset.FullID.ToString()));
+                    m_propertyMngr.SaveResource(oldProp);
+                }
+
                 return HttpStatusCode.Created;
             }
             catch (Exception e)
