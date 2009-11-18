@@ -82,6 +82,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnGet += GetHandler;
             m_webdav.OnPut += PutHandler;
             m_webdav.OnNewCol += MkcolHandler;
+            m_webdav.OnMove += MoveHandler;
 
             return true;
         }
@@ -92,6 +93,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnGet -= GetHandler;
             m_webdav.OnPut -= PutHandler;
             m_webdav.OnNewCol -= MkcolHandler;
+            m_webdav.OnMove -= MoveHandler;
             m_listener.Stop();
         }
 
@@ -176,8 +178,11 @@ namespace ModularRex.WorldInventory
                     IList<AssetFolder> folders = m_assetFolderStrg.GetSubItems(path);
                     foreach (AssetFolder folder in folders)
                     {
-                        folder.ParentPath = folder.ParentPath.EndsWith("/") == true ? folder.ParentPath : folder.ParentPath+"/";
-                        IWebDAVResource folderProps = m_propertyMngr.GetResource(folder.ParentPath + folder.Name);
+                        if (!folder.ParentPath.EndsWith("/")) folder.ParentPath += "/";
+                        string resourcePath = folder.ParentPath + folder.Name;
+                        if (!(folder is AssetFolderItem))
+                            resourcePath += "/";
+                        IWebDAVResource folderProps = m_propertyMngr.GetResource(resourcePath);
                         if (folderProps != null)
                         {
                             resources.Add(folderProps);
@@ -190,8 +195,7 @@ namespace ModularRex.WorldInventory
                                 AssetFolderItem item = (AssetFolderItem)folder;
                                 AssetBase asset = m_scenes[0].AssetService.Get(item.AssetID.ToString());
                                 string contentType = MimeTypeConverter.GetContentType((int)asset.Type);
-                                WebDAVFile file = new WebDAVFile(folder.ParentPath + folder.Name,
-                                    contentType, asset.Data.Length,
+                                WebDAVFile file = new WebDAVFile(resourcePath, contentType, asset.Data.Length,
                                     asset.Metadata.CreationDate, DateTime.Now, DateTime.Now, false, false);
 
                                 //add asset id to custom properties
@@ -201,7 +205,7 @@ namespace ModularRex.WorldInventory
                             }
                             else
                             {
-                                WebDAVFolder resource = new WebDAVFolder(folder.ParentPath + folder.Name, DateTime.Now, DateTime.Now, DateTime.Now, false);
+                                WebDAVFolder resource = new WebDAVFolder(resourcePath, DateTime.Now, DateTime.Now, DateTime.Now, false);
                                 m_propertyMngr.SaveResource(resource);
                                 resources.Add(resource);
                             }
@@ -217,8 +221,11 @@ namespace ModularRex.WorldInventory
                     //get subitems until found all
                     foreach (AssetFolder folder in folders)
                     {
-                        folder.ParentPath = folder.ParentPath.EndsWith("/") == true ? folder.ParentPath : folder.ParentPath + "/";
-                        IWebDAVResource folderProps = m_propertyMngr.GetResource(folder.ParentPath + folder.Name);
+                        if (!folder.ParentPath.EndsWith("/")) folder.ParentPath += "/";
+                        string resourcePath = folder.ParentPath + folder.Name;
+                        if (!(folder is AssetFolderItem))
+                            resourcePath += "/";
+                        IWebDAVResource folderProps = m_propertyMngr.GetResource(resourcePath);
                         if (folderProps != null)
                         {
                             resources.Add(folderProps);
@@ -231,8 +238,7 @@ namespace ModularRex.WorldInventory
                                 AssetFolderItem item = (AssetFolderItem)folder;
                                 AssetBase asset = m_scenes[0].AssetService.Get(item.AssetID.ToString());
                                 string contentType = MimeTypeConverter.GetContentType((int)asset.Type);
-                                WebDAVFile file = new WebDAVFile(folder.ParentPath + folder.Name,
-                                    contentType, asset.Data.Length,
+                                WebDAVFile file = new WebDAVFile(resourcePath, contentType, asset.Data.Length,
                                     asset.Metadata.CreationDate, DateTime.Now, DateTime.Now, false, false);
 
                                 //add asset id to custom properties
@@ -242,7 +248,7 @@ namespace ModularRex.WorldInventory
                             }
                             else
                             {
-                                WebDAVFolder resource = new WebDAVFolder(folder.ParentPath + folder.Name, DateTime.Now, DateTime.Now, DateTime.Now, false);
+                                WebDAVFolder resource = new WebDAVFolder(resourcePath, DateTime.Now, DateTime.Now, DateTime.Now, false);
                                 m_propertyMngr.SaveResource(resource);
                                 resources.Add(resource);
                             }
@@ -453,6 +459,101 @@ namespace ModularRex.WorldInventory
             }
         }
 
+        HttpStatusCode MoveHandler(string username, Uri source, string destination, DepthHeader depth, bool overwrite,
+            string[] ifHeaders, out Dictionary<string, HttpStatusCode> multiStatusValues)
+        {
+            multiStatusValues = null;
+            try
+            {
+                string[] srcParts = source.ToString().Split('/');
+                string[] dstParts = destination.Split('/');
+
+                //check the source
+                string srcParent = "/";
+                string[] srcFolders = new string[srcParts.Length - 4];
+                Array.Copy(srcParts, 3, srcFolders, 0, srcFolders.Length);
+                for (int i = 0; i < srcFolders.Length; i++)
+                {
+                    srcParent += srcFolders[i];
+                    srcParent += "/";
+                }
+
+                string srcResourceName = (source.ToString().EndsWith("/")) ? srcParts[srcParts.Length - 2] : srcParts[srcParts.Length - 1];
+                AssetFolder sourceResource = m_assetFolderStrg.GetItem(srcParent, srcResourceName);
+
+                if (sourceResource == null)
+                    return HttpStatusCode.NotFound; //source resource not found
+
+                //then check destination
+                string dstParent = "/";
+                string[] dstFolders = new string[dstParts.Length - 4];
+                Array.Copy(dstParts, 3, dstFolders, 0, dstFolders.Length);
+                for (int i = 0; i < dstFolders.Length; i++)
+                {
+                    dstParent += dstFolders[i];
+                    dstParent += "/";
+                }
+
+                //check if destination parent exists
+                AssetFolder destinationParent = GetAssetFolder(dstParent);
+                if (destinationParent == null)
+                    return HttpStatusCode.Conflict; //it didn't, conflict
+
+                //if no problems, move
+                string dstResourceName = (source.ToString().EndsWith("/")) ? dstParts[dstParts.Length - 2] : dstParts[dstParts.Length - 1];
+                AssetFolder destinationResource = m_assetFolderStrg.GetItem(dstParent, dstResourceName);
+                if (destinationResource == null)
+                {
+                    //no destination. simplest case.
+                    //just move existing resource to here
+                    MoveFolderAndAllSubFolders(sourceResource, destinationResource, dstParent, dstResourceName, ref multiStatusValues);
+
+                    if (multiStatusValues != null)
+                        return (HttpStatusCode)207;
+                    else
+                        return HttpStatusCode.Created;
+                }
+                else
+                {
+                    if (overwrite)
+                    {
+                        //check if source and destination are both folder so we move only the content
+                        //and remove the old folder
+                        bool sourceIsFolder = !(sourceResource is AssetFolderItem);
+                        bool destinationIsFolder = !(destinationResource is AssetFolderItem);
+                        if (sourceIsFolder && destinationIsFolder)
+                        {
+                            //remove, add etc.
+                            MoveFolderAndAllSubFolders(sourceResource, destinationResource, dstParent, dstResourceName, ref multiStatusValues);
+
+                            if (multiStatusValues != null)
+                                return (HttpStatusCode)207;
+                            else
+                                return HttpStatusCode.NoContent; //all ok
+                        }
+                        else
+                        {
+                            MoveFolderAndAllSubFolders(sourceResource, destinationResource, dstParent, dstResourceName, ref multiStatusValues);
+
+                            if (multiStatusValues != null)
+                                return (HttpStatusCode)207;
+                            else
+                                return HttpStatusCode.Created;
+                        }
+                    }
+                    else
+                    {
+                        return HttpStatusCode.PreconditionFailed;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[WORLDINVENTORY]: Could not move {0} to {1}, because exception {2} was thrown.", source.ToString(), destination, e.ToString());
+                return HttpStatusCode.InternalServerError;
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -493,6 +594,54 @@ namespace ModularRex.WorldInventory
                 parentPath += "/";
             }
             return m_assetFolderStrg.GetItem(parentPath, pathParts[pathParts.Length - 1]);
+        }
+
+        private void MoveFolderAndAllSubFolders(AssetFolder source, AssetFolder destination, string destinationParent, string destinationName, ref Dictionary<string, HttpStatusCode> multiStatus)
+        {
+            string srcPath = source.ParentPath + source.Name;
+            if (!(source is AssetFolderItem)) srcPath += "/";
+
+            //TODO: Lock check
+
+            //first move resource
+            if (destination == null)
+            {
+                if (!m_assetFolderStrg.RemoveItem(source)) { SetMultiStatusPrecoditionFailedError(destinationParent + destinationName, ref multiStatus); return; }
+                source.Name = destinationName;
+                source.ParentPath = destinationParent;
+                m_assetFolderStrg.Save(source);
+
+                IWebDAVResource resProp = m_propertyMngr.GetResource(srcPath);
+                if (!m_propertyMngr.Remove(resProp)) { SetMultiStatusPrecoditionFailedError(destinationParent + destinationName, ref multiStatus); return; }
+                string newPath = destinationParent + destinationName;
+                if (!(source is AssetFolderItem)) newPath += "/";
+                resProp.Path = newPath;
+                if (!m_propertyMngr.SaveResource(resProp)) { SetMultiStatusPrecoditionFailedError(destinationParent + destinationName, ref multiStatus); return; }
+            }
+            else
+            {
+                //just delete the source
+                if (!m_assetFolderStrg.RemoveItem(source)) { SetMultiStatusPrecoditionFailedError(destinationParent + destinationName, ref multiStatus); return; }
+                if (!m_propertyMngr.Remove(srcPath)) { SetMultiStatusPrecoditionFailedError(destinationParent + destinationName, ref multiStatus); return; }
+            }
+
+            //then move sub resources
+            if (!(source is AssetFolderItem))
+            {
+                IList<AssetFolder> subitems = m_assetFolderStrg.GetSubItems(srcPath);
+                foreach (AssetFolder item in subitems)
+                {
+                    AssetFolder subDst = m_assetFolderStrg.GetItem(destinationParent + destinationName + "/", item.Name);
+                    MoveFolderAndAllSubFolders(item, subDst, destinationParent + destinationName + "/", item.Name, ref multiStatus);
+                }
+            }
+        }
+
+        private void SetMultiStatusPrecoditionFailedError(string path, ref Dictionary<string, HttpStatusCode> multiStatus)
+        {
+            if (multiStatus == null)
+                multiStatus = new Dictionary<string, HttpStatusCode>();
+            multiStatus.Add(path, HttpStatusCode.PreconditionFailed);
         }
 
         #endregion
