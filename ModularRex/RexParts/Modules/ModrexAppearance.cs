@@ -133,6 +133,7 @@ namespace ModularRex.RexParts.Modules
                 if (clientCore.TryGet(out rexClientAppearance))
                 {
                     rexClientAppearance.OnRexAppearance += mcv_OnRexAppearance;
+                    rexClientAppearance.OnRexSetAppearance += mcv_OnRexSetAppearance;
                     SendAppearanceToAllUsers(client.AgentId, rexClientAppearance.RexAvatarURLVisible, !string.IsNullOrEmpty(rexClientAppearance.RexAvatarURLOverride));
                     if (client is RexClientViewBase)
                     {
@@ -155,6 +156,44 @@ namespace ModularRex.RexParts.Modules
             if (sender is IClientRexAppearance)
                 SendAppearanceToAllUsers(sender.AgentId, ((IClientRexAppearance)sender).RexAvatarURLVisible, !string.IsNullOrEmpty(((IClientRexAppearance)sender).RexAvatarURLOverride));
         }
+
+        /// <summary>
+        /// Fired when a viewer sends a packet telling new appearance
+        /// </summary>
+        /// <param name="sender">IClientApi of the sender</param>
+        /// <param name="agentID">Agent ID of the sender</param>
+        /// <param name="args">Generic message arguments</param>
+        void mcv_OnRexSetAppearance(IClientAPI sender, UUID agentID, List<string> args)
+        {
+            try
+            {        
+                if (args.Count >= 2)
+                {
+                    if (sender is IClientRexAppearance)
+                    {
+                        // Check that agent id matches
+                        UUID id;
+                        UUID.TryParse(args[0], out id);
+                        if (id != agentID)
+                        {
+                            m_log.Info("[REXAPPEAR] RexSetAppearance with non-matching agent id");
+                            return;
+                        }       
+                        
+                        IClientRexAppearance rexClientAppearance = (IClientRexAppearance)sender;
+                        // This should trigger OnRexAppearance: replication of new avatar URL to everyone
+                        m_log.Info("[REXAPPEAR] Setting new avatar address " + args[1]);
+                        rexClientAppearance.RexAvatarURL = args[1];
+                    }                                                           
+                }            
+            }
+            catch (Exception ex)
+            {
+                m_log.Info("[REXAPPEAR] Exception in RexSetAppearance" + ex.ToString());
+                return;
+            }
+        }
+
 
         /// <summary>
         /// Fired when a client is started (rendering world after loading menu)

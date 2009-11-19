@@ -46,6 +46,7 @@ namespace ModularRex.RexNetwork
         private float m_RexVertMovementSpeedMod = 1.0f;
 
         public event RexAppearanceDelegate OnRexAppearance;
+        public event RexSetAppearanceDelegate OnRexSetAppearance;
         public event RexGenericMessageDelegate OnRexFaceExpression;
         public event RexGenericMessageDelegate OnRexAvatarProperties;
         public event RexObjectPropertiesDelegate OnRexObjectProperties;
@@ -88,6 +89,7 @@ namespace ModularRex.RexNetwork
             OnGenericMessage += RealXtendClientView_OnGenericMessage;
 
             AddGenericPacketHandler("RexAppearance", RealXtendClientView_OnGenericMessage);
+            AddGenericPacketHandler("RexSetAppearance", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexFaceExpression", RealXtendClientView_OnGenericMessage);
             AddGenericPacketHandler("RexAvatarProp", RealXtendClientView_OnGenericMessage);
 
@@ -350,6 +352,15 @@ namespace ModularRex.RexNetwork
                 if (OnRexAppearance != null)
                 {
                     OnRexAppearance(this);
+                    return;
+                }
+            }
+
+            if (method.ToLower() == "rexsetappearance")
+            {
+                if (OnRexSetAppearance != null)
+                {
+                    OnRexSetAppearance(this, AgentId, args);
                     return;
                 }
             }

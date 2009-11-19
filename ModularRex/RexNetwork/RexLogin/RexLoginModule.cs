@@ -83,7 +83,15 @@ namespace ModularRex.RexNetwork.RexLogin
                     //ok, no userdata found
                     //maybe client logged in with cb_connector
                     //let's try to find that information
-                    IRegionModuleBase cb_module = m_scenes[0].RegionModules["CableBeachWorldServiceConnector"];
+                    IRegionModuleBase cb_module = null;
+                    try
+                    {
+                        cb_module = m_scenes[0].RegionModules["CableBeachWorldServiceConnector"];
+                    }
+                    catch (Exception)
+                    {
+                    }
+
                     if (cb_module != null)
                     {
                         //yes, user logged with cb connector

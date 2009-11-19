@@ -81,6 +81,7 @@ namespace OpenSim.Region.Examples.RexBot
         private NavMeshInstance m_navMesh;
 
         public event RexAppearanceDelegate OnRexAppearance;
+        public event RexSetAppearanceDelegate OnRexSetAppearance;
         public event RexStartUpDelegate OnRexStartUp;
         public event RexClientScriptCmdDelegate OnRexClientScriptCmd;
 

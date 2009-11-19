@@ -10,6 +10,7 @@ namespace ModularRex.RexNetwork
 
     public delegate void RexGenericMessageDelegate(IClientAPI sender, List<string> parameters);
     public delegate void RexAppearanceDelegate(IClientAPI sender);
+    public delegate void RexSetAppearanceDelegate(IClientAPI sender, UUID agentID, List<string> parameters);
     public delegate void RexObjectPropertiesDelegate(IClientAPI sender, UUID id, RexObjectProperties props);
     public delegate void RexStartUpDelegate(IRexClientCore remoteClient, UUID agentID, string status);
     public delegate void RexClientScriptCmdDelegate(IRexClientCore remoteClient, UUID agentID, List<string> parameters);
