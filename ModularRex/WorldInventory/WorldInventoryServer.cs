@@ -83,6 +83,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnPut += PutHandler;
             m_webdav.OnNewCol += MkcolHandler;
             m_webdav.OnMove += MoveHandler;
+            m_webdav.OnDelete += DeleteHandler;
 
             return true;
         }
@@ -94,6 +95,7 @@ namespace ModularRex.WorldInventory
             m_webdav.OnPut -= PutHandler;
             m_webdav.OnNewCol -= MkcolHandler;
             m_webdav.OnMove -= MoveHandler;
+            m_webdav.OnDelete -= DeleteHandler;
             m_listener.Stop();
         }
 
@@ -104,12 +106,12 @@ namespace ModularRex.WorldInventory
             if (res == null)
             {
                 //add only these folders now, add more when needed
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/3d_models/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/3d_animations/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/ogre_scripts/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/textures/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
-                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/sounds/", DateTime.MinValue, DateTime.MinValue, DateTime.MinValue, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/", DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/3d_models/", DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/3d_animations/", DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/ogre_scripts/", DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/textures/", DateTime.Now, DateTime.Now, DateTime.Now, false));
+                m_propertyMngr.SaveResource(new WebDAVFolder("/inventory/sounds/", DateTime.Now, DateTime.Now, DateTime.Now, false));
             }
 
             AssetFolder folder = m_assetFolderStrg.GetItem("/", "inventory");
@@ -554,6 +556,26 @@ namespace ModularRex.WorldInventory
             }
         }
 
+        HttpStatusCode DeleteHandler(Uri uri, string username, out Dictionary<string, HttpStatusCode> multiStatus)
+        {
+            multiStatus = null;
+
+            if (DeleteResource(uri.AbsolutePath, ref multiStatus))
+            {
+                return HttpStatusCode.NoContent;
+            }
+            else if (multiStatus.Count == 1 && multiStatus.ContainsKey(uri.AbsolutePath))
+            {
+                HttpStatusCode ret = multiStatus[uri.AbsolutePath];
+                multiStatus = null;
+                return ret;
+            }
+            else
+            {
+                return (HttpStatusCode)207;
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -601,6 +623,16 @@ namespace ModularRex.WorldInventory
             string srcPath = source.ParentPath + source.Name;
             if (!(source is AssetFolderItem)) srcPath += "/";
 
+            //check "permissions"
+            if (IsProtectedPath(srcPath))
+            {
+                //this is one of the default paths. this can't be deleted because it might result some problems
+                if (multiStatus == null)
+                    multiStatus = new Dictionary<string, HttpStatusCode>();
+                multiStatus.Add(srcPath, HttpStatusCode.Forbidden);
+                return;
+            }
+
             //TODO: Lock check
 
             //first move resource
@@ -642,6 +674,79 @@ namespace ModularRex.WorldInventory
             if (multiStatus == null)
                 multiStatus = new Dictionary<string, HttpStatusCode>();
             multiStatus.Add(path, HttpStatusCode.PreconditionFailed);
+        }
+
+        private bool IsProtectedPath(string path)
+        {
+            switch (path)
+            {
+                case "/inventory/":
+                case "/inventory/3d_models/":
+                case "/inventory/3d_animations/":
+                case "/inventory/ogre_scripts/":
+                case "/inventory/textures/":
+                case "/inventory/sounds/":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool DeleteResource(string path, ref Dictionary<string, HttpStatusCode> multiStatus)
+        {
+            AssetFolder item = GetAssetFolder(path);
+            if (item is AssetFolderItem)
+            {
+                //delete item and webdavproperties
+                if (!m_assetFolderStrg.RemoveItem(item) || !m_propertyMngr.Remove(path))
+                {
+                    SetMultiStatusPrecoditionFailedError(path, ref multiStatus);
+                    return false;
+                }
+                else
+                    return true;
+            }
+            else
+            {
+                bool okToDeleteThis = true;
+
+                //first delete subitems
+                if (!path.EndsWith("/")) path += "/";
+                IList<AssetFolder> subItems = m_assetFolderStrg.GetSubItems(path);
+                foreach (AssetFolder subitem in subItems)
+                {
+                    string subItemPath = path + subitem.Name;
+                    if (!(subitem is AssetFolderItem))
+                        subItemPath += "/";
+                    if (!DeleteResource(subItemPath, ref multiStatus))
+                        okToDeleteThis = false;
+                }
+
+                //if no problems, delete also this
+                if (okToDeleteThis)
+                {
+                    if (IsProtectedPath(path)) //this is not ok to be deleted
+                    {
+                        if (multiStatus == null)
+                            multiStatus = new Dictionary<string, HttpStatusCode>();
+                        multiStatus.Add(path, HttpStatusCode.Forbidden);
+                        return false;
+                    }
+
+                    if (!m_assetFolderStrg.RemoveItem(item) || !m_propertyMngr.Remove(path))
+                    {
+                        SetMultiStatusPrecoditionFailedError(path, ref multiStatus);
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                else
+                {
+                    SetMultiStatusPrecoditionFailedError(path, ref multiStatus);
+                    return false;
+                }
+            }
         }
 
         #endregion
