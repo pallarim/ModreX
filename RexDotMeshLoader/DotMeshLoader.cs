@@ -101,5 +101,29 @@ namespace RexDotMeshLoader
                 errorMessage = e.Message.ToString();
             }
         }
+
+        public static void ReadDotMeshMaterialNames(byte[] vData, out List<string> materials, out string errorMessage)
+        {
+            materials = new List<string>();
+            errorMessage = "";
+
+            try
+            {
+                MeshSerializerImpl TempSerializer = new MeshSerializerImpl();
+                OMesh mesh = TempSerializer.ImportMesh(vData);
+
+                if (mesh == null)
+                    return;
+
+                foreach (SubMesh submesh in mesh.subMeshList)
+                {
+                    materials.Add(submesh.MaterialName);
+                }
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message.ToString();
+            }
+        }
     }
 }
