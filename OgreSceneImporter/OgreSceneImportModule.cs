@@ -193,6 +193,7 @@ namespace OgreSceneImporter
                     //Add mesh to asset db
                     AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
                     asset.Description = ent.Name;
+                    asset.Data = data;
                     m_scene.AssetService.Store(asset);
                     //Read material names
                     List<string> materialNames;
