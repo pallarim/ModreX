@@ -218,6 +218,7 @@ namespace OgreSceneImporter
                     robject.RexDrawDistance = ent.RenderingDistance;
                     robject.RexCastShadows = ent.CastShadows;
                     robject.RexDrawType = 1;
+                    robject.RexCollisionMeshUUID = asset.FullID;
                     for (int i = 0; i < materialNames.Count; i++)
                     {
                         robject.RexMaterials.AddMaterial((uint)i, materials[materialNames[i]]);
