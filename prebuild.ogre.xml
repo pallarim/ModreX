@@ -1,0 +1,34 @@
+    <Project name="OgreSceneImporter" path="./addon-modules/ModreX/OgreSceneImporter" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../bin/</ReferencePath>
+        <ReferencePath>../bin/</ReferencePath>
+	 <Reference name="log4net"/>
+	 <Reference name="OpenMetaverse"/>
+	 <Reference name="OpenMetaverseTypes"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Drawing"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="Mogre"/>
+	 <Reference name="Nini"/>
+	 <Reference name="OpenSim.Framework"/>
+	 <Reference name="OpenSim.Framework.Console"/>
+	 <Reference name="OpenSim.Region.Framework"/>
+	 <Reference name="OpenSim.Services.Interfaces"/>
+	 <Reference name="RexDotMeshLoader"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>

@@ -212,7 +212,7 @@ namespace OgreSceneImporter
                         m_scene.RegionInfo.MasterAvatarAssignedUUID, node.Position, node.Orientation, PrimitiveBaseShape.CreateBox());
                     sceneObject.RootPart.Scale = node.Scale;
                     //Add refs to materials, mesh etc.
-                    ModularRex.RexParts.ModrexObjects rexObjects = (ModularRex.RexParts.ModrexObjects)m_scene.Modules["RexObjectsModule"];
+                    IModrexObjectsProvider rexObjects = m_scene.RequestModuleInterface<IModrexObjectsProvider>();
                     RexObjectProperties robject = rexObjects.GetObject(sceneObject.RootPart.UUID);
                     robject.RexMeshUUID = asset.FullID;
                     robject.RexDrawDistance = ent.RenderingDistance;
