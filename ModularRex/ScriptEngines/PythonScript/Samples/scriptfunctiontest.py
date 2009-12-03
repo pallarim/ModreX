@@ -18,6 +18,7 @@ class Test(rxactor.Actor):
         self.log = logAsm.log4net.LogManager.GetLogger(type(MethodBase.GetCurrentMethod().DeclaringType))
         super(Test, self).__init__(vId)
 
+    @staticmethod
     def GetScriptClassName():
         return "scriptfunctiontest.Test"
 

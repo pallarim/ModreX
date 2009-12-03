@@ -8,6 +8,7 @@ import math
 
 
 class FlashAnim(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleflashanimation.FlashAnim"
 

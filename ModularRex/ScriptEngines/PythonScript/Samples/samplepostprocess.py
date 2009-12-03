@@ -8,6 +8,7 @@ import math
 
 
 class PP(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplepostprocess.PP"
 

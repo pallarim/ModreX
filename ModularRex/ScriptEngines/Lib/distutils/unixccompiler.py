@@ -13,7 +13,7 @@ the "typical" Unix-style command-line C compiler:
   * link shared library handled by 'cc -shared'
 """
 
-__revision__ = "$Id: unixccompiler.py 52231 2006-10-08 17:41:25Z ronald.oussoren $"
+__revision__ = "$Id: unixccompiler.py 54954 2007-04-25 06:42:41Z neal.norwitz $"
 
 import os, sys
 from types import StringType, NoneType
@@ -45,7 +45,7 @@ from distutils import log
 def _darwin_compiler_fixup(compiler_so, cc_args):
     """
     This function will strip '-isysroot PATH' and '-arch ARCH' from the
-    compile flag if the user has specified one of them in extra_compile_flags.
+    compile flags if the user has specified one them in extra_compile_flags.
 
     This is needed because '-arch ARCH' adds another architecture to the
     build, without a way to remove an architecture. Furthermore GCC will
@@ -82,8 +82,23 @@ def _darwin_compiler_fixup(compiler_so, cc_args):
         except ValueError:
             pass
 
-    return compiler_so
+    # Check if the SDK that is used during compilation actually exists,
+    # the universal build requires the usage of a universal SDK and not all
+    # users have that installed by default.
+    sysroot = None
+    if '-isysroot' in cc_args:
+        idx = cc_args.index('-isysroot')
+        sysroot = cc_args[idx+1]
+    elif '-isysroot' in compiler_so:
+        idx = compiler_so.index('-isysroot')
+        sysroot = compiler_so[idx+1]
 
+    if sysroot and not os.path.isdir(sysroot):
+        log.warn("Compiling with an SDK that doesn't seem to exist: %s",
+                sysroot)
+        log.warn("Please check your Xcode installation")
+
+    return compiler_so
 
 class UnixCCompiler(CCompiler):
 
@@ -218,7 +233,18 @@ class UnixCCompiler(CCompiler):
                 else:
                     linker = self.linker_so[:]
                 if target_lang == "c++" and self.compiler_cxx:
-                    linker[0] = self.compiler_cxx[0]
+                    # skip over environment variable settings if /usr/bin/env
+                    # is used to set up the linker's environment.
+                    # This is needed on OSX. Note: this assumes that the
+                    # normal and C++ compiler have the same environment
+                    # settings.
+                    i = 0
+                    if os.path.basename(linker[0]) == "env":
+                        i = 1
+                        while '=' in linker[i]:
+                            i = i + 1
+
+                    linker[i] = self.compiler_cxx[i]
 
                 if sys.platform == 'darwin':
                     linker = _darwin_compiler_fixup(linker, ld_args)

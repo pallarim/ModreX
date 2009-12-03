@@ -43,7 +43,7 @@ Example:
 
 import socket
 import re
-import rfc822
+import email.Utils
 import base64
 import hmac
 from email.base64MIME import encode as encode_base64
@@ -150,7 +150,7 @@ class SSLFakeFile:
 
     It only supports what is needed in smtplib.
     """
-    def __init__( self, sslobj):
+    def __init__(self, sslobj):
         self.sslobj = sslobj
 
     def readline(self):
@@ -171,7 +171,7 @@ def quoteaddr(addr):
     """
     m = (None, None)
     try:
-        m=rfc822.parseaddr(addr)[1]
+        m = email.Utils.parseaddr(addr)[1]
     except AttributeError:
         pass
     if m == (None, None): # Indicates parse failure or AttributeError
@@ -297,10 +297,10 @@ class SMTP:
             af, socktype, proto, canonname, sa = res
             try:
                 self.sock = socket.socket(af, socktype, proto)
-                if self.debuglevel > 0: print>>stderr, 'connect:', (host, port)
+                if self.debuglevel > 0: print>>stderr, 'connect:', sa
                 self.sock.connect(sa)
             except socket.error, msg:
-                if self.debuglevel > 0: print>>stderr, 'connect fail:', (host, port)
+                if self.debuglevel > 0: print>>stderr, 'connect fail:', msg
                 if self.sock:
                     self.sock.close()
                 self.sock = None
@@ -446,7 +446,7 @@ class SMTP:
         """SMTP 'help' command.
         Returns help text from server."""
         self.putcmd("help", args)
-        return self.getreply()
+        return self.getreply()[1]
 
     def rset(self):
         """SMTP 'rset' command -- resets session."""
@@ -537,7 +537,7 @@ class SMTP:
             return encode_base64(response, eol="")
 
         def encode_plain(user, password):
-            return encode_base64("%s\0%s\0%s" % (user, user, password), eol="")
+            return encode_base64("\0%s\0%s" % (user, password), eol="")
 
 
         AUTH_PLAIN = "PLAIN"
@@ -585,7 +585,7 @@ class SMTP:
             (code, resp) = self.docmd(encode_base64(password, eol=""))
         elif authmethod is None:
             raise SMTPException("No suitable authentication method found.")
-        if code not in [235, 503]:
+        if code not in (235, 503):
             # 235 == 'Authentication successful'
             # 503 == 'Error: already authenticated'
             raise SMTPAuthenticationError(code, resp)
@@ -605,6 +605,14 @@ class SMTP:
             sslobj = socket.ssl(self.sock, keyfile, certfile)
             self.sock = SSLFakeSocket(self.sock, sslobj)
             self.file = SSLFakeFile(sslobj)
+            # RFC 3207:
+            # The client MUST discard any knowledge obtained from
+            # the server, such as the list of SMTP service extensions,
+            # which was not obtained from the TLS negotiation itself.
+            self.helo_resp = None
+            self.ehlo_resp = None
+            self.esmtp_features = {}
+            self.does_esmtp = 0
         return (resp, reply)
 
     def sendmail(self, from_addr, to_addrs, msg, mail_options=[],

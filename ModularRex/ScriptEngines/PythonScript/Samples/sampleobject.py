@@ -11,6 +11,7 @@ import math
 
 
 class TestActor(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleobject.TestActor"
 

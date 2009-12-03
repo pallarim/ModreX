@@ -1,10 +1,17 @@
-# Copyright (C) 2002-2006 Python Software Foundation
+# Copyright (C) 2002-2007 Python Software Foundation
 # Contact: email-sig@python.org
 
 """Email address parsing code.
 
 Lifted directly from rfc822.py.  This should eventually be rewritten.
 """
+
+__all__ = [
+    'mktime_tz',
+    'parsedate',
+    'parsedate_tz',
+    'quote',
+    ]
 
 import time
 
@@ -165,6 +172,7 @@ class AddrlistClass:
         self.pos = 0
         self.LWS = ' \t'
         self.CR = '\r\n'
+        self.FWS = self.LWS + self.CR
         self.atomends = self.specials + self.LWS + self.CR
         # Note that RFC 2822 now specifies `.' as obs-phrase, meaning that it
         # is obsolete syntax.  RFC 2822 requires that we recognize obsolete
@@ -411,7 +419,7 @@ class AddrlistClass:
         plist = []
 
         while self.pos < len(self.field):
-            if self.field[self.pos] in self.LWS:
+            if self.field[self.pos] in self.FWS:
                 self.pos += 1
             elif self.field[self.pos] == '"':
                 plist.append(self.getquote())

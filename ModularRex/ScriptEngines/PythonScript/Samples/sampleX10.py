@@ -12,6 +12,7 @@ class Lamp(rxX10.X10Actor):
         super(Lamp,self).__init__(vId)
         self.state = 1
 
+    @staticmethod
     def GetScriptClassName():
         return "sampleX10.Lamp"
 

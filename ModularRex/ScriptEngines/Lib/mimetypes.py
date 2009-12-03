@@ -33,6 +33,10 @@ __all__ = [
 
 knownfiles = [
     "/etc/mime.types",
+    "/etc/httpd/mime.types",                    # Mac OS X
+    "/etc/httpd/conf/mime.types",               # Apache
+    "/etc/apache/mime.types",                   # Apache 1
+    "/etc/apache2/mime.types",                  # Apache 2
     "/usr/local/etc/httpd/conf/mime.types",
     "/usr/local/lib/netscape/mime.types",
     "/usr/local/etc/httpd/conf/mime.types",     # Apache 1.2
@@ -449,20 +453,22 @@ def _default_mime_types():
         '.vcf'    : 'text/x-vcard',
         '.wav'    : 'audio/x-wav',
         '.wiz'    : 'application/msword',
+        '.wsdl'   : 'application/xml',
         '.xbm'    : 'image/x-xbitmap',
         '.xlb'    : 'application/vnd.ms-excel',
         # Duplicates :(
         '.xls'    : 'application/excel',
         '.xls'    : 'application/vnd.ms-excel',
         '.xml'    : 'text/xml',
+        '.xpdl'   : 'application/xml',
         '.xpm'    : 'image/x-xpixmap',
         '.xsl'    : 'application/xml',
         '.xwd'    : 'image/x-xwindowdump',
         '.zip'    : 'application/zip',
         }
 
-    # These are non-standard types, commonly found in the wild.  They will only
-    # match if strict=0 flag is given to the API methods.
+    # These are non-standard types, commonly found in the wild.  They will
+    # only match if strict=0 flag is given to the API methods.
 
     # Please sort these too
     common_types = {
@@ -475,6 +481,7 @@ def _default_mime_types():
         '.rtf' : 'application/rtf',
         '.xul' : 'text/xul'
         }
+
 
 _default_mime_types()
 

@@ -6,6 +6,7 @@ import clr
 from System.Collections.Generic import List as GenericList
 
 class PreLoadAssets(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplepreloadassets.PreLoadAssets"
 

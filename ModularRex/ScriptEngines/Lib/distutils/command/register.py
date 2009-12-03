@@ -5,7 +5,7 @@ Implements the Distutils 'register' command (register with the repository).
 
 # created 2002/10/21, Richard Jones
 
-__revision__ = "$Id: register.py 52244 2006-10-09 17:15:39Z andrew.kuchling $"
+__revision__ = "$Id: register.py 56542 2007-07-25 16:24:08Z martin.v.loewis $"
 
 import sys, os, string, urllib2, getpass, urlparse
 import StringIO, ConfigParser
@@ -17,7 +17,7 @@ class register(Command):
 
     description = ("register the distribution with the Python package index")
 
-    DEFAULT_REPOSITORY = 'http://www.python.org/pypi'
+    DEFAULT_REPOSITORY = 'http://pypi.python.org/pypi'
 
     user_options = [
         ('repository=', 'r',
@@ -231,7 +231,13 @@ Your selection [default 1]: ''',
             'platform': meta.get_platforms(),
             'classifiers': meta.get_classifiers(),
             'download_url': meta.get_download_url(),
+            # PEP 314
+            'provides': meta.get_provides(),
+            'requires': meta.get_requires(),
+            'obsoletes': meta.get_obsoletes(),
         }
+        if data['provides'] or data['requires'] or data['obsoletes']:
+            data['metadata_version'] = '1.1'
         return data
 
     def post_to_server(self, data, auth=None):

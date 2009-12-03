@@ -5,7 +5,8 @@
 import rxactor
 
 class WorldInfo(rxactor.Actor):
-
+    
+    @staticmethod
     def GetScriptClassName():
         return "rxworldinfo.WorldInfo"
     

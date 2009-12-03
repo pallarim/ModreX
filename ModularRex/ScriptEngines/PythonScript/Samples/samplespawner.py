@@ -9,6 +9,7 @@ Vector3 = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3
 
 # Sample tree
 class Tree(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplespawner.Tree"
 

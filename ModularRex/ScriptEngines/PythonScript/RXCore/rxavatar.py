@@ -11,6 +11,7 @@ import rxactor
 
 class Avatar(rxactor.Actor):
 
+    @staticmethod
     def GetScriptClassName():
         return "rxavatar.Avatar"
     

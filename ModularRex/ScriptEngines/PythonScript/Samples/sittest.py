@@ -4,6 +4,7 @@ import clr
 
 
 class SitTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sittest.SitTest"
 

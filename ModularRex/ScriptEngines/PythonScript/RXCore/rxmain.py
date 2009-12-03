@@ -6,8 +6,6 @@ import time
 import sys
 from threading import Thread
 
-# csharp imports
-import System
 
 # python imports
 import rxactor
@@ -146,6 +144,7 @@ def CreateActorOfClass(vId,vClassName,vTag):
     try:
         if globals()["MyWorld"].AllActors.has_key(strid):
             globals()["MyEventManager"].DeleteActor(strid)
+            print "DID GLOBALS\n"
     except:
         print "rxmain,CreateActorOfClass,del:", sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2]
         return

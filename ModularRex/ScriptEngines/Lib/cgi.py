@@ -34,13 +34,17 @@ __version__ = "2.6"
 # Imports
 # =======
 
+from operator import attrgetter
 import sys
 import os
 import urllib
 import mimetools
 import rfc822
 import UserDict
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 __all__ = ["MiniFieldStorage", "FieldStorage", "FormContentDict",
            "SvFormContentDict", "InterpFormContentDict", "FormContent",
@@ -233,7 +237,7 @@ def parse_multipart(fp, pdict):
 
     Arguments:
     fp   : input file
-    pdict: dictionary containing other parameters of conten-type header
+    pdict: dictionary containing other parameters of content-type header
 
     Returns a dictionary just like parse_qs(): keys are the field names, each
     value is a list of values for that field.  This is easy to use but not
@@ -332,7 +336,7 @@ def parse_header(line):
     Return the main content-type and a dictionary of options.
 
     """
-    plist = map(lambda x: x.strip(), line.split(';'))
+    plist = [x.strip() for x in line.split(';')]
     key = plist.pop(0).lower()
     pdict = {}
     for p in plist:
@@ -571,7 +575,7 @@ class FieldStorage:
         if key in self:
             value = self[key]
             if type(value) is type([]):
-                return map(lambda v: v.value, value)
+                return map(attrgetter('value'), value)
             else:
                 return value.value
         else:
@@ -593,7 +597,7 @@ class FieldStorage:
         if key in self:
             value = self[key]
             if type(value) is type([]):
-                return map(lambda v: v.value, value)
+                return map(attrgetter('value'), value)
             else:
                 return [value.value]
         else:
@@ -1045,7 +1049,9 @@ environment as well.  Here are some common variable names:
 # =========
 
 def escape(s, quote=None):
-    """Replace special characters '&', '<' and '>' by SGML entities."""
+    '''Replace special characters "&", "<" and ">" to HTML-safe sequences.
+    If the optional flag quote is true, the quotation mark character (")
+    is also translated.'''
     s = s.replace("&", "&amp;") # Must be done first!
     s = s.replace("<", "&lt;")
     s = s.replace(">", "&gt;")

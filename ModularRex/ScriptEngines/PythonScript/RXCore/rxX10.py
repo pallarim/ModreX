@@ -157,6 +157,7 @@ class X10Connection:
 # - Mother class for all X10 object classes
 class X10Actor(rxactor.Actor):
 
+    @staticmethod
     def GetScriptClassName():
         return "rxX10.X10Actor"
         

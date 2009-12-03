@@ -27,6 +27,7 @@ class Actor(rxlslobject.LSLObject):
     #    #print "DELETING ACTOR!"
     #    #super(self.__class__, self).__del__()
 
+    @staticmethod
     def GetScriptClassName():
         return "rxactor.Actor"
 
@@ -109,8 +110,8 @@ class Actor(rxlslobject.LSLObject):
     def rexSetTextureMediaURL(self, url):
         return self.MyWorld.CS.rexSetTextureMediaURL(url)
 
-    def rexSetTextureMediaURL(self, url, refreshRate):
-        return self.MyWorld.CS.rexSetTextureMediaURL(url, refreshRate)
+#    def rexSetTextureMediaURL(self, url, refreshRate):
+#        return self.MyWorld.CS.rexSetTextureMediaURL(url, refreshRate)
 
     def rexAddInitialPreloadAssets(self,vAssetList):
         self.MyWorld.CS.rexAddInitialPreloadAssets(vAssetList)

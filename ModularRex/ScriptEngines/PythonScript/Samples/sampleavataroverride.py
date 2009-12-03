@@ -8,6 +8,7 @@ import math
 
 
 class AO(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavataroverride.AO"
 

@@ -23,6 +23,7 @@ import math
 
 # All effects in one class.
 class ClientScripting(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclientscripting.ClientScripting"
 
@@ -104,6 +105,7 @@ class ClientScripting(rxactor.Actor):
         
 # Senses, blind
 class BlindTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclientscripting.BlindTest"
 
@@ -127,6 +129,7 @@ class BlindTest(rxactor.Actor):
 
 # Senses, deaf
 class DeafTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclientscripting.DeafTest"
 
@@ -143,6 +146,7 @@ class DeafTest(rxactor.Actor):
 
 # Senses, mute
 class MuteTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclientscripting.MuteTest"
 
@@ -160,6 +164,7 @@ class MuteTest(rxactor.Actor):
         
 # More info about an object by touching it.
 class ArmChair(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclientscripting.ArmChair"
     

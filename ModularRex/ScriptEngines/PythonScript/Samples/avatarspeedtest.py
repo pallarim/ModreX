@@ -4,6 +4,7 @@ import clr
 
 
 class Test(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "avatarspeedtest.Test"
 

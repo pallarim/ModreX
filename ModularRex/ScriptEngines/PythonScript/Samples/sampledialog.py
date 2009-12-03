@@ -12,6 +12,7 @@ import math
 
 
 class DialogActor(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampledialog.DialogActor"
 

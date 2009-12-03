@@ -11,6 +11,7 @@ import math
 
 
 class RayTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleraycast.RayTest"
 

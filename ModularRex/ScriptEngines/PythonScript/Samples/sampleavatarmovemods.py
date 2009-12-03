@@ -4,6 +4,7 @@ import clr
 
 
 class WalkDisabler(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarmovemods.WalkDisabler"
 
@@ -18,6 +19,7 @@ class WalkDisabler(rxactor.Actor):
         self.llShout(0,"Your walkdisabled is set to:"+str(curvalue))
 
 class FlyDisabler(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarmovemods.FlyDisabler"
 

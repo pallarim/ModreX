@@ -7,6 +7,7 @@ asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
 Vector3 = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3
 
 class SayHello(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplevolumetrigger.SayHello"
 

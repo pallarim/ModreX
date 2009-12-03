@@ -9,6 +9,11 @@ using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Scripting;
 using OpenMetaverse;
 using Nini.Config;
+using Microsoft.Scripting;
+using Microsoft.Scripting.Hosting;
+using IronPython.Hosting;
+using IronPython.Runtime;
+
 
 namespace ModularRex.RexParts.RexPython
 {
@@ -20,11 +25,12 @@ namespace ModularRex.RexParts.RexPython
         internal RexEventManager m_EventManager;
 
         private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private IronPython.Hosting.PythonEngine mPython = null;
+        private ScriptEngine m_pyEng = null;
+        private ScriptScope m_defaultScope = null;
         private bool m_PythonEnabled;
         private bool m_EngineStarted;
         private ModrexObjects m_rexObjects;
-
+        
         public RexScriptEngine()
         {
         }
@@ -104,27 +110,25 @@ namespace ModularRex.RexParts.RexPython
             {
                 Log.InfoFormat("[RexScriptEngine]: IronPython init");
                 m_EngineStarted = false;
-                bool bNewEngine = true;
+                bool bNewEngine = false;
 
-                if (mPython == null)
+                if (m_pyEng == null)
                 {
-                    IronPython.Hosting.EngineOptions engineOptions = new IronPython.Hosting.EngineOptions();
-                    engineOptions.ClrDebuggingEnabled = false;
-                    IronPython.Compiler.Options.Verbose = false;
-                    IronPython.Compiler.Options.GenerateModulesAsSnippets = true;
-                    mPython = new IronPython.Hosting.PythonEngine(engineOptions);
+                    m_pyEng = Python.CreateEngine();
+                    m_defaultScope = m_pyEng.CreateScope();
                 }
-                else
-                    bNewEngine = false;
+                //else
+                //    bNewEngine = false;
 
                 // Add script folder paths to python path
-                mPython.AddToPath(AppDomain.CurrentDomain.BaseDirectory);
+                ICollection<string> paths = m_pyEng.GetSearchPaths();
+                paths.Add(AppDomain.CurrentDomain.BaseDirectory);
 
                 string rexdlldir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ScriptEngines");
-                mPython.AddToPath(rexdlldir);
+                paths.Add(rexdlldir);
 
                 string PytProjectPath = Path.Combine(rexdlldir, "PythonScript");
-                mPython.AddToPath(PytProjectPath);
+                paths.Add(PytProjectPath);
 
                 DirectoryInfo TempDirInfo = new DirectoryInfo(@PytProjectPath);
                 DirectoryInfo[] dirs = TempDirInfo.GetDirectories("*.*");
@@ -132,13 +136,17 @@ namespace ModularRex.RexParts.RexPython
                 foreach (DirectoryInfo dir in dirs)
                 {
                     TempPath = Path.Combine(PytProjectPath, dir.Name);
-                    mPython.AddToPath(TempPath);
+                    paths.Add(TempPath);
                 }
                 String PytLibPath = Path.Combine(rexdlldir, "Lib");
-                mPython.AddToPath(PytLibPath);
+                paths.Add(PytLibPath);
 
+                m_pyEng.SetSearchPaths(paths);
+                                
                 // Import Core and init
-                mPython.Execute("from RXCore import *"); 
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString("from RXCore import *",SourceCodeKind.Statements);
+                source.Execute(m_defaultScope);
                 if (!bNewEngine)
                 {
                     ExecutePythonStartCommand("reload(rxlslobject)");
@@ -150,10 +158,14 @@ namespace ModularRex.RexParts.RexPython
                     ExecutePythonStartCommand("reload(rxworld)");
                     ExecutePythonStartCommand("reload(rxworldinfo)");                    
                     ExecutePythonStartCommand("reload(rxtimer)");                       
-                    ExecutePythonStartCommand("reload(rxX10)");              
+                    ExecutePythonStartCommand("reload(rxX10)");
                 }
-                mPython.Globals.Add("objCSharp", mCSharp);
-                mPython.ExecuteFile(PytProjectPath + "/RXCore/rxmain.py"); // tucofixme, possible error with path???
+
+                m_defaultScope.SetVariable("objCSharp", mCSharp);              
+                m_pyEng.Runtime.LoadAssembly(typeof(String).Assembly); // Add reference to System 
+                m_pyEng.Runtime.LoadAssembly(typeof(Uri).Assembly); // Add reference to mscorlib 
+                source = m_pyEng.CreateScriptSourceFromFile(PytProjectPath + "/RXCore/rxmain.py");
+                source.Execute(m_defaultScope);
 
                 // Import other packages
                 foreach (DirectoryInfo dir in dirs)
@@ -164,7 +176,8 @@ namespace ModularRex.RexParts.RexPython
                         continue;
                     else
                     {
-                        mPython.Execute("from " + dir.Name + " import *");
+                        source = m_pyEng.CreateScriptSourceFromString("from " + dir.Name + " import *", SourceCodeKind.SingleStatement);
+                        source.Execute(m_defaultScope);
                         if (!bNewEngine)
                         {
                             FileInfo[] files = dir.GetFiles("*.py");
@@ -278,14 +291,14 @@ namespace ModularRex.RexParts.RexPython
              
                 // start script thread
                 m_EngineStarted = true;
-                mPython.Execute("StartMainThread()");
+                source = m_pyEng.CreateScriptSourceFromString("StartMainThread()", SourceCodeKind.SingleStatement);
+                source.Execute(m_defaultScope);
             }
             catch (Exception e)
             {
                 Log.WarnFormat("[RexScriptEngine]: Python init exception: " + e.ToString());
             }
         }
-
 
         public void RestartPythonEngine()
         {
@@ -298,8 +311,8 @@ namespace ModularRex.RexParts.RexPython
             try
             {
                 Log.InfoFormat("[RexScriptEngine]: Restart");
-                // ShutDownPythonEngine();
-                mPython.Execute("StopMainThread()");
+                ShutDownPythonEngine();
+
                 GC.Collect();
                 GC.WaitForPendingFinalizers(); // tucofixme, blocking???
                 StartPythonEngine();
@@ -318,7 +331,9 @@ namespace ModularRex.RexParts.RexPython
                 return;
             try
             {
-                mPython.Execute(vCommand);
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString(vCommand, SourceCodeKind.Statements);
+                source.Execute(m_defaultScope);
             }
             catch (Exception e)
             {
@@ -330,7 +345,9 @@ namespace ModularRex.RexParts.RexPython
         {
             try
             {
-                mPython.Execute(vCommand);
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString(vCommand, SourceCodeKind.Statements);
+                source.Execute(m_defaultScope);
             }
             catch (Exception e)
             {
@@ -343,7 +360,9 @@ namespace ModularRex.RexParts.RexPython
         {
             try
             {
-                return mPython.Evaluate(vCommand);
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString(vCommand, SourceCodeKind.Statements);
+                return source.Execute(m_defaultScope);
             }
             catch (Exception e)
             {
@@ -352,15 +371,14 @@ namespace ModularRex.RexParts.RexPython
             return null;
         }
 
-
-
-
-
         public void CreateActorToPython(string vLocalId, string vPythonClassName, string vPythonTag)
         {
             try
             {
-                mPython.Execute("CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")");
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString("CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")", SourceCodeKind.Statements);
+                Log.InfoFormat("[RexScriptEngine]: CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")");
+                source.Execute(m_defaultScope);
             }
             catch (Exception)
             {
@@ -369,7 +387,9 @@ namespace ModularRex.RexParts.RexPython
                     if (vPythonClassName.Length > 0)
                         Log.WarnFormat("[RexScriptEngine]: Could not load class:" + vPythonClassName);
 
-                    mPython.Execute("CreateActorOfClass(" + vLocalId + ",rxactor.Actor,\"\")");
+                    ScriptSource source = null;
+                    source = m_pyEng.CreateScriptSourceFromString("CreateActorOfClass(" + vLocalId + ",rxactor.Actor,\"\")", SourceCodeKind.Statements);
+                    source.Execute(m_defaultScope);
                 }
                 catch (Exception)
                 {
@@ -391,12 +411,14 @@ namespace ModularRex.RexParts.RexPython
 
         private void ShutDownPythonEngine()
         {
-            if (mPython != null)
+            if (m_pyEng != null)
             {
-                mPython.Execute("StopMainThread()");
-                mPython.Shutdown();
-                mPython.Dispose();
-                mPython = null;
+                ScriptSource source = null;
+                source = m_pyEng.CreateScriptSourceFromString("StopMainThread()", SourceCodeKind.Statements);
+                source.Execute(m_defaultScope);
+                m_pyEng.Runtime.Shutdown();
+                m_pyEng = null;
+                m_defaultScope = null;
             }
         }
 

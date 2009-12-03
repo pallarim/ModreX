@@ -76,10 +76,14 @@
       </Configuration>
 
 	 <ReferencePath>../../../bin/</ReferencePath>
+         <ReferencePath>bin/</ReferencePath>
 	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="ModularRex.NHibernate"/>
-	 <Reference name="IronMath.dll" />
-	 <Reference name="IronPython.dll" />
+	 <Reference name="IronPython.dll" localCopy="true"/>
+      <Reference name="IronPython.Modules.dll" localCopy="true"/>
+	  <Reference name="Microsoft.Scripting.dll" localCopy="true"/>
+	  <Reference name="Microsoft.Scripting.Core.dll" localCopy="true"/>
+	  <Reference name="Microsoft.Scripting.ExtensionAttribute.dll" localCopy="true"/>
 	 <Reference name="log4net.dll"/>
 	 <Reference name="Nini.dll" />
 	 <Reference name="OpenMetaverse.dll"/>

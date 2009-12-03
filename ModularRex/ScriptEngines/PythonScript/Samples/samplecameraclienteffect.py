@@ -11,6 +11,7 @@ import math
 
 
 class CameraEffect(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplecameraclienteffect.CameraEffect"
 

@@ -15,7 +15,7 @@ from collections import deque
 # Rename some stuff so "from threading import *" is safe
 __all__ = ['activeCount', 'Condition', 'currentThread', 'enumerate', 'Event',
            'Lock', 'RLock', 'Semaphore', 'BoundedSemaphore', 'Thread',
-           'Timer', 'setprofile', 'settrace', 'local']
+           'Timer', 'setprofile', 'settrace', 'local', 'stack_size']
 
 _start_new_thread = thread.start_new_thread
 _allocate_lock = thread.allocate_lock
@@ -85,9 +85,10 @@ class _RLock(_Verbose):
         self.__count = 0
 
     def __repr__(self):
+        owner = self.__owner
         return "<%s(%s, %d)>" % (
                 self.__class__.__name__,
-                self.__owner and self.__owner.getName(),
+                owner and owner.getName(),
                 self.__count)
 
     def acquire(self, blocking=1):
@@ -108,9 +109,11 @@ class _RLock(_Verbose):
                 self._note("%s.acquire(%s): failure", self, blocking)
         return rc
 
+    __enter__ = acquire
+
     def release(self):
-        me = currentThread()
-        assert self.__owner is me, "release() of un-acquire()d lock"
+        if self.__owner is not currentThread():
+            raise RuntimeError("cannot release un-aquired lock")
         self.__count = count = self.__count - 1
         if not count:
             self.__owner = None
@@ -120,6 +123,9 @@ class _RLock(_Verbose):
         else:
             if __debug__:
                 self._note("%s.release(): non-final release", self)
+
+    def __exit__(self, t, v, tb):
+        self.release()
 
     # Internal methods used by condition variables
 
@@ -174,6 +180,12 @@ class _Condition(_Verbose):
             pass
         self.__waiters = []
 
+    def __enter__(self):
+        return self.__lock.__enter__()
+
+    def __exit__(self, *args):
+        return self.__lock.__exit__(*args)
+
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
@@ -193,7 +205,8 @@ class _Condition(_Verbose):
             return True
 
     def wait(self, timeout=None):
-        assert self._is_owned(), "wait() of un-acquire()d lock"
+        if not self._is_owned():
+            raise RuntimeError("cannot wait on un-aquired lock")
         waiter = _allocate_lock()
         waiter.acquire()
         self.__waiters.append(waiter)
@@ -234,7 +247,8 @@ class _Condition(_Verbose):
             self._acquire_restore(saved_state)
 
     def notify(self, n=1):
-        assert self._is_owned(), "notify() of un-acquire()d lock"
+        if not self._is_owned():
+            raise RuntimeError("cannot notify on un-aquired lock")
         __waiters = self.__waiters
         waiters = __waiters[:n]
         if not waiters:
@@ -262,7 +276,8 @@ class _Semaphore(_Verbose):
     # After Tim Peters' semaphore class, but not quite the same (no maximum)
 
     def __init__(self, value=1, verbose=None):
-        assert value >= 0, "Semaphore initial value must be >= 0"
+        if value < 0:
+            raise ValueError("semaphore initial value must be >= 0")
         _Verbose.__init__(self, verbose)
         self.__cond = Condition(Lock())
         self.__value = value
@@ -286,6 +301,8 @@ class _Semaphore(_Verbose):
         self.__cond.release()
         return rc
 
+    __enter__ = acquire
+
     def release(self):
         self.__cond.acquire()
         self.__value = self.__value + 1
@@ -294,6 +311,9 @@ class _Semaphore(_Verbose):
                        self, self.__value)
         self.__cond.notify()
         self.__cond.release()
+
+    def __exit__(self, t, v, tb):
+        self.release()
 
 
 def BoundedSemaphore(*args, **kwargs):
@@ -358,7 +378,7 @@ def _newname(template="Thread-%d"):
 
 # Active thread administration
 _active_limbo_lock = _allocate_lock()
-_active = {}
+_active = {}    # maps thread id to Thread object
 _limbo = {}
 
 
@@ -374,9 +394,11 @@ class Thread(_Verbose):
     __exc_info = _sys.exc_info
 
     def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs={}, verbose=None):
+                 args=(), kwargs=None, verbose=None):
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
+        if kwargs is None:
+            kwargs = {}
         self.__target = target
         self.__name = str(name or _newname())
         self.__args = args
@@ -406,8 +428,10 @@ class Thread(_Verbose):
         return "<%s(%s, %s)>" % (self.__class__.__name__, self.__name, status)
 
     def start(self):
-        assert self.__initialized, "Thread.__init__() not called"
-        assert not self.__started, "thread already started"
+        if not self.__initialized:
+            raise RuntimeError("thread.__init__() not called")
+        if self.__started:
+            raise RuntimeError("thread already started")
         if __debug__:
             self._note("%s.start(): starting thread", self)
         _active_limbo_lock.acquire()
@@ -422,6 +446,26 @@ class Thread(_Verbose):
             self.__target(*self.__args, **self.__kwargs)
 
     def __bootstrap(self):
+        # Wrapper around the real bootstrap code that ignores
+        # exceptions during interpreter cleanup.  Those typically
+        # happen when a daemon thread wakes up at an unfortunate
+        # moment, finds the world around it destroyed, and raises some
+        # random exception *** while trying to report the exception in
+        # __bootstrap_inner() below ***.  Those random exceptions
+        # don't help anybody, and they confuse users, so we suppress
+        # them.  We suppress them only when it appears that the world
+        # indeed has already been destroyed, so that exceptions in
+        # __bootstrap_inner() during normal business hours are properly
+        # reported.  Also, we only suppress them for daemonic threads;
+        # if a non-daemonic encounters this, something else is wrong.
+        try:
+            self.__bootstrap_inner()
+        except:
+            if self.__daemonic and _sys is None:
+                return
+            raise
+
+    def __bootstrap_inner(self):
         try:
             self.__started = True
             _active_limbo_lock.acquire()
@@ -480,11 +524,17 @@ class Thread(_Verbose):
                 if __debug__:
                     self._note("%s.__bootstrap(): normal return", self)
         finally:
-            self.__stop()
+            _active_limbo_lock.acquire()
             try:
-                self.__delete()
-            except:
-                pass
+                self.__stop()
+                try:
+                    # We don't call self.__delete() because it also
+                    # grabs _active_limbo_lock.
+                    del _active[_get_ident()]
+                except:
+                    pass
+            finally:
+                _active_limbo_lock.release()
 
     def __stop(self):
         self.__block.acquire()
@@ -527,9 +577,13 @@ class Thread(_Verbose):
             _active_limbo_lock.release()
 
     def join(self, timeout=None):
-        assert self.__initialized, "Thread.__init__() not called"
-        assert self.__started, "cannot join thread before it is started"
-        assert self is not currentThread(), "cannot join current thread"
+        if not self.__initialized:
+            raise RuntimeError("Thread.__init__() not called")
+        if not self.__started:
+            raise RuntimeError("cannot join thread before it is started")
+        if self is currentThread():
+            raise RuntimeError("cannot join current thread")
+
         if __debug__:
             if not self.__stopped:
                 self._note("%s.join(): waiting until thread stops", self)
@@ -572,8 +626,10 @@ class Thread(_Verbose):
         return self.__daemonic
 
     def setDaemon(self, daemonic):
-        assert self.__initialized, "Thread.__init__() not called"
-        assert not self.__started, "cannot set daemon status of active thread"
+        if not self.__initialized:
+            raise RuntimeError("Thread.__init__() not called")
+        if self.__started:
+            raise RuntimeError("cannot set daemon status of active thread");
         self.__daemonic = daemonic
 
 # The timer class was contributed by Itamar Shtull-Trauring
@@ -618,13 +674,11 @@ class _MainThread(Thread):
         _active_limbo_lock.acquire()
         _active[_get_ident()] = self
         _active_limbo_lock.release()
-        import atexit
-        atexit.register(self.__exitfunc)
 
     def _set_daemon(self):
         return False
 
-    def __exitfunc(self):
+    def _exitfunc(self):
         self._Thread__stop()
         t = _pickSomeNonDaemonThread()
         if t:
@@ -645,8 +699,9 @@ def _pickSomeNonDaemonThread():
 
 
 # Dummy thread class to represent threads not started here.
-# These aren't garbage collected when they die,
-# nor can they be waited for.
+# These aren't garbage collected when they die, nor can they be waited for.
+# If they invoke anything in threading.py that calls currentThread(), they
+# leave an entry in the _active dict forever after.
 # Their purpose is to return *something* from currentThread().
 # They are marked as daemon threads so we won't wait for them
 # when we exit (conform previous semantics).
@@ -655,6 +710,12 @@ class _DummyThread(Thread):
 
     def __init__(self):
         Thread.__init__(self, name=_newname("Dummy-%d"))
+
+        # Thread.__block consumes an OS-level locking primitive, which
+        # can never be used by a _DummyThread.  Since a _DummyThread
+        # instance is immortal, that's bad, so release this resource.
+        del self._Thread__block
+
         self._Thread__started = True
         _active_limbo_lock.acquire()
         _active[_get_ident()] = self
@@ -688,9 +749,13 @@ def enumerate():
     _active_limbo_lock.release()
     return active
 
-# Create the main thread object
+from thread import stack_size
 
-_MainThread()
+# Create the main thread object,
+# and make it available for the interpreter
+# (Py_Main) as threading._shutdown.
+
+_shutdown = _MainThread()._exitfunc
 
 # get thread-local implementation, either from the thread
 # module, or from the python fallback

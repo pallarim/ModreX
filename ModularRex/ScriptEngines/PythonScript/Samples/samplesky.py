@@ -6,6 +6,7 @@ import math
 import clr
 
 class Sky(rxworldinfo.WorldInfo):
+    @staticmethod
     def GetScriptClassName():
         return "samplesky.Sky"
 

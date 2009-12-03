@@ -8,6 +8,7 @@ import math
 
 
 class CViewport(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleviewport.CViewport"
 

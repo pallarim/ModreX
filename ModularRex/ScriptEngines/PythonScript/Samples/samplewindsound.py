@@ -6,6 +6,7 @@ import clr
 asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
 
 class WindSound(rxactor.Actor):
+	@staticmethod
 	def GetScriptClassName():
 		return "samplewindsound.WindSound"
 

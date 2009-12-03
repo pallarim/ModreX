@@ -11,6 +11,7 @@ import math
 
 
 class AllHere(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "avatarutils.AllHere"
 

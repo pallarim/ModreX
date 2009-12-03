@@ -8,6 +8,7 @@ import math
 
 
 class MediaUrlTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplemediaurl.MediaUrlTest"
 

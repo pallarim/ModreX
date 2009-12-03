@@ -11,6 +11,7 @@ import math
 
 
 class Test(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "testobject.Test"
 

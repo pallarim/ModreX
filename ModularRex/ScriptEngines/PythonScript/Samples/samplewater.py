@@ -8,6 +8,7 @@ import math
 
 
 class Water(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplewater.Water"
 

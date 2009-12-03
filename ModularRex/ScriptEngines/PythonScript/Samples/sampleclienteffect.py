@@ -11,6 +11,7 @@ import math
 
 
 class EffectTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleclienteffect.EffectTest"
 

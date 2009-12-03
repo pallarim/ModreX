@@ -8,6 +8,7 @@ import math
 
 
 class Fog(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplefog.Fog"
 

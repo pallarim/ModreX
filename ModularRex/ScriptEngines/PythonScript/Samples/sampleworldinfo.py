@@ -9,6 +9,7 @@ asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
 Vector3 = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3
 
 class WI(rxworldinfo.WorldInfo):
+    @staticmethod
     def GetScriptClassName():
         return "sampleworldinfo.WI"
 

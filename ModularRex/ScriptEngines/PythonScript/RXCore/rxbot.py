@@ -6,6 +6,7 @@ import clr
 import rxavatar
 
 class Bot(rxavatar.Avatar):
+    @staticmethod
     def GetScriptClassName():
         return "rxbot.Bot"
     

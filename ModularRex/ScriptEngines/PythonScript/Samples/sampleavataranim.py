@@ -8,6 +8,7 @@ import math
 
 
 class AnimTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavataranim.AnimTest"
 

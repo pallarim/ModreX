@@ -9,6 +9,7 @@ import math
 # This tests a primitive with a mesh and an animation named Wave.
 # For avatar animation see sampleavataranim.py
 class AnimTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplemeshanim.AnimTest"
 

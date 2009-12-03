@@ -6,6 +6,7 @@ import clr
 asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
 
 class SoundTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplesound.SoundTest"
 

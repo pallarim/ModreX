@@ -14,6 +14,7 @@ import math
 
 # Rotate avatar relatively 90 degrees right
 class RotRight(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarrotate.RotRight"
 
@@ -29,6 +30,7 @@ class RotRight(rxactor.Actor):
 
 # Rotate north, south, east,west
 class RotMainDirs(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarrotate.RotMainDirs"
 
@@ -60,6 +62,7 @@ class RotMainDirs(rxactor.Actor):
         
 # Rotate avatar towards this object
 class RotTowardsMe(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarrotate.RotTowardsMe"
 

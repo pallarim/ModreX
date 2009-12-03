@@ -7,6 +7,7 @@ import math
 
 
 class MorphTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarmorph.MorphTest"
 
@@ -28,6 +29,7 @@ class MorphTest(rxactor.Actor):
 
 
 class MasterModifierTest(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "sampleavatarmorph.MasterModifierTest"
 

@@ -1,4 +1,4 @@
-r"""OS routines for Mac, DOS, NT, or Posix depending on what system we're on.
+r"""OS routines for Mac, NT, or Posix depending on what system we're on.
 
 This exports:
   - all functions from posix, nt, os2, mac, or ce, e.g. unlink, stat, etc.
@@ -23,13 +23,14 @@ and opendir), and leave all pathname manipulation to os.path
 
 #'
 
-import sys
+import sys, errno
 
 _names = sys.builtin_module_names
 
 # Note:  more names are added to __all__ later.
 __all__ = ["altsep", "curdir", "pardir", "sep", "pathsep", "linesep",
-           "defpath", "name", "path", "devnull"]
+           "defpath", "name", "path", "devnull",
+           "SEEK_SET", "SEEK_CUR", "SEEK_END"]
 
 def _get_exports_list(module):
     try:
@@ -135,6 +136,12 @@ from os.path import (curdir, pardir, sep, pathsep, defpath, extsep, altsep,
 
 del _names
 
+# Python uses fixed values for the SEEK_ constants; they are mapped
+# to native constants if necessary in posixmodule.c
+SEEK_SET = 0
+SEEK_CUR = 1
+SEEK_END = 2
+
 #'
 
 # Super directory utilities.
@@ -153,7 +160,12 @@ def makedirs(name, mode=0777):
     if not tail:
         head, tail = path.split(head)
     if head and tail and not path.exists(head):
-        makedirs(head, mode)
+        try:
+            makedirs(head, mode)
+        except OSError, e:
+            # be happy if someone already created the path
+            if e.errno != errno.EEXIST:
+                raise
         if tail == curdir:           # xxx/newdir/. exists if xxx/newdir exists
             return
     mkdir(name, mode)
@@ -161,7 +173,7 @@ def makedirs(name, mode=0777):
 def removedirs(name):
     """removedirs(path)
 
-    Super-rmdir; remove a leaf directory and empty all intermediate
+    Super-rmdir; remove a leaf directory and all empty intermediate
     ones.  Works like rmdir except that, if the leaf directory is
     successfully removed, directories corresponding to rightmost path
     segments will be pruned away until either the whole path is
@@ -352,8 +364,6 @@ def execvpe(file, args, env):
 __all__.extend(["execl","execle","execlp","execlpe","execvp","execvpe"])
 
 def _execvpe(file, args, env=None):
-    from errno import ENOENT, ENOTDIR
-
     if env is not None:
         func = execve
         argrest = (args, env)
@@ -379,7 +389,7 @@ def _execvpe(file, args, env=None):
             func(fullname, *argrest)
         except error, e:
             tb = sys.exc_info()[2]
-            if (e.errno != ENOENT and e.errno != ENOTDIR
+            if (e.errno != errno.ENOENT and e.errno != errno.ENOTDIR
                 and saved_exc is None):
                 saved_exc = e
                 saved_tb = tb
@@ -716,7 +726,7 @@ if not _exists("urandom"):
         """
         try:
             _urandomfd = open("/dev/urandom", O_RDONLY)
-        except:
+        except (OSError, IOError):
             raise NotImplementedError("/dev/urandom (or equivalent) not found")
         bytes = ""
         while len(bytes) < n:

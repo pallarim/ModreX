@@ -1,4 +1,4 @@
-# Copyright 2001-2005 by Vinay Sajip. All Rights Reserved.
+# Copyright 2001-2007 by Vinay Sajip. All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose and without fee is hereby granted,
@@ -22,7 +22,7 @@ Apache's log4j system.
 Should work under Python versions >= 1.5.2, except that source line
 information is not available unless 'sys._getframe()' is.
 
-Copyright (C) 2001-2004 Vinay Sajip. All Rights Reserved.
+Copyright (C) 2001-2007 Vinay Sajip. All Rights Reserved.
 
 To use, simply 'import logging' and log away!
 """
@@ -229,13 +229,16 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             #         Days to rollover is 6 - 5 + 3, or 4.  In this case, it's the
             #         number of days left in the current week (1) plus the number
             #         of days in the next week until the rollover day (3).
+            # The calculations described in 2) and 3) above need to have a day added.
+            # This is because the above time calculation takes us to midnight on this
+            # day, i.e. the start of the next day.
             if when.startswith('W'):
                 day = t[6] # 0 is Monday
-                if day > self.dayOfWeek:
-                    daysToWait = (day - self.dayOfWeek) - 1
-                    self.rolloverAt = self.rolloverAt + (daysToWait * (60 * 60 * 24))
-                if day < self.dayOfWeek:
-                    daysToWait = (6 - self.dayOfWeek) + day
+                if day != self.dayOfWeek:
+                    if day < self.dayOfWeek:
+                        daysToWait = self.dayOfWeek - day
+                    else:
+                        daysToWait = 6 - day + self.dayOfWeek + 1
                     self.rolloverAt = self.rolloverAt + (daysToWait * (60 * 60 * 24))
 
         #print "Will rollover at %d, %d seconds from now" % (self.rolloverAt, self.rolloverAt - currentTime)
@@ -562,11 +565,24 @@ class SysLogHandler(logging.Handler):
         "local7":   LOG_LOCAL7,
         }
 
+    #The map below appears to be trivially lowercasing the key. However,
+    #there's more to it than meets the eye - in some locales, lowercasing
+    #gives unexpected results. See SF #1524081: in the Turkish locale,
+    #"INFO".lower() != "info"
+    priority_map = {
+        "DEBUG" : "debug",
+        "INFO" : "info",
+        "WARNING" : "warning",
+        "ERROR" : "error",
+        "CRITICAL" : "critical"
+    }
+
     def __init__(self, address=('localhost', SYSLOG_UDP_PORT), facility=LOG_USER):
         """
         Initialize a handler.
 
-        If address is specified as a string, UNIX socket is used.
+        If address is specified as a string, a UNIX socket is used. To log to a
+        local syslogd, "SysLogHandler(address="/dev/log")" can be used.
         If facility is not specified, LOG_USER is used.
         """
         logging.Handler.__init__(self)
@@ -574,11 +590,11 @@ class SysLogHandler(logging.Handler):
         self.address = address
         self.facility = facility
         if type(address) == types.StringType:
-            self._connect_unixsocket(address)
             self.unixsocket = 1
+            self._connect_unixsocket(address)
         else:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.unixsocket = 0
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.formatter = None
 
@@ -598,7 +614,7 @@ class SysLogHandler(logging.Handler):
     #   necessary.
     log_format_string = '<%d>%s\000'
 
-    def encodePriority (self, facility, priority):
+    def encodePriority(self, facility, priority):
         """
         Encode the facility and priority. You can pass in strings or
         integers - if strings are passed, the facility_names and
@@ -619,6 +635,16 @@ class SysLogHandler(logging.Handler):
             self.socket.close()
         logging.Handler.close(self)
 
+    def mapPriority(self, levelName):
+        """
+        Map a logging level name to a key in the priority_names map.
+        This is useful in two scenarios: when custom levels are being
+        used, and in the case where you can't do a straightforward
+        mapping by lowercasing the logging level name because of locale-
+        specific issues (see SF #1524081).
+        """
+        return self.priority_map.get(levelName, "warning")
+
     def emit(self, record):
         """
         Emit a record.
@@ -633,8 +659,8 @@ class SysLogHandler(logging.Handler):
         """
         msg = self.log_format_string % (
             self.encodePriority(self.facility,
-                                string.lower(record.levelname)),
-            msg)
+                                self.mapPriority(record.levelname)),
+                                msg)
         try:
             if self.unixsocket:
                 try:

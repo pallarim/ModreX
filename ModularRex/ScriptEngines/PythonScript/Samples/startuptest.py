@@ -4,6 +4,7 @@ import clr
 
 
 class A(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "startuptest.A"
 
@@ -14,7 +15,7 @@ class A(rxactor.Actor):
 
     def EventDestroyed(self):
         self.MyWorld.MyEventManager.onClientStartup -= self.HandleOnClientStartup
-		
+
     def HandleOnClientStartup(self,vAvatar,vStatus):
         try:
             self.llShout(0,"Startup event recived from avatar "+str(vAvatar)+ " and status is "+str(vStatus))

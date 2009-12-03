@@ -11,6 +11,7 @@ import math
 
 
 class RttCam(rxactor.Actor):
+    @staticmethod
     def GetScriptClassName():
         return "samplertt.RttCam"
 

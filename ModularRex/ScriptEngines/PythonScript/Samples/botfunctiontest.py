@@ -20,6 +20,7 @@ class Test(rxactor.Actor):
         self.log = logAsm.log4net.LogManager.GetLogger(type(MethodBase.GetCurrentMethod().DeclaringType))
         super(Test, self).__init__(vId)
 
+    @staticmethod
     def GetScriptClassName():
         return "botfunctiontest.Test"
 
@@ -93,7 +94,7 @@ class Test(rxactor.Actor):
         
         #Don't check z axis. terrain can have height differences
 
-        return true
+        return True
 
     #BotWalkTo
     def Test1(self):
