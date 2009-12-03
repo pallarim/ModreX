@@ -15,7 +15,7 @@ using OpenSim.Framework.Communications.Cache;
 
 namespace ModularRex.RexParts
 {
-    public class ModrexObjects : IRegionModule, IRexObjectPropertiesEventManager 
+    public class ModrexObjects : IRegionModule, IRexObjectPropertiesEventManager, IModrexObjectsProvider
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -34,6 +34,7 @@ namespace ModularRex.RexParts
             m_scenes.Add(scene);
 
             scene.RegisterModuleInterface<ModrexObjects>(this);
+            scene.RegisterModuleInterface<IModrexObjectsProvider>(this);
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.SceneContents.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
             scene.SceneContents.OnObjectRemove += SceneGraph_OnObjectRemove;
