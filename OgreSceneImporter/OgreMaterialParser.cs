@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using OpenSim.Region.Framework.Scenes;
 using OpenMetaverse;
 using OpenSim.Framework;
+using log4net;
+using System.Reflection;
 
 namespace OgreSceneImporter
 {
     public class OgreMaterialParser
     {
+        private static readonly ILog m_log
+            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private Scene m_scene = null;
 
         public OgreMaterialParser(Scene scene)
@@ -28,9 +32,32 @@ namespace OgreSceneImporter
                 if (line.StartsWith("material"))
                 {
                     string[] matStrParts = line.Split(' ');
+                    string materialName = String.Empty;
                     if (matStrParts.Length > 2)
-                        Console.WriteLine("more than two parts in material name");
-                    string materialName = matStrParts[1];
+                    {
+                        if (matStrParts[1].StartsWith("\""))
+                        {
+                            //combine rest of the parts together
+                            for (int i = 1; i < matStrParts.Length; i++)
+                            {
+                                materialName += matStrParts[i];
+                                if (i < matStrParts.Length - 1)
+                                    materialName += " ";
+                            }
+                            //and remove the quotes from it
+                            materialName = materialName.Replace("\"", "");
+                        }
+                        else
+                        {
+                            m_log.ErrorFormat("Could not parse material name from malformed material file line \"{0}\"", line);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        materialName = matStrParts[1];
+                    }
+                    
                     UUID materialID = UUID.Random();
                     materialUUIDs.Add(materialName, materialID);
                     StringBuilder material = new StringBuilder();
@@ -48,9 +75,32 @@ namespace OgreSceneImporter
                         if (tempLine.StartsWith("texture "))
                         {
                             string[] tempLineParts = tempLine.Split(' ');
+                            string textName = String.Empty;
                             if (tempLineParts.Length > 2)
-                                Console.WriteLine("more than two parts in texture");
-                            string textName = tempLineParts[1];
+                            {
+                                if (tempLineParts[1].StartsWith("\""))
+                                {
+                                    //combine rest of the parts together
+                                    for (int i = 1; i < tempLineParts.Length; i++)
+                                    {
+                                        textName += tempLineParts[i];
+                                        if (i < tempLineParts.Length - 1)
+                                            textName += " ";
+                                    }
+                                    //and remove the quotes from it
+                                    textName = textName.Replace("\"", "");
+                                }
+                                else
+                                {
+                                    m_log.ErrorFormat("Could not parse texture name from malformed material file line \"{0}\"", line);
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                textName = tempLineParts[1];
+                            }
+                            
                             UUID textUUID;
                             if (!textureUUIDs.ContainsKey(textName))
                             {

@@ -583,7 +583,7 @@ namespace OgreSceneImporter
             }
             catch (Exception e)
             {
-                //LogManager.Singleton.LogMessage("[DotSceneLoader] Error loading an entity!" + e.Message);
+                m_log.Error("[DotSceneLoader] Error loading an entity!" + e.Message);
             }
 
         }
