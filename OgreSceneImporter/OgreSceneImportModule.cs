@@ -20,6 +20,7 @@ namespace OgreSceneImporter
 
         private Scene m_scene;
         private float m_objectImportScale = 1.0f;
+        private Vector3 m_offset = Vector3.Zero;
 
         #region IRegionModule Members
 
@@ -63,6 +64,26 @@ namespace OgreSceneImporter
                             break;
                         case "setscale":
                             SetScale(cmdparams[2]);
+                            break;
+                        case "offset":
+                            if (cmdparams.Length == 2)
+                                m_log.Info("Current offset is " + m_offset.ToString());
+                            else
+                            {
+                                try
+                                {
+                                    string[] vectParts = cmdparams[2].Split(',');
+                                    Vector3 newOffset = new Vector3(
+                                        Convert.ToSingle(vectParts[0]),
+                                        Convert.ToSingle(vectParts[1]),
+                                        Convert.ToSingle(vectParts[2]));
+                                    m_offset = newOffset;
+                                }
+                                catch (Exception e)
+                                {
+                                    m_log.ErrorFormat("Could not parse new offset vector {0}", cmdparams[2]);
+                                }
+                            }
                             break;
                         default:
                             break;
@@ -258,12 +279,12 @@ namespace OgreSceneImporter
                     if (node.Position.X >= 0 && node.Position.Y >= 0 && node.Position.Z >= 0 &&
                         node.Position.X <= 256 && node.Position.Y <= 256 && node.Position.Z <= 256)
                     {
-                        if (node.Position.Z < 20)
+                        if (node.Position.Z + m_offset.Z < 20)
                             m_log.WarnFormat("Inserting object {1} to height {0}. This object might be under water", node.Position.Z, ent.MeshName);
 
                         //Add object to scene
                         SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
-                            m_scene.RegionInfo.MasterAvatarAssignedUUID, node.Position, node.Orientation, PrimitiveBaseShape.CreateBox());
+                            m_scene.RegionInfo.MasterAvatarAssignedUUID, node.Position+ m_offset, node.Orientation, PrimitiveBaseShape.CreateBox());
                         Vector3 newScale = new Vector3();
                         newScale.X = node.Scale.X * m_objectImportScale;
                         newScale.Y = node.Scale.Y * m_objectImportScale;

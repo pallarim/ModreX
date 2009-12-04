@@ -50,9 +50,9 @@ namespace OgreSceneImporter
 
         public void ParseDotScene(String SceneName, String groupName, SceneManager yourSceneMgr, SceneNode pAttachNode, String sPrependNode)
         {
-            Mogre.Root root = new Mogre.Root();
+            //Mogre.Root root = new Mogre.Root();
             if (groupName == null)
-                groupName = Mogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME;
+                groupName = "General";// Mogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME;
 
             // set up shared object values
             m_sGroupName = groupName;
@@ -77,7 +77,7 @@ namespace OgreSceneImporter
             {
                 path = path.Replace("file:\\", "");
             }
-            Mogre.ResourceGroupManager.Singleton.AddResourceLocation(path,"FileSystem", "General");
+            //Mogre.ResourceGroupManager.Singleton.AddResourceLocation(path,"FileSystem", "General");
             //Mogre.DataStreamPtr pStream = Mogre.ResourceGroupManager.Singleton.OpenResource(SceneName, groupName);
 
             //String data = pStream.AsString;
@@ -152,15 +152,15 @@ namespace OgreSceneImporter
                 return defaultValue;
         }
 
-        protected Mogre.ColourValue parseColour(XmlElement XMLNode)
-        {
-            return new Mogre.ColourValue(
-               ParseFloat(XMLNode.GetAttribute("r")),
-               ParseFloat(XMLNode.GetAttribute("g")),
-               ParseFloat(XMLNode.GetAttribute("b")),
-               string.IsNullOrEmpty(XMLNode.GetAttribute("a")) == false ? ParseFloat(XMLNode.GetAttribute("a")) : 1
-              );
-        }
+        //protected Mogre.ColourValue parseColour(XmlElement XMLNode)
+        //{
+        //    return new Mogre.ColourValue(
+        //       ParseFloat(XMLNode.GetAttribute("r")),
+        //       ParseFloat(XMLNode.GetAttribute("g")),
+        //       ParseFloat(XMLNode.GetAttribute("b")),
+        //       string.IsNullOrEmpty(XMLNode.GetAttribute("a")) == false ? ParseFloat(XMLNode.GetAttribute("a")) : 1
+        //      );
+        //}
 
         protected OpenMetaverse.Quaternion parseQuaternion(XmlElement XMLNode)
         {
@@ -195,10 +195,10 @@ namespace OgreSceneImporter
               );
         }
 
-        protected Mogre.Vector3 omvVector3AsMogreVector3(OpenMetaverse.Vector3 vector)
-        {
-            return new Mogre.Vector3(vector.X, vector.Y, vector.Z);
-        }
+        //protected Mogre.Vector3 omvVector3AsMogreVector3(OpenMetaverse.Vector3 vector)
+        //{
+        //    return new Mogre.Vector3(vector.X, vector.Y, vector.Z);
+        //}
 
         protected void processCamera(XmlElement XMLNode, SceneNode pParent)
         {
@@ -562,29 +562,29 @@ namespace OgreSceneImporter
             bool castShadows = getAttribBool(XMLNode, "castShadows");
             bool receiveShadows = getAttribBool(XMLNode, "receiveShadows");
 
-            Mogre.Vector3 normal = Mogre.Vector3.ZERO;
-            XmlElement pElement = (XmlElement)XMLNode.SelectSingleNode("normal");
-            if (pElement != null)
-                normal = omvVector3AsMogreVector3(parseVector3(pElement));
+            //Mogre.Vector3 normal = Mogre.Vector3.ZERO;
+            //XmlElement pElement = (XmlElement)XMLNode.SelectSingleNode("normal");
+            //if (pElement != null)
+            //    normal = omvVector3AsMogreVector3(parseVector3(pElement));
 
-            Mogre.Vector3 upVector = Mogre.Vector3.UNIT_Y;
-            pElement = (XmlElement)XMLNode.SelectSingleNode("upVector");
-            if (pElement != null)
-                upVector = omvVector3AsMogreVector3(parseVector3(pElement));
+            //Mogre.Vector3 upVector = Mogre.Vector3.UNIT_Y;
+            //pElement = (XmlElement)XMLNode.SelectSingleNode("upVector");
+            //if (pElement != null)
+            //    upVector = omvVector3AsMogreVector3(parseVector3(pElement));
 
-            Mogre.Plane pPlane = new Mogre.Plane(normal, upVector);
+            //Mogre.Plane pPlane = new Mogre.Plane(normal, upVector);
 
-            Entity pEntity = null;
-            try
-            {
-                Mogre.MeshPtr ptr = Mogre.MeshManager.Singleton.CreatePlane(name, m_sGroupName, pPlane, width, height, xSegments, ySegments, normals, numTexCoordSets, uTile, vTile, upVector);
-                pEntity = mSceneMgr.CreateEntity(name, name);
-                pParent.AttachObject(pEntity);
-            }
-            catch (Exception e)
-            {
-                m_log.Error("[DotSceneLoader] Error loading an entity!" + e.Message);
-            }
+            //Entity pEntity = null;
+            //try
+            //{
+            //    Mogre.MeshPtr ptr = Mogre.MeshManager.Singleton.CreatePlane(name, m_sGroupName, pPlane, width, height, xSegments, ySegments, normals, numTexCoordSets, uTile, vTile, upVector);
+            //    pEntity = mSceneMgr.CreateEntity(name, name);
+            //    pParent.AttachObject(pEntity);
+            //}
+            //catch (Exception e)
+            //{
+            //    m_log.Error("[DotSceneLoader] Error loading an entity!" + e.Message);
+            //}
 
         }
 
