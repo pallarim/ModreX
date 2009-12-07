@@ -373,6 +373,8 @@ namespace ModularRex.RexFramework
 
         #endregion
 
+        System.Timers.Timer m_saveProperties = null;
+
         #region Constructors
         /// <summary>
         /// Initialises a new RexObjectProperties class from
@@ -397,10 +399,18 @@ namespace ModularRex.RexFramework
             ParentObjectID = parentid;
             RexEventManager = newrexeventmanager;
             RexMaterials.SetSceneObjectPart(this);
+            m_saveProperties = new System.Timers.Timer();
+            m_saveProperties.Interval = 1000;
+            m_saveProperties.Elapsed += m_saveProperties_Elapsed;
         }
 
         #endregion
 
+        void m_saveProperties_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            m_saveProperties.Stop();
+            RexEventManager.TriggerOnSaveObject(this.parentObjectID);
+        }
 
         public void SetRexEventManager(IRexObjectPropertiesEventManager newrexeventmanager)
         {
@@ -811,6 +821,14 @@ namespace ModularRex.RexFramework
                 return;
             if (RexEventManager != null)
                 RexEventManager.TriggerOnChangeRexObjectProperties(parentObjectID);       
+        }
+
+        public void ScheduleSave()
+        {
+            if (!m_saveProperties.Enabled)
+            {
+                m_saveProperties.Start();
+            }
         }
     }
 }

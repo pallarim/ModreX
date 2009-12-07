@@ -308,8 +308,10 @@ namespace ModularRex.RexParts
         {
             RexObjectProperties props = GetObject(id);
 
-            m_db.StoreObject(props);
+            //instead of saving right away, set timer to save after a sec.
+            //m_db.StoreObject(props);
             SendPropertiesToAllUsers(id,props);
+            props.ScheduleSave();
         }
         
         public void TriggerOnChangeRexObjectMetaData(UUID id)
@@ -354,6 +356,13 @@ namespace ModularRex.RexParts
                 return(byte)(tempmodel.Type);
             else
                 return 0;
+        }
+
+
+        public void TriggerOnSaveObject(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);
+            m_db.StoreObject(props);
         }
         #endregion
 

@@ -14,5 +14,7 @@ namespace ModularRex.RexFramework
         void TriggerOnChangeRexObjectMetaData(UUID id);
         
         byte GetAssetType(UUID assetid);
+
+        void TriggerOnSaveObject(UUID id);
     }
 }
