@@ -92,12 +92,12 @@ namespace ModularRex.NHibernate
                 session.Close();
                 if (i != 0) //A: more than zero, update instead of insert
                 {
-                    m_log.InfoFormat("[NHIBERNATE] updating RexObjectProperties {0}", p.ParentObjectID);
+                    m_log.DebugFormat("[NHIBERNATE] updating RexObjectProperties {0}", p.ParentObjectID);
                     manager.Update(p);
                 }
                 else //B: zero, insert
                 {
-                    m_log.InfoFormat("[NHIBERNATE] saving RexObjectProperties {0}", p.ParentObjectID);
+                    m_log.DebugFormat("[NHIBERNATE] saving RexObjectProperties {0}", p.ParentObjectID);
                     p.RexMaterialDictionaryItems = new List<RexMaterialsDictionaryItem>();
                     manager.Insert(p);
                 }

@@ -250,13 +250,16 @@ namespace ModularRex.NHibernate
         {
             try
             {
-                using (IStatelessSession session = sessionFactory.OpenStatelessSession())
+                lock (sessionFactory)
                 {
-                    using (ITransaction transaction = session.BeginTransaction())
+                    using (IStatelessSession session = sessionFactory.OpenStatelessSession())
                     {
-                        session.Update(obj);
-                        transaction.Commit();
-                        return true;
+                        using (ITransaction transaction = session.BeginTransaction())
+                        {
+                            session.Update(obj);
+                            transaction.Commit();
+                            return true;
+                        }
                     }
                 }
             }

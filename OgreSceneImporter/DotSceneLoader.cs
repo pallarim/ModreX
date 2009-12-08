@@ -90,7 +90,7 @@ namespace OgreSceneImporter
             XMLRoot = XMLDoc.DocumentElement;
             if (XMLRoot.Name != "scene")
             {
-                //LogManager.Singleton.LogMessage("[DotSceneLoader] Error: Invalid .scene File. Missing <scene>");
+                m_log.Error("[DotSceneLoader] Error: Invalid .scene File. Missing <scene>");
                 return;
             }
 
@@ -606,9 +606,7 @@ namespace OgreSceneImporter
             // Process the scene parameters
             String version = getAttrib(XMLRoot, "formatVersion", "unknown");
 
-            String message = "[DotSceneLoader] Parsing dotScene file with version " + version;
-
-            //LogManager.Singleton.LogMessage(message);
+            m_log.Info("[DotSceneLoader] Parsing dotScene file with version " + version);
 
             XmlElement pElement;
 

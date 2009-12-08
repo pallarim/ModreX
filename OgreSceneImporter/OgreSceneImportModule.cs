@@ -67,7 +67,7 @@ namespace OgreSceneImporter
                             break;
                         case "offset":
                             if (cmdparams.Length == 2)
-                                m_log.Info("Current offset is " + m_offset.ToString());
+                                m_log.Info("[OGRESCENE]: Current offset is " + m_offset.ToString());
                             else
                             {
                                 try
@@ -81,7 +81,7 @@ namespace OgreSceneImporter
                                 }
                                 catch (Exception e)
                                 {
-                                    m_log.ErrorFormat("Could not parse new offset vector {0}", cmdparams[2]);
+                                    m_log.ErrorFormat("[OGRESCENE]: Could not parse new offset vector {0}", cmdparams[2]);
                                 }
                             }
                             break;
@@ -92,7 +92,7 @@ namespace OgreSceneImporter
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat("Failed to execute ogrescene command. Exception {0} was thrown.", e);
+                m_log.ErrorFormat("[OGRESCENE]: Failed to execute ogrescene command. Exception {0} was thrown.", e);
             }
         }
 
@@ -100,7 +100,7 @@ namespace OgreSceneImporter
         {
             if (p == "help")
             {
-                m_log.InfoFormat("Set object scale on import. By default this is 1.0. Current value {0}", m_objectImportScale);
+                m_log.InfoFormat("[OGRESCENE]: Set object scale on import. By default this is 1.0. Current value {0}", m_objectImportScale);
             }
             else
             {
@@ -111,7 +111,7 @@ namespace OgreSceneImporter
                 }
                 catch (Exception)
                 {
-                    m_log.ErrorFormat("Error parsin scale from value {0}", p);
+                    m_log.ErrorFormat("[OGRESCENE]: Error parsin scale from value {0}", p);
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace OgreSceneImporter
                 loader.ParseDotScene(fileName + ".scene", "General", ogreSceneManager);
             else
             {
-                m_log.ErrorFormat("Could not find scene file {0}.scene", fileName);
+                m_log.ErrorFormat("[OGRESCENE]: Could not find scene file {0}.scene", fileName);
                 return;
             }
             
@@ -133,7 +133,7 @@ namespace OgreSceneImporter
             //check that file exists
             if (!System.IO.File.Exists(fileName + ".material"))
             {
-                m_log.ErrorFormat("Could not find material file {0}.material", fileName);
+                m_log.ErrorFormat("[OGRESCENE]: Could not find material file {0}.material", fileName);
                 return;
             }
             System.IO.StreamReader sreader = System.IO.File.OpenText(fileName+".material");
@@ -143,19 +143,19 @@ namespace OgreSceneImporter
             Dictionary<string, UUID> textures = null;
             if (!parser.ParseAndSaveMaterial(data, out materials, out textures))
             {
-                m_log.Error("Material parsing failed. Ending operation");
+                m_log.Error("[OGRESCENE]: Material parsing failed. Ending operation");
                 return;
             }
 
             if (!LoadAndSaveTextures(textures))
             {
-                m_log.ErrorFormat("Aborting ogre scene importing, because there were some errors in loading textures");
+                m_log.ErrorFormat("[OGRESCENE]: Aborting ogre scene importing, because there were some errors in loading textures");
                 return;
             }
-            m_log.InfoFormat("Found and loaded {0} materials and {1} textures", materials.Count, textures.Count);
+            m_log.InfoFormat("[OGRESCENE]: Found and loaded {0} materials and {1} textures", materials.Count, textures.Count);
 
             //Load&parse meshes and add them to scene
-            m_log.Info("Loading OGRE stuff to scene");
+            m_log.Info("[OGRESCENE]: Loading OGRE stuff to scene");
             AddObjectsToScene(ogreSceneManager.RootSceneNode, materials);
         }
 
@@ -168,7 +168,7 @@ namespace OgreSceneImporter
                     //check that file exists
                     if (!System.IO.File.Exists(texture.Key))
                     {
-                        m_log.ErrorFormat("Could not load file {0}, because it doesn't exist in working directory", texture.Key);
+                        m_log.ErrorFormat("[OGRESCENE]: Could not load file {0}, because it doesn't exist in working directory", texture.Key);
                         return false;
                     }
 
@@ -203,7 +203,7 @@ namespace OgreSceneImporter
                 }
                 catch (Exception e)
                 {
-                    m_log.ErrorFormat("Could not load texture {0}, because {1}", texture.Key, e);
+                    m_log.ErrorFormat("[OGRESCENE]: Could not load texture {0}, because {1}", texture.Key, e);
                     return false;
                 }
             }
@@ -249,7 +249,7 @@ namespace OgreSceneImporter
                     //first check that file exists
                     if (!System.IO.File.Exists(ent.MeshName))
                     {
-                        m_log.ErrorFormat("Could not find mesh file {0}. Skipping", ent.MeshName);
+                        m_log.ErrorFormat("[OGRESCENE]: Could not find mesh file {0}. Skipping", ent.MeshName);
                         continue;
                     }
 
@@ -271,7 +271,7 @@ namespace OgreSceneImporter
                         //probably error in the mesh. this can't be fixed.
                         //setting this to physics engine could have devastating effect.
                         //must skip this object
-                        m_log.ErrorFormat("Error occurred while parsing material names from mesh. Skipping object {0}", ent.MeshName);
+                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh. Skipping object {0}", ent.MeshName);
                         continue;
                     }
 
@@ -280,7 +280,7 @@ namespace OgreSceneImporter
                         node.Position.X <= 256 && node.Position.Y <= 256 && node.Position.Z <= 256)
                     {
                         if (node.Position.Z + m_offset.Z < 20)
-                            m_log.WarnFormat("Inserting object {1} to height {0}. This object might be under water", node.Position.Z, ent.MeshName);
+                            m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", node.Position.Z, ent.MeshName);
 
                         //Add object to scene
                         SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
@@ -308,14 +308,14 @@ namespace OgreSceneImporter
                             }
                             else
                             {
-                                m_log.ErrorFormat("Could not find material UUID for material {0}. Skipping material", materialNames[i]);
+                                m_log.ErrorFormat("[OGRESCENE]: Could not find material UUID for material {0}. Skipping material", materialNames[i]);
                                 continue;
                             }
                         }
                     }
                     else
                     {
-                        m_log.ErrorFormat("Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, node.Position.ToString());
+                        m_log.ErrorFormat("[OGRESCENE]: Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, node.Position.ToString());
                         continue;
                     }
                 }

@@ -49,7 +49,7 @@ namespace OgreSceneImporter
                         }
                         else
                         {
-                            m_log.ErrorFormat("Could not parse material name from malformed material file line \"{0}\"", line);
+                            m_log.ErrorFormat("[OGRESCENE]: Could not parse material name from malformed material file line \"{0}\"", line);
                             return false;
                         }
                     }
@@ -92,7 +92,7 @@ namespace OgreSceneImporter
                                 }
                                 else
                                 {
-                                    m_log.ErrorFormat("Could not parse texture name from malformed material file line \"{0}\"", line);
+                                    m_log.ErrorFormat("[OGRESCENE]: Could not parse texture name from malformed material file line \"{0}\"", line);
                                     return false;
                                 }
                             }
