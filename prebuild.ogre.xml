@@ -26,7 +26,7 @@
 	 <Reference name="OpenSim.Framework.Console"/>
 	 <Reference name="OpenSim.Region.Framework"/>
 	 <Reference name="OpenSim.Services.Interfaces"/>
-	 <Reference name="RexDotMeshLoader"/>
+	 <Reference name="RexDotMeshLoader" localCopy="true"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>

@@ -13,6 +13,45 @@ using OpenSim.Region.Framework.Scenes;
 
 namespace ModularRex.RexNetwork
 {
+    public sealed class RexUDPServerShim : IClientNetworkServer
+    {
+        RexUDPServer m_udpServer;
+
+        public RexUDPServerShim()
+        {
+        }
+
+        public void Initialise(IPAddress listenIP, ref uint port, int proxyPortOffsetParm, bool allow_alternate_port, IConfigSource configSource, AgentCircuitManager circuitManager)
+        {
+            m_udpServer = new RexUDPServer(listenIP, ref port, proxyPortOffsetParm, allow_alternate_port, configSource, circuitManager);
+        }
+
+        public void NetworkStop()
+        {
+            m_udpServer.Stop();
+        }
+
+        public void AddScene(IScene scene)
+        {
+            m_udpServer.AddScene(scene);
+        }
+
+        public bool HandlesRegion(Location x)
+        {
+            return m_udpServer.HandlesRegion(x);
+        }
+
+        public void Start()
+        {
+            m_udpServer.Start();
+        }
+
+        public void Stop()
+        {
+            m_udpServer.Stop();
+        }
+    }
+
     /// <summary>
     /// Extends the standard OpenSim UDP Server Class
     /// With the only difference being that the packet
