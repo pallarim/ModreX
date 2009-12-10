@@ -387,11 +387,17 @@ namespace ModularRex.RexFramework
         {
             SetRexPrimDataFromBytes(data, containsURIs);
             RexMaterials.SetSceneObjectPart(this);
+            m_saveProperties = new System.Timers.Timer();
+            m_saveProperties.Interval = 1000;
+            m_saveProperties.Elapsed += m_saveProperties_Elapsed;
         }
 
         public RexObjectProperties() 
         {
             RexMaterials.SetSceneObjectPart(this);
+            m_saveProperties = new System.Timers.Timer();
+            m_saveProperties.Interval = 1000;
+            m_saveProperties.Elapsed += m_saveProperties_Elapsed;
         }
 
         public RexObjectProperties(UUID parentid,IRexObjectPropertiesEventManager newrexeventmanager) 
