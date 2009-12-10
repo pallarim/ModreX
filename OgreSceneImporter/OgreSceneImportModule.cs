@@ -271,13 +271,13 @@ namespace OgreSceneImporter
                         //probably error in the mesh. this can't be fixed.
                         //setting this to physics engine could have devastating effect.
                         //must skip this object
-                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh. Skipping object {0}", ent.MeshName);
+                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh. Skipping object {0}. Error message {1}", ent.MeshName, meshLoaderError);
                         continue;
                     }
 
                     //check that postition of the object is inside scene
-                    if (node.Position.X >= 0 && node.Position.Y >= 0 && node.Position.Z >= 0 &&
-                        node.Position.X <= 256 && node.Position.Y <= 256 && node.Position.Z <= 256)
+                    if (node.Position.X + m_offset.X >= 0 && node.Position.Y + m_offset.Y >= 0 && node.Position.Z + m_offset.Z >= 0 &&
+                        node.Position.X + m_offset.X <= 256 && node.Position.Y + m_offset.Y <= 256 && node.Position.Z + m_offset.Z <= 256)
                     {
                         if (node.Position.Z + m_offset.Z < 20)
                             m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", node.Position.Z, ent.MeshName);
