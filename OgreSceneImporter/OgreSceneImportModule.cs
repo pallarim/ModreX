@@ -276,15 +276,20 @@ namespace OgreSceneImporter
                     }
 
                     //check that postition of the object is inside scene
-                    if (node.Position.X + m_offset.X >= 0 && node.Position.Y + m_offset.Y >= 0 && node.Position.Z + m_offset.Z >= 0 &&
-                        node.Position.X + m_offset.X <= 256 && node.Position.Y + m_offset.Y <= 256 && node.Position.Z + m_offset.Z <= 256)
+                    Vector3 objPos = new Vector3(node.Position.X, node.Position.Y, node.Position.Z);
+                    objPos = objPos + m_offset; //add offset
+                    if (objPos.X >= 0 && objPos.Y >= 0 && objPos.Z >= 0 &&
+                        objPos.X <= 256 && objPos.Y <= 256 && objPos.Z <= 256)
                     {
-                        if (node.Position.Z + m_offset.Z < 20)
-                            m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", node.Position.Z, ent.MeshName);
+                        if (objPos.Z < 20)
+                            m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", objPos.Z, ent.MeshName);
 
                         //Add object to scene
+                        Quaternion rot = new Quaternion(node.Orientation.X, node.Orientation.Y, node.Orientation.Z, node.Orientation.W);
+                        rot *= new Quaternion(1, 0, 0);
+                        rot *= new Quaternion(0, 1, 0);
                         SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
-                            m_scene.RegionInfo.MasterAvatarAssignedUUID, node.Position+ m_offset, node.Orientation, PrimitiveBaseShape.CreateBox());
+                            m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
                         Vector3 newScale = new Vector3();
                         newScale.X = node.Scale.X * m_objectImportScale;
                         newScale.Y = node.Scale.Y * m_objectImportScale;
@@ -315,7 +320,7 @@ namespace OgreSceneImporter
                     }
                     else
                     {
-                        m_log.ErrorFormat("[OGRESCENE]: Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, node.Position.ToString());
+                        m_log.ErrorFormat("[OGRESCENE]: Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, objPos.ToString());
                         continue;
                     }
                 }
