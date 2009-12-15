@@ -116,15 +116,32 @@ namespace ModularRex.RexNetwork.RexLogin
                                 return;
                             }
                         }
+
+                        //try with legacy parameters
                         object[] parameters = new object[3];
                         parameters[0] = rex.AgentId;
                         parameters[1] = new Uri("http://www.realxtend.org/attributes/avatarStorageUri");
                         parameters[2] = new Uri("http://www.realxtend.org/attributes/avatarStorageUri");
                         object returnObject = cb_ws_method.Invoke(cb_module, parameters);
 
-                        if (returnObject is Uri)
+                        if (returnObject != null)
                         {
-                            rex.RexAvatarURL = ((Uri)returnObject).ToString();
+                            if (returnObject is Uri)
+                            {
+                                rex.RexAvatarURL = ((Uri)returnObject).ToString();
+                            }
+                        }
+                        else
+                        {
+                            //now try with new style (webdav based avatar)
+                            parameters[1] = new Uri("http://openmetaverse.org/services/webdav_avatar");
+                            parameters[2] = new Uri("http://openmetaverse.org/services/webdav_avatar/get_webdav_root");
+                            returnObject = cb_ws_method.Invoke(cb_module, parameters);
+
+                            if (returnObject is Uri)
+                            {
+                                rex.RexAvatarURL = ((Uri)returnObject).ToString();
+                            }
                         }
                     }
                     else
