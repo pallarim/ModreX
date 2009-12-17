@@ -377,7 +377,7 @@ namespace ModularRex.RexParts.RexPython
             {
                 ScriptSource source = null;
                 source = m_pyEng.CreateScriptSourceFromString("CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")", SourceCodeKind.Statements);
-                Log.InfoFormat("[RexScriptEngine]: CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")");
+                //Log.InfoFormat("[RexScriptEngine]: CreateActorOfClass(" + vLocalId + "," + vPythonClassName + ",\"" + vPythonTag + "\")");
                 source.Execute(m_defaultScope);
             }
             catch (Exception)
