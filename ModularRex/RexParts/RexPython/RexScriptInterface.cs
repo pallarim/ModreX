@@ -650,7 +650,16 @@ namespace ModularRex.RexParts.RexPython
                 (temppre.ControllingClient as IRexBot).StopAutoMove(vEnable);
             }
         }
-        
+
+        public void AddUserGenericPacketHandler(string presenceId, string method, GenericMessage handler)
+        {
+            UUID userId = new UUID(presenceId);
+            ScenePresence sp = myScriptEngine.World.GetScenePresence(userId);
+            if (sp != null)
+            {
+                sp.ControllingClient.AddGenericPacketHandler(method, handler);
+            }
+        }
 
         #region Functions not supported at the moment.
         /*  

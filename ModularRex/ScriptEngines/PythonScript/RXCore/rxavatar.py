@@ -25,6 +25,9 @@ class Avatar(rxactor.Actor):
         #print "Avatar EventDestroyed",self.Id
         pass
 
+    def AddGenericMessageHandler(self, method, handler):
+        self.MyWorld.CS.AddUserGenericPacketHandler(self.AgentId, method, handler)
+
     def GetFullName(self):
         return self.MyWorld.CS.SPGetFullName(self.AgentId)
     def GetFirstName(self):

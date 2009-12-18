@@ -38,3 +38,5 @@ import botfunctiontest
 import sittest
 import avatarspeedtest
 import startuptest
+import avatargmtest
+
