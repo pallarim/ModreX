@@ -119,6 +119,7 @@ namespace ModularRex.RexParts.Modules
 
             m_log.Info("[REXAPPEAR] Added Scene");
             m_scenes.Add(scene);
+            scene.RegisterModuleInterface<ModrexAppearance>(this);
 
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
         }
