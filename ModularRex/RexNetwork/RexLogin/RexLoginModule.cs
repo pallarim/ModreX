@@ -451,8 +451,8 @@ namespace ModularRex.RexNetwork.RexLogin
                     acd.startpos = new Vector3(128, 128, 128);
 
                     string reason;
-
-                    if (!scene.NewUserConnection(acd, out reason))
+                    
+                    if (!scene.NewUserConnection(acd, (uint)TeleportFlags.ViaLogin, out reason))
                     {
                         //Login failed
                         XmlRpcResponse resp = new XmlRpcResponse();
