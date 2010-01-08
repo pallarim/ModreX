@@ -268,6 +268,43 @@ namespace OpenSim.Region.Examples.RexBot
 
         public event AvatarInterestUpdate OnAvatarInterestUpdate;
         public event GrantUserFriendRights OnGrantUserRights;
+        public event FindAgentUpdate OnFindAgent;
+
+        public event TrackAgentUpdate OnTrackAgent;
+
+        public event NewUserReport OnUserReport;
+
+        public event SaveStateHandler OnSaveState;
+
+        public event GroupAccountSummaryRequest OnGroupAccountSummaryRequest;
+
+        public event GroupAccountDetailsRequest OnGroupAccountDetailsRequest;
+
+        public event GroupAccountTransactionsRequest OnGroupAccountTransactionsRequest;
+
+        public event FreezeUserUpdate OnParcelFreezeUser;
+
+        public event EjectUserUpdate OnParcelEjectUser;
+
+        public event ParcelBuyPass OnParcelBuyPass;
+
+        public event ParcelGodMark OnParcelGodMark;
+
+        public event GroupActiveProposalsRequest OnGroupActiveProposalsRequest;
+
+        public event GroupVoteHistoryRequest OnGroupVoteHistoryRequest;
+
+        public event SimWideDeletesDelegate OnSimWideDeletes;
+
+        public event SendPostcard OnSendPostcard;
+
+        public event MuteListEntryUpdate OnUpdateMuteListEntry;
+
+        public event MuteListEntryRemove OnRemoveMuteListEntry;
+
+        public event GodlikeMessage onGodlikeMessage;
+
+        public event GodUpdateRegionInfoUpdate OnGodUpdateRegionInfoUpdate;
 
 #pragma warning restore 67
 
@@ -1128,6 +1165,22 @@ namespace OpenSim.Region.Examples.RexBot
         }
 
         public void SendInventoryFolderDetails(UUID ownerID, UUID folderID, List<InventoryItemBase> items, List<InventoryFolderBase> folders, int version, bool fetchFolders, bool fetchItems)
+        {
+        }
+
+        public void SendAvatarInterestsReply(UUID avatarID, uint wantMask, string wantText, uint skillsMask, string skillsText, string languages)
+        {
+        }
+
+        public void SendGroupAccountingDetails(IClientAPI sender, UUID groupID, UUID transactionID, UUID sessionID, int amt)
+        {
+        }
+
+        public void SendGroupAccountingSummary(IClientAPI sender, UUID groupID, uint moneyAmt, int totalTier, int usedTier)
+        {
+        }
+
+        public void SendGroupTransactionsSummaryDetails(IClientAPI sender, UUID groupID, UUID transactionID, UUID sessionID, int amt)
         {
         }
 

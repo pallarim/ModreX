@@ -2656,6 +2656,14 @@ namespace ModularRex.RexOdePlugin
         public override bool PIDActive { set { m_usePID = value; } }
         public override float PIDTau { set { m_PIDTau = value; } }
 
+        public override Quaternion APIDTarget { set { return; } }
+
+        public override bool APIDActive { set { return; } }
+
+        public override float APIDStrength { set { return; } }
+
+        public override float APIDDamping { set { return; } }
+
         private void createAMotor(Vector3 axis)
         {
             if (Body == IntPtr.Zero)
