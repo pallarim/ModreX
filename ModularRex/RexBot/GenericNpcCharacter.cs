@@ -1184,6 +1184,18 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void SendEstateList(UUID invoice, int code, UUID[] Data, uint estateID)
+        {
+        }
+
+        public void SendGroupActiveProposals(UUID groupID, UUID transactionID, GroupActiveProposals[] Proposals)
+        {
+        }
+
+        public void SendGroupVoteHistory(UUID groupID, UUID transactionID, GroupVoteHistory[] Votes)
+        {
+        }
+
         #endregion
     }
 }
