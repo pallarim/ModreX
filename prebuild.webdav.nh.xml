@@ -1,0 +1,25 @@
+    <Project name="WebDAVSharp.NHibernateStorage" path="./addon-modules/ModreX/ModularRex/lib/WebDAVSharp.NHibernateStorage" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../../bin/</ReferencePath>
+      <ReferencePath>../../../ModularRex/bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="log4net"/>
+      <Reference name="NHibernate"/>
+      <Reference name="WebDAVSharp"/>
+      
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+      </Files>
+    </Project>

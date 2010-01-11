@@ -1,0 +1,31 @@
+    <Project name="ModularRex.RexOdePlugin" path="./addon-modules/ModreX/ModularRex/RexOdePlugin" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/Physics/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../ModularRex/bin/</ReferencePath>
+      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../../bin/Physics</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="Nini.dll" />
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Region.Physics.Manager"/>
+      <Reference name="OpenSim.Region.Physics.Meshing"/>
+      <Reference name="ModularRex"/>
+      <Reference name="Ode.NET.dll"/>
+      <Reference name="nunit.framework.dll"/>
+      <Reference name="log4net.dll"/>
+      <Reference name="RexDotMeshLoader.dll" localCopy="true"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>

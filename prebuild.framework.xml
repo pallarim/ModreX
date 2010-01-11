@@ -1,0 +1,25 @@
+    <Project name="ModularRex.RexFramework" path="./addon-modules/ModreX/ModularRex/RexFramework" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../../bin/</ReferencePath>
+	 <Reference name="log4net"/>
+	 <Reference name="OpenMetaverse"/>
+	 <Reference name="OpenMetaverseTypes"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>

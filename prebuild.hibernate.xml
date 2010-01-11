@@ -1,0 +1,36 @@
+    <Project name="ModularRex.NHibernate" path="./addon-modules/ModreX/ModularRex/NHibernate" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+	<ReferencePath>../../../../bin/</ReferencePath>
+	<ReferencePath>../../ModularRex/bin/</ReferencePath>
+	 <Reference name="ModularRex.RexFramework"/>
+	 <Reference name="log4net.dll"/>
+	 <Reference name="OpenMetaverse.dll"/>
+	 <Reference name="OpenMetaverseTypes.dll"/>
+	 <Reference name="System" localCopy="false"/>
+	 <Reference name="System.Core" localCopy="false"/>
+	 <Reference name="System.Data"/>
+	 <Reference name="System.Xml"/>
+	 <Reference name="System.Xml.Linq"/>
+	 <Reference name="OpenSim.Framework"/>
+	 <Reference name="OpenSim.Data"/>
+	 <Reference name="NHibernate" localCopy="true"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+        <Match pattern="*.addin.xml" path="Resources" buildAction="EmbeddedResource" recurse="true"/>
+        <!-- add more as you go -->
+        <Match path="Resources/MsSql2005Dialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match path="Resources/SQLiteDialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match path="Resources/MySQLDialect" pattern="*.sql" buildAction="EmbeddedResource"/>
+      </Files>
+    </Project>

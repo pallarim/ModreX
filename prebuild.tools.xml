@@ -1,0 +1,35 @@
+    <Project name="ModularRex.Tools.MigrationTool" path="./addon-modules/ModreX/ModularRex/Tools/MigrationTool" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml" localCopy="false"/>
+      <Reference name="OpenMetaverse.dll" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
+      <Reference name="ModularRex"/>
+      <Reference name="ModularRex.RexFramework"/>
+      <Reference name="ModularRex.NHibernate"/>
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim"/>
+      <Reference name="Nini.dll" />
+      <Reference name="log4net.dll"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Data.SQLite.dll"/>
+      <Reference name="OpenSim.Data"/>
+      <Reference name="Mono.Data.SqliteClient"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match path="Resources/" pattern="*.sql" buildAction="EmbeddedResource"/>
+        <Match pattern="ModularRex.Tools.MigrationTool.exe.config" copyToOutput="PreserveNewest" buildAction="None"/>
+      </Files>
+    </Project>

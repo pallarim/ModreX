@@ -1,0 +1,39 @@
+   <Project name="ModularRex.WorldInventory" path="./addon-modules/ModreX/ModularRex/WorldInventory" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../../bin/</ReferencePath>
+	  <ReferencePath>../../ModularRex/bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Drawing" localCopy="false"/>
+      <Reference name="OpenMetaverse.dll" localCopy="false"/>
+      <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
+      <Reference name="OpenMetaverse.StructuredData.dll" localCopy="false"/>
+      <Reference name="ModularRex"/>
+      <Reference name="ModularRex.RexFramework"/>
+	  <Reference name="ModularRex.NHibernate"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenSim.Framework"/>
+      <Reference name="OpenSim.Framework.Communications"/>
+	  <Reference name="OpenSim.Framework.Console.dll"/>
+      <Reference name="OpenSim.Region.Framework.dll"/>
+	  <Reference name="OpenSim.Region.ClientStack.LindenUDP.dll"/>
+	  <Reference name="OpenSim.Framework.Statistics.dll"/>
+	  <Reference name="OpenSim.Services.Interfaces.dll"/>
+	  <Reference name="WebDAVSharp"/>
+	  <Reference name="WebDAVSharp.NHibernateStorage"/>
+	  <Reference name="HttpServer"/>
+      <Reference name="Nini.dll" />
+      <Reference name="log4net.dll"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
