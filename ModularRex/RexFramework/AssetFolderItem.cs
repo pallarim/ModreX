@@ -7,9 +7,25 @@ namespace ModularRex.RexFramework
 {
     public class AssetFolder
     {
-        public virtual int Id { get; set; }
-        public virtual string ParentPath { get; set; }
-        public virtual string Name { get; set; }
+        private int m_id = 0;
+        private string m_parentPath = String.Empty;
+        private string m_name = String.Empty;
+
+        public virtual int Id
+        {
+            get { return m_id; }
+            set { m_id = value; }
+        }
+        public virtual string ParentPath
+        {
+            get { return m_parentPath; }
+            set { m_parentPath = value; }
+        }
+        public virtual string Name
+        {
+            get { return m_name; }
+            set { m_name = value; }
+        }
 
         public AssetFolder() { }
         public AssetFolder(string parentPath, string name)
@@ -21,7 +37,12 @@ namespace ModularRex.RexFramework
 
     public class AssetFolderItem : AssetFolder
     {
-        public virtual UUID AssetID { get; set; }
+        private UUID m_assetId = UUID.Zero;
+        public virtual UUID AssetID
+        {
+            get { return m_assetId; }
+            set { m_assetId = value; }
+        }
 
         public AssetFolderItem() { }
         public AssetFolderItem(string parentPath, string name, UUID assetID)
