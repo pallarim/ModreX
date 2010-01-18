@@ -9,5 +9,6 @@
 
   <Extension path = "/OpenSim/RegionModules">
     <RegionModule id="RexLoginModule" type="ModularRex.RexNetwork.RexLogin.RexLoginModule" />
+    <RegionModule id="RexLoginConfigurationManager" type="ModularRex.RexNetwork.RexLogin.LoginConfigurationManager" />
   </Extension>
 </Addin>

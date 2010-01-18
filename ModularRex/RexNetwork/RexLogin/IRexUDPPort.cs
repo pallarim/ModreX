@@ -6,5 +6,6 @@ namespace ModularRex.RexNetwork.RexLogin
     {
         int GetPort(ulong regionHandle);
         int GetPort(IPEndPoint endPoint);
+        bool RegisterRegionPort(ulong regionHandle, int port);
     }
 }
