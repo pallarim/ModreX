@@ -64,10 +64,10 @@ namespace ModularRex.RexParts
 
         /* are in db for assets, but in UI for textures only - also this now works for just textures 
            TODO: options for which faces to affect, e.g. main &/ some individual faces */
-        public int rexSetTextureMediaURL(string url)
-        {
-            return rexSetTextureMediaURL(url, 0);
-        }
+        //public int rexSetTextureMediaURL(string url)
+        //{
+        //    return rexSetTextureMediaURL(url, 0);
+        //}
 
         // This function sets the mediaurl for all textures which are in the prim to the param...
         public int rexSetTextureMediaURL(string url, int vRefreshRate)
@@ -1254,6 +1254,16 @@ namespace ModularRex.RexParts
                 m_log.Warn("[REXSCRIPT]: SetRexSelectPriority, target prim not found:" + vPrimLocalId);
         }
 
+
+        #endregion
+
+        #region Custom "overrides" of ll methods
+
+        public int rexListen(int channelID, string name, string ID, string msg)
+        {
+            int toReturn = base.llListen(channelID, name, ID, msg).value;
+            return -1;
+        }
 
         #endregion
     }

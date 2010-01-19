@@ -8,7 +8,7 @@ namespace ModularRex.RexParts
 {
     public interface Rex_BuiltIn_Commands_Interface
     {
-        int rexSetTextureMediaURL(string url);
+        int rexSetTextureMediaURL(string url, int refreshRate);
         
         void rexIKSetLimbTarget(string vAvatar, int vLimbId, LSL_Types.Vector3 vDest, float vTimeToTarget, float vStayTime, 
             float vConstraintAngle, string vStartAnim, string vTargetAnim, string vEndAnim);

@@ -18,4 +18,4 @@ class MediaUrlTest(rxactor.Actor):
 
     def EventTouch(self,vAvatar):
         self.llShout(0,"Changeing MediaURL to http://www.realxtend.org/")
-	self.rexSetTextureMediaURL("http://www.realxtend.org/", 1)
+        self.rexSetTextureMediaURL("http://www.realxtend.org/", 1)
