@@ -489,7 +489,7 @@ class EventManager(object):
                 #print " type: " + str(vEvent.OtherId.__class__)
                 #print "Message: " + vEvent.Message
                 #print " type: " + str(vEvent.Message.__class__)
-                TempActor.llListen(int(vEvent.Channel),vEvent.EvName,vEvent.OtherId,vEvent.Message)
+                TempActor.listen(vEvent.Channel,vEvent.EvName,vEvent.OtherId,vEvent.Message)
             else:
                 print "LISTEN EVENT FOR MISSING ACTOR",vEvent.ObjectId
         except:

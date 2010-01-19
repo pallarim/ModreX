@@ -18,6 +18,7 @@ namespace ModularRex.RexParts.RexPython
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private ModrexObjects m_rexObjects;
+        private ScriptListener m_scriptListener = null;
 
         // tuco fixme, is there a better way to do this search???
         private EntityBase GetEntityBase(uint vId)
@@ -58,9 +59,13 @@ namespace ModularRex.RexParts.RexPython
             //myScriptEngine.World.EventManager.OnRemoveEntity += OnRemoveEntity; //this was previously launched from Scene
             //myScriptEngine.World.EventManager.OnPrimVolumeCollision += OnPrimVolumeCollision; //this was launched from PhysicActor
             m_scriptEngine.World.EventManager.OnScriptColliding += HandleScriptColliding; //No rex collision, but the same than in LSL
-            m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
-            m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
-            m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
+
+            //these are now listened in ScriptListener class
+            //m_scriptEngine.World.EventManager.OnChatFromWorld += OnRexScriptListen;
+            //m_scriptEngine.World.EventManager.OnChatBroadcast += OnRexScriptListen;
+            //m_scriptEngine.World.EventManager.OnChatFromClient += OnRexScriptListen;
+            m_scriptListener = m_scriptEngine.World.RequestModuleInterface<ScriptListener>();
+            m_scriptListener.OnNewMessage += OnRexScriptListen;
 
             m_scriptEngine.World.AddCommand(scriptEngine, "python", "python help",
                 "Gives more help on python commands", PythonScriptCommand);
@@ -320,46 +325,41 @@ namespace ModularRex.RexParts.RexPython
                 m_log.WarnFormat("[RexScriptEngine]: OnPrimVolumeCollision: " + e.ToString());
             }
         }
-        
+
         /// <summary>
         /// Listens to all world scripts and clients. Sends event from that to python scripts
         /// </summary>
-        public void OnRexScriptListen(object sender, OSChatMessage chat)//uint vPrimLocalId, int vChannel, string vName, UUID vId, string vMessage)
+        void OnRexScriptListen(int channel, string name, UUID objectId, string message, UUID senderId)
         {
             try
             {
-                if (chat.Message != "")
+                if (message != "")
                 {
                     uint localId = 0;
                     string sid = "0";
-                    string name = chat.From;
 
-                    SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(chat.SenderUUID);
+                    SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(objectId);
                     if (sop != null)
                     {
                         localId = sop.LocalId;
-                        sid = sop.ParentGroup.LocalId.ToString();
                     }
 
-                    if (chat.Sender != null)
+                    SceneObjectPart part = m_scriptEngine.World.GetSceneObjectPart(senderId);
+                    if (part != null)
                     {
-                        ScenePresence sp = m_scriptEngine.World.GetScenePresence(chat.Sender.AgentId);
-                        if (sp != null)
+                        sid = part.ParentGroup.LocalId.ToString();
+                    }
+                    else
+                    {
+                        ScenePresence avtr = m_scriptEngine.World.GetScenePresence(senderId);
+                        if (avtr != null)
                         {
-                            return;
-                            localId = sp.LocalId;
-                            sid = chat.Sender.AgentId.ToString();
-                            if (name == "" || name == null) name = chat.Sender.Name; 
+                            sid = senderId.ToString();
                         }
                     }
 
-                    //if (chat.SenderObject != null)
-                    //{
-                    //    m_log.Info("sender is an "+chat.SenderObject.GetType());
-                    //}
-
-                    string eventParams = "\"listen\"," + localId + "," + chat.Channel.ToString() + "," +
-                        "\"" + name + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + chat.Message + "\"";
+                    string eventParams = "\"listen\"," + localId + "," + channel + "," +
+                        "\"" + name + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + message + "\"";
                     m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + eventParams + ")");
                     //m_log.Info(eventParams);
                 }
@@ -369,6 +369,55 @@ namespace ModularRex.RexParts.RexPython
                 m_log.WarnFormat("[RexScriptEngine]: OnRexScriptListen: " + e.ToString());
             }
         }
+
+        /// <summary>
+        /// Listens to all world scripts and clients. Sends event from that to python scripts
+        /// </summary>
+        //public void OnRexScriptListen(object sender, OSChatMessage chat)//uint vPrimLocalId, int vChannel, string vName, UUID vId, string vMessage)
+        //{
+        //    try
+        //    {
+        //        if (chat.Message != "")
+        //        {
+        //            uint localId = 0;
+        //            string sid = "0";
+        //            string name = chat.From;
+
+        //            SceneObjectPart sop = m_scriptEngine.World.GetSceneObjectPart(chat.SenderUUID);
+        //            if (sop != null)
+        //            {
+        //                localId = sop.LocalId;
+        //                sid = sop.ParentGroup.LocalId.ToString();
+        //            }
+
+        //            if (chat.Sender != null)
+        //            {
+        //                ScenePresence sp = m_scriptEngine.World.GetScenePresence(chat.Sender.AgentId);
+        //                if (sp != null)
+        //                {
+        //                    return;
+        //                    localId = sp.LocalId;
+        //                    sid = chat.Sender.AgentId.ToString();
+        //                    if (name == "" || name == null) name = chat.Sender.Name; 
+        //                }
+        //            }
+
+        //            //if (chat.SenderObject != null)
+        //            //{
+        //            //    m_log.Info("sender is an "+chat.SenderObject.GetType());
+        //            //}
+
+        //            string eventParams = "\"listen\"," + localId + "," + chat.Channel.ToString() + "," +
+        //                "\"" + name + "\"" + "," + "\"" + sid + "\"" + "," + "\"" + chat.Message + "\"";
+        //            m_scriptEngine.ExecutePythonCommand("CreateEventWithName(" + eventParams + ")");
+        //            //m_log.Info(eventParams);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        m_log.WarnFormat("[RexScriptEngine]: OnRexScriptListen: " + e.ToString());
+        //    }
+        //}
 
         public void OnRexClientStartUp(IRexClientCore client, UUID agentID, string status)
         {

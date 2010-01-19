@@ -63,7 +63,8 @@ class LSLObject(object):
         
     def llListen(self,channelID, name,ID,msg):
         self.MyWorld.CS.SetScriptRunner(self.Id)
-        return self.MyWorld.CS.llListen(channelID, name,ID,msg)
+        return self.MyWorld.CS.rexListen(channelID, name,ID,msg)
+        #return self.MyWorld.CS.llListen(channelID, name,ID,msg)
     def llListenControl(self,number,active):
         self.MyWorld.CS.SetScriptRunner(self.Id)
         self.MyWorld.CS.llListenControl(number,active)

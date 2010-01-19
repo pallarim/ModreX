@@ -12,6 +12,7 @@ using OpenSim.Region.ScriptEngine.Shared.Api;
 using log4net;
 using ModularRex.RexFramework;
 using OpenSim.Region.Physics.Manager;
+using ModularRex.RexParts.RexPython;
 
 namespace ModularRex.RexParts
 {
@@ -64,10 +65,7 @@ namespace ModularRex.RexParts
 
         /* are in db for assets, but in UI for textures only - also this now works for just textures 
            TODO: options for which faces to affect, e.g. main &/ some individual faces */
-        //public int rexSetTextureMediaURL(string url)
-        //{
-        //    return rexSetTextureMediaURL(url, 0);
-        //}
+
 
         // This function sets the mediaurl for all textures which are in the prim to the param...
         public int rexSetTextureMediaURL(string url, int vRefreshRate)
@@ -1261,8 +1259,17 @@ namespace ModularRex.RexParts
 
         public int rexListen(int channelID, string name, string ID, string msg)
         {
-            int toReturn = base.llListen(channelID, name, ID, msg).value;
-            return -1;
+            UUID keyID;
+            UUID.TryParse(ID, out keyID);
+            ScriptListener module = World.RequestModuleInterface<ScriptListener>();
+            if (module != null)
+            {
+                return module.Listen(m_localID, m_itemID, m_host.UUID, channelID, name, keyID, msg);
+            }
+            else
+            {
+                return -1;
+            }
         }
 
         #endregion
