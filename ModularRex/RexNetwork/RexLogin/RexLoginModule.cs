@@ -45,7 +45,7 @@ namespace ModularRex.RexNetwork.RexLogin
         /// <summary>
         /// Used during login to send the skeleton of the OpenSim Library to the client.
         /// </summary>
-        protected LibraryRootFolder m_libraryRootFolder;
+        //protected LibraryRootFolder m_libraryRootFolder;
 
         protected WorldAssetsFolder m_worldAssets;
 
@@ -515,8 +515,9 @@ namespace ModularRex.RexNetwork.RexLogin
         /// <returns></returns>
         protected virtual ArrayList GetInventoryLibrary()
         {
-            Dictionary<UUID, InventoryFolderImpl> rootFolders
-                = m_libraryRootFolder.RequestSelfAndDescendentFolders();
+            //Dictionary<UUID, InventoryFolderImpl> rootFolders
+            //    = m_libraryRootFolder.RequestSelfAndDescendentFolders();
+            Dictionary<UUID, InventoryFolderImpl> rootFolders = ((LibraryRootFolder)m_scenes[0].CommsManager.UserProfileCacheService.LibraryRoot).RequestSelfAndDescendentFolders();
             ArrayList folderHashes = new ArrayList();
 
             foreach (InventoryFolderBase folder in rootFolders.Values)
@@ -585,6 +586,12 @@ namespace ModularRex.RexNetwork.RexLogin
                     {
                         module.LoginMethodOverloaded = true;
 
+                        //Load OpenSim Library folder config
+                        //string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
+                        //m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
+                        m_primaryRegionInfo = m_scenes[0].RegionInfo;
+                        m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
+
                         //Do this here because LLStandaloneLoginModule will register it's own login method in Initializion for each Scene
                         m_log.Info("[REX] Overloading Login_to_Simulator");
                         default_login_to_simulator = MainServer.Instance.GetXmlRPCHandler("login_to_simulator");
@@ -592,7 +599,10 @@ namespace ModularRex.RexNetwork.RexLogin
 
                         m_worldAssets = scene.RequestModuleInterface<WorldAssetsFolder>();
                         if (m_worldAssets != null)
-                            m_libraryRootFolder.AddChildFolder(m_worldAssets);
+                        {
+                            scene.CommsManager.UserProfileCacheService.LibraryRoot.AddChildFolder(m_worldAssets);
+                            //m_libraryRootFolder.AddChildFolder(m_worldAssets);
+                        }
                     }
 
                     m_nextUdpPort = module.NextPort;
@@ -601,17 +611,6 @@ namespace ModularRex.RexNetwork.RexLogin
                 {
                         //if not found, try legacy way of fetching port. this probably causes crash
                         m_nextUdpPort = m_config.Configs["realXtend"].GetInt("FirstPort", 7000);
-                }
-
-                if (m_scenes.Count == 1) //Listen very carefully, I will say this only once
-                {
-                    //Load OpenSim Library folder config
-                    string LibrariesXMLFile = m_config.Configs["StandAlone"].GetString("LibrariesXMLFile");
-                    m_libraryRootFolder = new LibraryRootFolder(LibrariesXMLFile);
-
-                    m_primaryRegionInfo = m_scenes[0].RegionInfo;
-
-                    m_checkSessionHash = m_config.Configs["realXtend"].GetBoolean("CheckSessionHash", true);
                 }
 
                 IRexUDPPort udpPortsMod = scene.RequestModuleInterface<IRexUDPPort>();
