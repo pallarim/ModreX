@@ -267,7 +267,17 @@ namespace ModularRex.RexParts
             //    return;
 
             RexObjectProperties p = GetObject(id);
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            SceneObjectPart sop = null;// = m_scenes[0].GetSceneObjectPart(id);
+            foreach (Scene scene in m_scenes)
+            {
+                SceneObjectPart part = scene.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+
             if (sop == null)
             {
                 m_log.Error("[REXOBJS] TriggerOnChangeCollisionMesh, no SceneObjectPart for id:" + id.ToString());
@@ -331,7 +341,17 @@ namespace ModularRex.RexParts
             //    return;
 
             RexObjectProperties p = GetObject(id);
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            SceneObjectPart sop = null;// m_scenes[0].GetSceneObjectPart(id);
+            foreach (Scene s in m_scenes)
+            {
+                SceneObjectPart part = s.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+
             if (sop == null)
             {
                 m_log.Error("[REXOBJS] RexUpdateCollisionMesh, no SceneObjectPart for id:" + id.ToString());
