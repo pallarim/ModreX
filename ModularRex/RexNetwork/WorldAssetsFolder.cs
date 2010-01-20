@@ -93,10 +93,11 @@ namespace ModularRex.RexNetwork
                 return ret;
             }
 
-            InventoryCollection contents = m_scenes[0].InventoryService.GetFolderContent(agentID, folderID);
+            InventoryCollection contents = new InventoryCollection();
 
             if (folderID != UUID.Zero)
             {
+                contents = m_scenes[0].InventoryService.GetFolderContent(agentID, folderID);
                 InventoryFolderBase containingFolder = new InventoryFolderBase();
                 containingFolder.ID = folderID;
                 containingFolder.Owner = agentID;
@@ -231,17 +232,52 @@ namespace ModularRex.RexNetwork
                 return;
             }
 
-            CachedUserInfo userProfile = scene.CommsManager.UserProfileCacheService.GetUserDetails(remoteClient.AgentId);
+            // We're going to send the reply async, because there may be
+            // an enormous quantity of packets -- basically the entire inventory!
+            // We don't want to block the client thread while all that is happening.
+            SendInventoryDelegate d = SendInventoryAsync;
+            d.BeginInvoke(remoteClient, folderID, ownerID, fetchFolders, fetchItems, sortOrder, SendInventoryComplete, d);
+            #region Old code as reference
+            //CachedUserInfo userProfile = scene.CommsManager.UserProfileCacheService.GetUserDetails(remoteClient.AgentId);
 
-            if (null == userProfile)
-            {
-                m_log.ErrorFormat(
-                    "[AGENT INVENTORY]: Could not find user profile for {0} {1}",
-                    remoteClient.Name, remoteClient.AgentId);
-                return;
-            }
+            //if (null == userProfile)
+            //{
+            //    m_log.ErrorFormat(
+            //        "[AGENT INVENTORY]: Could not find user profile for {0} {1}",
+            //        remoteClient.Name, remoteClient.AgentId);
+            //    return;
+            //}
 
-            userProfile.SendInventoryDecendents(remoteClient, folderID, this.Version, fetchFolders, fetchItems);
+            //userProfile.SendInventoryDecendents(remoteClient, folderID, this.Version, fetchFolders, fetchItems);
+            #endregion
+        }
+
+        #region Async methods
+        delegate void SendInventoryDelegate(IClientAPI remoteClient, UUID folderID, UUID ownerID, bool fetchFolders, bool fetchItems, int sortOrder);
+
+        void SendInventoryAsync(IClientAPI remoteClient, UUID folderID, UUID ownerID, bool fetchFolders, bool fetchItems, int sortOrder)
+        {
+            SendInventoryUpdate(remoteClient, new InventoryFolderBase(folderID), fetchFolders, fetchItems);
+        }
+
+        void SendInventoryComplete(IAsyncResult iar)
+        {
+            SendInventoryDelegate d = (SendInventoryDelegate)iar.AsyncState;
+            d.EndInvoke(iar);
+        }
+        #endregion
+
+        private void SendInventoryUpdate(IClientAPI client, InventoryFolderBase folder, bool fetchFolders, bool fetchItems)
+        {
+            m_log.DebugFormat("[AGENT INVENTORY]: Send Inventory Folder {0} Update to {1} {2}", folder.Name, client.FirstName, client.LastName);
+            InventoryCollection contents = m_scenes[0].InventoryService.GetFolderContent(client.AgentId, folder.ID);
+            InventoryFolderBase containingFolder = new InventoryFolderBase();
+            containingFolder.ID = folder.ID;
+            containingFolder.Owner = client.AgentId;
+            containingFolder = m_scenes[0].InventoryService.GetFolder(containingFolder);
+            int version = containingFolder.Version;
+
+            client.SendInventoryFolderDetails(client.AgentId, folder.ID, contents.Items, contents.Folders, version, fetchFolders, fetchItems);
         }
 
         public InventoryItemBase CreateItem(UUID inventoryID, UUID assetID, string name, string description,
@@ -280,19 +316,19 @@ namespace ModularRex.RexNetwork
         public void UpdateWorldAssetFolders(Scene scene)
         {
             // Textures
-            List<AssetBase> allTex = AssetsHelper.GetAssetList(scene, 0);
+            Dictionary<UUID, AssetBase> allTex = AssetsHelper.GetAssetList(scene, 0);
             m_WorldTexturesFolder.Purge();
             InventoryItemBase item;
-            foreach (AssetBase asset in allTex)
+            foreach (AssetBase asset in allTex.Values)
             {
                 item = CreateItem(UUID.Random(), asset.FullID, asset.Name, asset.Description, (int)AssetType.Texture, (int)InventoryType.Texture, m_WorldTexturesFolder.ID);
                 m_WorldTexturesFolder.Items.Add(item.ID, item);
             }
 
             // 3D Models
-            List<AssetBase> allModels = AssetsHelper.GetAssetList(scene, 6);
+            Dictionary<UUID, AssetBase> allModels = AssetsHelper.GetAssetList(scene, 6);
             m_World3DModelsFolder.Purge();
-            foreach (AssetBase asset in allModels)
+            foreach (AssetBase asset in allModels.Values)
             {
                 if (asset.Name != "Primitive")
                 {
@@ -302,9 +338,9 @@ namespace ModularRex.RexNetwork
             }
 
             // Material scripts
-            List<AssetBase> allMaterials = AssetsHelper.GetAssetList(scene, 41);
+            Dictionary<UUID, AssetBase> allMaterials = AssetsHelper.GetAssetList(scene, 45);
             m_WorldMaterialScriptsFolder.Purge();
-            foreach (AssetBase asset in allMaterials)
+            foreach (AssetBase asset in allMaterials.Values)
             {
                 if (asset.Type == 45)
                 {
@@ -314,9 +350,9 @@ namespace ModularRex.RexNetwork
             }
 
             // 3D Model animations
-            List<AssetBase> allAnims = AssetsHelper.GetAssetList(scene, 19);
+            Dictionary<UUID, AssetBase> allAnims = AssetsHelper.GetAssetList(scene, 19);
             m_World3DModelAnimationsFolder.Purge();
-            foreach (AssetBase asset in allAnims)
+            foreach (AssetBase asset in allAnims.Values)
             {
                 if (asset.Type == 44)
                 {
@@ -326,9 +362,9 @@ namespace ModularRex.RexNetwork
             }
 
             // Particles
-            List<AssetBase> allParticles = AssetsHelper.GetAssetList(scene, 41);
+            Dictionary<UUID, AssetBase> allParticles = AssetsHelper.GetAssetList(scene, 41);
             m_WorldParticleScriptsFolder.Purge();
-            foreach (AssetBase asset in allParticles)
+            foreach (AssetBase asset in allParticles.Values)
             {
                 if (asset.Type == 47)
                 {
@@ -338,16 +374,16 @@ namespace ModularRex.RexNetwork
             }
 
             // Sounds
-            List<AssetBase> allSounds = AssetsHelper.GetAssetList(scene, 1);
+            Dictionary<UUID, AssetBase> allSounds = AssetsHelper.GetAssetList(scene, 1);
             m_WorldSoundsFolder.Purge();
-            foreach (AssetBase asset in allSounds)
+            foreach (AssetBase asset in allSounds.Values)
             {
                 item = CreateItem(UUID.Random(), asset.FullID, asset.Name, asset.Description, (int)AssetType.Sound, (int)InventoryType.Sound, m_WorldSoundsFolder.ID);
                 m_WorldSoundsFolder.Items.Add(item.ID, item);
             }
 
             // Flash anims
-            List<AssetBase> allFlashs = AssetsHelper.GetAssetList(scene, 42);
+            Dictionary<UUID, AssetBase> allFlashs = AssetsHelper.GetAssetList(scene, 42);
             m_WorldFlashFolder.Purge();
             AssetBase ass = new AssetBase(UUID.Random(), "README", (sbyte)AssetType.Notecard);
             ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");

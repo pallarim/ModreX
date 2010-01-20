@@ -128,32 +128,32 @@ namespace ModularRex.WorldInventory
 
         public void LoadAssetsFromScene(Scene scene)
         {
-            List<AssetBase> textures = AssetsHelper.GetAssetList(scene, 0);
-            foreach (AssetBase texture in textures)
+            Dictionary<UUID, AssetBase> textures = AssetsHelper.GetAssetList(scene, 0);
+            foreach (AssetBase texture in textures.Values)
             {
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/textures/", texture.Name, texture.FullID));
             }
 
-            List<AssetBase> sounds = AssetsHelper.GetAssetList(scene, 1);
-            foreach (AssetBase sound in sounds)
+            Dictionary<UUID, AssetBase> sounds = AssetsHelper.GetAssetList(scene, 1);
+            foreach (AssetBase sound in sounds.Values)
             {
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/sounds/", sound.Name, sound.FullID));
             }
 
-            List<AssetBase> meshes = AssetsHelper.GetAssetList(scene, 6);
-            foreach (AssetBase mesh in meshes)
+            Dictionary<UUID, AssetBase> meshes = AssetsHelper.GetAssetList(scene, 6);
+            foreach (AssetBase mesh in meshes.Values)
             {
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/3d_models/", mesh.Name, mesh.FullID));
             }
 
-            List<AssetBase> ogreScripts = AssetsHelper.GetAssetList(scene, 41);
-            foreach (AssetBase oScript in ogreScripts)
+            Dictionary<UUID, AssetBase> ogreScripts = AssetsHelper.GetAssetList(scene, 41);
+            foreach (AssetBase oScript in ogreScripts.Values)
             {
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/ogre_scripts/", oScript.Name, oScript.FullID));
             }
 
-            List<AssetBase> animations = AssetsHelper.GetAssetList(scene, 19);
-            foreach (AssetBase animation in animations)
+            Dictionary<UUID, AssetBase> animations = AssetsHelper.GetAssetList(scene, 19);
+            foreach (AssetBase animation in animations.Values)
             {
                 m_assetFolderStrg.Save(new AssetFolderItem("/inventory/3d_animations/", animation.Name, animation.FullID));
             }

@@ -17,15 +17,15 @@ namespace ModularRex.RexParts.Helpers
         /// </summary>
         /// <param name="scene">The scene where to get the assets</param>
         /// <param name="assetType">Type of the assets to get</param>
-        /// <returns>List of assets found</returns>
-        public static List<AssetBase> GetAssetList(Scene scene, int assetType)
+        /// <returns>Dictinary of assets found</returns>
+        public static Dictionary<UUID, AssetBase> GetAssetList(Scene scene, int assetType)
         {
             Dictionary<UUID, int> assetUuids = new Dictionary<UUID, int>();
 
             List<EntityBase> entities = scene.GetEntities();
             List<SceneObjectGroup> sceneObjects = new List<SceneObjectGroup>();
 
-            List<AssetBase> foundObjects = new List<AssetBase>();
+            Dictionary<UUID, AssetBase> foundObjects = new Dictionary<UUID, AssetBase>();
 
             foreach (EntityBase entity in entities)
             {
@@ -62,9 +62,9 @@ namespace ModularRex.RexParts.Helpers
                             if (rop.RexSoundUUID != UUID.Zero)
                             {
                                 asset = scene.AssetService.Get(rop.RexSoundUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
+                                if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             break;
@@ -72,17 +72,17 @@ namespace ModularRex.RexParts.Helpers
                             if (rop.RexMeshUUID != UUID.Zero)
                             {
                                 asset = scene.AssetService.Get(rop.RexMeshUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
+                                if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             if (rop.RexCollisionMeshUUID != UUID.Zero)
                             {
                                 asset = scene.AssetService.Get(rop.RexCollisionMeshUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
+                                if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             break;
@@ -90,27 +90,29 @@ namespace ModularRex.RexParts.Helpers
                             foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
                             {
                                 asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
-                                if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
+                                if (asset != null && (int)asset.Type == assetType && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             break;
-                        case 41: //Material && Particle, WTF??!
-                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
-                            {
-                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
-                                if (asset != null && (int)asset.Type == assetType && !foundObjects.Contains(asset))
-                                {
-                                    foundObjects.Add(asset);
-                                }
-                            }
+                        case 41: //Particle
                             if (rop.RexParticleScriptUUID != UUID.Zero)
                             {
                                 asset = scene.AssetService.Get(rop.RexParticleScriptUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
+                                if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
+                                }
+                            }
+                            break;
+                        case 45: //Material
+                            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> kvp in rop.GetRexMaterials())
+                            {
+                                asset = scene.AssetService.Get(kvp.Value.AssetID.ToString());
+                                if (asset != null && (int)asset.Type == assetType && !foundObjects.ContainsKey(asset.FullID))
+                                {
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             break;
@@ -118,9 +120,9 @@ namespace ModularRex.RexParts.Helpers
                             if (rop.RexAnimationPackageUUID != UUID.Zero)
                             {
                                 asset = scene.AssetService.Get(rop.RexAnimationPackageUUID.ToString());
-                                if (asset != null && !foundObjects.Contains(asset))
+                                if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                                 {
-                                    foundObjects.Add(asset);
+                                    foundObjects.Add(asset.FullID, asset);
                                 }
                             }
                             break;
@@ -141,9 +143,9 @@ namespace ModularRex.RexParts.Helpers
                 if (kvp.Value == assetType)
                 {
                     AssetBase asset = scene.AssetService.Get(kvp.Key.ToString());
-                    if (asset != null)
+                    if (asset != null && !foundObjects.ContainsKey(asset.FullID))
                     {
-                        foundObjects.Add(asset);
+                        foundObjects.Add(asset.FullID, asset);
                     }
                 }
             }
