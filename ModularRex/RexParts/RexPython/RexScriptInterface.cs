@@ -335,8 +335,28 @@ namespace ModularRex.RexParts.RexPython
 
         public bool DestroyActor(string vId)
         {
-            m_log.Warn("[REXSCRIPT]: DestroyActor not implemented");
+            UUID objectUUID;
+            SceneObjectPart part = null;
+            if (UUID.TryParse(vId, out objectUUID))
+            {
+                part = myScriptEngine.World.GetSceneObjectPart(objectUUID);
+            }
+            else
+            {
+                part = myScriptEngine.World.GetSceneObjectPart(Convert.ToUInt32(vId));
+            }
+
+            if (part == null)
+            {
+                m_log.ErrorFormat("[REXSCRIPT]: Could not delete actor {0}, because it was not found", vId);
+                return false;
+            }
+
+            myScriptEngine.World.DeleteSceneObject(part.ParentGroup, false);
             return true;
+
+            //m_log.Warn("[REXSCRIPT]: DestroyActor not implemented");
+            //return true;
             //EntityBase tempobj = GetEntityBase(System.Convert.ToUInt32(vId, 10));
             //if (tempobj != null && tempobj is RexObjects.RexObjectGroup)
             //{
