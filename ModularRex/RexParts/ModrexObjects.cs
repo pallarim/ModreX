@@ -300,7 +300,17 @@ namespace ModularRex.RexParts
             //    return;        
 
             RexObjectProperties p = GetObject(id);
-            SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(id);
+            SceneObjectPart sop = null;
+            foreach (Scene s in m_scenes)
+            {
+                SceneObjectPart part = s.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+
             if (sop == null)
             {
                 m_log.Error("[REXOBJS] TriggerOnChangeScaleToPrim, no SceneObjectPart for id:" + id.ToString());
@@ -412,7 +422,7 @@ namespace ModularRex.RexParts
 
                     if (p.RexClassName.Length > 0)
                     {
-                        SceneObjectPart sop = m_scenes[0].GetSceneObjectPart(p.ParentObjectID);
+                        SceneObjectPart sop = s.GetSceneObjectPart(p.ParentObjectID);
                         if (sop != null)
                             sop.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
                     }      
