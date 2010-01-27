@@ -1273,5 +1273,60 @@ namespace ModularRex.RexParts
         }
 
         #endregion
+
+        public void rexAttachObjectToAvatar(string primId, string avatarId, int attachmentPoint, LSL_Types.Vector3 pos, LSL_Types.Quaternion rot, bool silent)
+        {
+            try
+            {
+                uint primLocalId = Convert.ToUInt32(primId);
+                UUID avatarUUID;
+                IClientAPI agent = null;
+                ScenePresence avatar = null;
+                if (UUID.TryParse(avatarId, out avatarUUID))
+                {
+                    ScenePresence presence = m_ScriptEngine.World.GetScenePresence(avatarUUID);
+                    agent = presence.ControllingClient;
+                    avatar = presence;
+                }
+                else
+                {
+                    uint avatarLocalId = Convert.ToUInt32(avatarId);
+                    List<EntityBase> entities = m_ScriptEngine.World.GetEntities();
+                    foreach (EntityBase ent in entities)
+                    {
+                        if (ent is ScenePresence)
+                        {
+                            if (ent.LocalId == avatarLocalId)
+                            {
+                                agent = ((ScenePresence)ent).ControllingClient;
+                                avatar = ((ScenePresence)ent);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (agent == null)
+                {
+                    m_log.ErrorFormat("[REXSCRIPT]: Failed to attach object to avatar. Could not find avatar {0}", avatarId);
+                    return;
+                }
+
+                SceneObjectPart part = m_ScriptEngine.World.GetSceneObjectPart(primLocalId);
+                if (part == null)
+                {
+                    m_log.Error("[REXSCRIPT] Error attaching object to avatar: Could not find object");
+                    return;
+                }
+
+                Vector3 position = new Vector3((float)pos.x, (float)pos.y, (float)pos.z);
+                m_ScriptEngine.World.AttachObject(agent, primLocalId, (uint)attachmentPoint, new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s), position, silent);
+                m_ScriptEngine.World.EventManager.TriggerOnAttach(primLocalId, part.ParentGroup.GetFromItemID(), agent.AgentId);
+            }
+            catch (Exception e)
+            {
+                m_log.Error("[REXSCRIPT] Error attaching object to avatar: " + e.ToString());
+            }
+        }
     }
 }

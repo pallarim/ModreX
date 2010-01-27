@@ -10,6 +10,10 @@ import rxlslobject
 import rxworld
 import rxtimer
 
+asm = clr.LoadAssemblyByName('OpenSim.Region.ScriptEngine.Shared')
+Vector3 = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3
+Quaternion = asm.OpenSim.Region.ScriptEngine.Shared.LSL_Types.Quaternion
+
 class Actor(rxlslobject.LSLObject):
 
     def __init__(self, vId):
@@ -242,6 +246,8 @@ class Actor(rxlslobject.LSLObject):
         return self.MyWorld.CS.rexGetTemporaryPrim(self.Id)
     def SetRexTemporaryPrim(self,vValue):
         self.MyWorld.CS.rexSetTemporaryPrim(self.Id,vValue)
+    def AttachObjectToAvatar(self, avatarId, attachmentPoint, pos=Vector3(0,0,0), rot=Quaternion(0,0,0,1), silent=False):
+        self.MyWorld.CS.rexAttachObjectToAvatar(self.Id, avatarId, attachmentPoint, pos, rot, silent)
 
 
 
