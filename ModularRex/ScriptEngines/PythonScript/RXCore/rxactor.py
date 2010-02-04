@@ -115,6 +115,7 @@ class Actor(rxlslobject.LSLObject):
 #        return self.MyWorld.CS.rexSetTextureMediaURL(url)
 
     def rexSetTextureMediaURL(self, url, refreshRate=None):
+        self.MyWorld.CS.SetScriptRunner(self.Id)
         if refreshRate is None:
             return self.MyWorld.CS.rexSetTextureMediaURL(url, 0)
         else: 
