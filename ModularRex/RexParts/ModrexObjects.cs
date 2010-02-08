@@ -134,7 +134,8 @@ namespace ModularRex.RexParts
 
         void SceneGraph_OnObjectRemove(EntityBase obj)
         {
-            DeleteObject(obj.UUID);
+            //this object group was removed from scene, but part is not necessarily removed from all groups
+            //DeleteObject(obj.UUID);
         }
 
 
@@ -411,21 +412,27 @@ namespace ModularRex.RexParts
             {
                 foreach (EntityBase e in s.Entities)
                 {
-                    RexObjectProperties p = LoadObject(e.UUID);
-                    p.ParentObjectID = e.UUID;
-                    p.SetRexEventManager(this);
-                    RexObjectPropertiesCache.Add(e.UUID,p);
-                    
-                    // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
-                    if(p.RexCollisionMeshUUID != UUID.Zero)
-                        TriggerOnChangeCollisionMesh(e.UUID);
-
-                    if (p.RexClassName.Length > 0)
+                    if (e is SceneObjectGroup)
                     {
-                        SceneObjectPart sop = s.GetSceneObjectPart(p.ParentObjectID);
-                        if (sop != null)
-                            sop.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
-                    }      
+                        SceneObjectGroup oGroup = (SceneObjectGroup)e;
+                        
+                        foreach (SceneObjectPart part in oGroup.GetParts())
+                        {
+                            RexObjectProperties p = LoadObject(part.UUID);
+                            p.ParentObjectID = part.UUID;
+                            p.SetRexEventManager(this);
+                            RexObjectPropertiesCache.Add(part.UUID, p);
+
+                            // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
+                            if (p.RexCollisionMeshUUID != UUID.Zero)
+                                TriggerOnChangeCollisionMesh(part.UUID);
+
+                            if (p.RexClassName.Length > 0)
+                            {
+                                part.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
+                            }
+                        }
+                    }
                 }
             }
         }

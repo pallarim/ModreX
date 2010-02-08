@@ -326,7 +326,7 @@ namespace ModularRex.RexParts
                             if (x.permissionToDelete)
                             {
                                 m_scene.DeleteSceneObject(x.objectGroup, false);
-                                m_rexObjects.DeleteObject(x.objectGroup.RootPart.UUID);
+                                //m_rexObjects.DeleteObject(x.objectGroup.RootPart.UUID);
                             }
                         }
                         catch (Exception e)
