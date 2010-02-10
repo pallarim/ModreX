@@ -551,6 +551,7 @@ namespace OpenSim.Region.Examples.RexBot
             try
             {
                 bot_toward = Util.GetNormalizedVector(pos - m_scenePresence.AbsolutePosition);
+                bot_toward.Z = 0;
                 Quaternion rot_result = llRotBetween(bot_forward, bot_toward);
                 m_bodyDirection = rot_result;
             } catch (System.ArgumentException) {}
