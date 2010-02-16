@@ -107,6 +107,12 @@ namespace ModularRex.RexParts
                         ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendMediaURL(texface.TextureID, url, vRefreshRate);
                     }
                 });
+
+                IRegionModule module = World.Modules["AssetMediaURLModule"];
+                if (module != null && module is ModRexMediaURL)
+                {
+                    ((ModRexMediaURL)module).SetAssetData(texface.TextureID, url, vRefreshRate);
+                }
                 //Old Rex: World.UpdateAssetMediaURLRequest(texface.TextureID, texasset, url, vRefreshRate);
                 return true;
             }
