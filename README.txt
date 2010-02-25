@@ -52,7 +52,7 @@ See: http://opensimulator.org/wiki/Dependencies#Linux and http://opensimulator.o
   * Navigate to addon-modules directory under OpenSim trunk
   * Check out the ModreX source to directory ModreX with command: svn checkout http://forge.opensimulator.org/svn/modrex/trunk ModreX
   * To access the svn use 'anonymous' as the username and a blank password
-  * Note: it is very important that you check out the source spesificly to ModreX direcotry under addon-modules directory! If this is not done properly next steps will produce errors.
+  * Note: it is very important that you check out the source to precisely the "addon-modules/ModreX" directory (not to be confused with "bin/addon-modules/ModreX")! If this is not done properly next steps will not work.
 
  3. Now before building, you must run the prebuilding script that will create the project files from the prebuild.xml. Go to OpenSim trunk root directory and run the runprebuild.bat or ./runprebuild.sh depending from the operating system you are using.
 
