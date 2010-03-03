@@ -450,6 +450,11 @@ namespace ModularRex.RexFramework
                 RexSoundRadius = source.RexSoundRadius;
                 RexSelectPriority = source.RexSelectPriority;
                 mProcessingPacketData = false;
+                m_rexAnimationPackageURL = source.RexAnimationPackageURI;
+                m_rexCollisionMeshURL = source.RexCollisionMeshURI;
+                m_rexMeshURL = source.RexMeshURI;
+                m_rexParticleScriptURL = source.RexParticleScriptURI;
+                m_rexSoundURL = source.RexSoundURI;
                 
                 TriggerChangedRexObjectProperties();
             }
