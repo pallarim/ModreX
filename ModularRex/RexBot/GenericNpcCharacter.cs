@@ -306,6 +306,11 @@ namespace OpenSim.Region.Examples.RexBot
 
         public event GodUpdateRegionInfoUpdate OnGodUpdateRegionInfoUpdate;
 
+        public event AgentSit OnRedo;
+
+        public event LandUndo OnLandUndo;
+
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();

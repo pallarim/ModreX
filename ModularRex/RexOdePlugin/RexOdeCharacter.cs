@@ -1061,5 +1061,9 @@ namespace ModularRex.RexOdePlugin
         public override float APIDStrength { set { return; } }
 
         public override float APIDDamping { set { return; } }
+
+        public override void VehicleFlags(int param, bool remove)
+        {
+        }
     }
 }

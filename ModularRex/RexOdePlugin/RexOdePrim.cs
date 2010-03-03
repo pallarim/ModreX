@@ -3009,5 +3009,12 @@ namespace ModularRex.RexOdePlugin
         public override bool PIDHoverActive { set { m_useHoverPID = value; } }
         public override PIDHoverType PIDHoverType { set { m_PIDHoverType = value; } }
         public override float PIDHoverTau { set { m_PIDHoverTau = value; } }
+
+        public override void VehicleFlags(int param, bool remove)
+        {
+            //this is what this should do, like in ODEPrim in OpenSim ODE module
+            //m_vehicle.ProcessVehicleFlags(param, remove);
+            //TODO: implement vechiles
+        }
     }
 }
