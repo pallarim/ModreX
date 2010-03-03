@@ -38,6 +38,7 @@ namespace ModularRex.RexParts
             scene.EventManager.OnClientConnect += EventManager_OnClientConnect;
             scene.SceneContents.OnObjectDuplicate += SceneGraph_OnObjectDuplicate;
             scene.SceneContents.OnObjectRemove += SceneGraph_OnObjectRemove;
+            scene.EventManager.OnObjectBeingRemovedFromScene += EventManager_OnObjectBeingRemovedFromScene;
 
             scene.AddCommand(this, "modreximport", "load 0.4 rex database <connstring>", "conn string example: SQLiteDialect;SQLite20Driver;Data Source=beneath_the_waves.db;Version=3", HandleLoadRexLegacyData);
 
@@ -62,6 +63,14 @@ namespace ModularRex.RexParts
             else
             {
                 m_db_connectionstring = "SQLiteDialect;SQLite20Driver;Data Source=RexObjects.db;Version=3";
+            }
+        }
+
+        void EventManager_OnObjectBeingRemovedFromScene(SceneObjectGroup obj)
+        {
+            if (RexObjectPropertiesCache.ContainsKey(obj.UUID))
+            {
+                RexObjectPropertiesCache.Remove(obj.UUID);
             }
         }
 
@@ -199,7 +208,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        void SendAllPropertiesToUser(RexClientViewBase user)
+        public void SendAllPropertiesToUser(RexClientViewBase user)
         {
             SendPreloadAssetsToUser(user);
 
@@ -412,7 +421,7 @@ namespace ModularRex.RexParts
             {
                 foreach (EntityBase e in s.Entities)
                 {
-                    if (e is SceneObjectGroup)
+                    if (e is SceneObjectGroup && !RexObjectPropertiesCache.ContainsKey(e.UUID))
                     {
                         SceneObjectGroup oGroup = (SceneObjectGroup)e;
                         
@@ -421,7 +430,8 @@ namespace ModularRex.RexParts
                             RexObjectProperties p = LoadObject(part.UUID);
                             p.ParentObjectID = part.UUID;
                             p.SetRexEventManager(this);
-                            RexObjectPropertiesCache.Add(part.UUID, p);
+                            if(!RexObjectPropertiesCache.ContainsKey(part.UUID))
+                                RexObjectPropertiesCache.Add(part.UUID, p);
 
                             // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
                             if (p.RexCollisionMeshUUID != UUID.Zero)
@@ -431,6 +441,8 @@ namespace ModularRex.RexParts
                             {
                                 part.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
                             }
+
+                            TriggerOnChangeRexObjectProperties(part.UUID);
                         }
                     }
                 }
