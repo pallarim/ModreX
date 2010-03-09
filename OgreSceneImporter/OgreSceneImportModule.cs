@@ -19,9 +19,12 @@ namespace OgreSceneImporter
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
-        private float m_objectImportScale = 1.0f;
+        private float m_objectScale = 1.0f;
         private Vector3 m_offset = Vector3.Zero;
-
+        private bool m_swapAxes = false;
+        private bool m_useCollisionMesh = true;
+        private float m_sceneRotation = 0.0f;
+                                      
         #region IRegionModule Members
 
         public void Initialise(Scene scene, Nini.Config.IConfigSource source)
@@ -54,20 +57,45 @@ namespace OgreSceneImporter
         {
             try
             {
-                if (cmdparams.Length >= 1)
+                bool showHelp = false;
+                if (cmdparams.Length > 1)
                 {
                     string command = cmdparams[1].ToLower(); //[0] == ogrescene
                     switch (command)
                     {
+                        case "help":
+                            showHelp = true;
+                            break;
                         case "import":
                             ImportOgreScene(cmdparams[2]);
                             break;
-                        case "setscale":
-                            SetScale(cmdparams[2]);
+                        case "collisionmesh":
+                            if (cmdparams.Length == 2)
+                                m_log.Info("[OGRESCENE]: Current use collision meshes setting is " + m_useCollisionMesh.ToString());                                
+                            else
+                                SetCollisionMesh(cmdparams[2]);
+                            break;
+                        case "swapaxes":
+                            if (cmdparams.Length == 2)
+                                m_log.Info("[OGRESCENE]: Current swap Y/Z axes setting is " + m_swapAxes.ToString());
+                            else 
+                                SetSwapAxes(cmdparams[2]);
+                            break;
+                        case "scale":
+                            if (cmdparams.Length == 2)
+                                m_log.Info("[OGRESCENE]: Current import scale is " + m_objectScale.ToString());
+                            else 
+                                SetScale(cmdparams[2]);
+                            break;
+                        case "rotation":
+                            if (cmdparams.Length == 2)
+                                m_log.Info("[OGRESCEEN]: Current import rotation (around Z axis) is " + m_sceneRotation.ToString() + " degrees");
+                            else
+                                SetRotation(cmdparams[2]);
                             break;
                         case "offset":
                             if (cmdparams.Length == 2)
-                                m_log.Info("[OGRESCENE]: Current offset is " + m_offset.ToString());
+                                m_log.Info("[OGRESCENE]: Current import offset is " + m_offset.ToString());
                             else
                             {
                                 try
@@ -86,9 +114,14 @@ namespace OgreSceneImporter
                             }
                             break;
                         default:
+                            showHelp = true;
                             break;
                     }
                 }
+                else showHelp = true;
+                
+                if (showHelp)
+                    m_log.Info("[OGRESCENE]: Available commands: import offset rotation scale swapaxes collisionmesh");
             }
             catch (Exception e)
             {
@@ -96,23 +129,60 @@ namespace OgreSceneImporter
             }
         }
 
+        private float ToRadians(double degrees)
+        {
+            return (float)(Math.PI * degrees / 180);
+        }
+
+        private void SetSwapAxes(string p)
+        {
+            try
+            {
+                bool newSwapAxes = Convert.ToBoolean(p);
+                m_swapAxes = newSwapAxes;
+            }
+            catch (Exception)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Error parsing swapaxes from value {0}", p);
+            }
+        }
+                
+        private void SetCollisionMesh(string p)
+        {
+            try
+            {
+                bool newUseCollisionMesh = Convert.ToBoolean(p);
+                m_useCollisionMesh = newUseCollisionMesh;
+            }
+            catch (Exception)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Error parsing collisionmesh from value {0}", p);
+            }
+        }
+
+        private void SetRotation(string p)
+        {
+            try
+            {
+                float newRotation = Convert.ToSingle(p);
+                m_sceneRotation = newRotation;
+            }
+            catch (Exception)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Error parsing rotation from value {0}", p);
+            }
+        }         
+                
         private void SetScale(string p)
         {
-            if (p == "help")
+            try
             {
-                m_log.InfoFormat("[OGRESCENE]: Set object scale on import. By default this is 1.0. Current value {0}", m_objectImportScale);
+                float newScale = Convert.ToSingle(p);
+                m_objectScale = newScale;
             }
-            else
+            catch (Exception)
             {
-                try
-                {
-                    float newScale = Convert.ToSingle(p);
-                    m_objectImportScale = newScale;
-                }
-                catch (Exception)
-                {
-                    m_log.ErrorFormat("[OGRESCENE]: Error parsin scale from value {0}", p);
-                }
+                m_log.ErrorFormat("[OGRESCENE]: Error parsing scale from value {0}", p);
             }
         }
 
@@ -169,7 +239,7 @@ namespace OgreSceneImporter
                     if (!System.IO.File.Exists(texture.Key))
                     {
                         m_log.ErrorFormat("[OGRESCENE]: Could not load file {0}, because it doesn't exist in working directory", texture.Key);
-                        return false;
+                        continue;
                     }
 
                     //Load file
@@ -204,7 +274,7 @@ namespace OgreSceneImporter
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[OGRESCENE]: Could not load texture {0}, because {1}", texture.Key, e);
-                    return false;
+                    continue;
                 }
             }
             return true;
@@ -227,6 +297,13 @@ namespace OgreSceneImporter
 
         private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials)
         {
+
+			// Quaternion for whole scene rotation
+            Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0,0,1), ToRadians(m_sceneRotation));
+
+            // Make sure node global transform is refreshed
+            node.RefreshDerivedTransform();
+
             if (node.Entities.Count >= 0) //add this to scene and do stuff
             {
                 foreach (Entity ent in node.Entities)
@@ -256,13 +333,20 @@ namespace OgreSceneImporter
                         //probably error in the mesh. this can't be fixed.
                         //setting this to physics engine could have devastating effect.
                         //must skip this object
-                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh. Skipping object {0}. Error message {1}", ent.MeshName, meshLoaderError);
-                        continue;
+                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh {0}. Error message {1}", ent.MeshName, meshLoaderError);
                     }
 
                     //check that postition of the object is inside scene
-                    Vector3 objPos = new Vector3(node.Position.X, node.Position.Y, node.Position.Z);
-                    objPos = objPos + m_offset; //add offset
+                    Vector3 objPos = new Vector3(node.DerivedPosition.X, node.DerivedPosition.Y, node.DerivedPosition.Z);
+                    if (m_swapAxes == true)
+                    {
+                        Vector3 temp = new Vector3(objPos);
+                        objPos.X = -temp.X;
+                        objPos.Y = temp.Z;
+                        objPos.Z = temp.Y;
+                    } 
+                    objPos = objPos * sceneRotQuat; // Apply scene rotation
+                    objPos = (objPos * m_objectScale) + m_offset; // Apply scale and add offset
                     if (objPos.X >= 0 && objPos.Y >= 0 && objPos.Z >= 0 &&
                         objPos.X <= 256 && objPos.Y <= 256 && objPos.Z <= 256)
                     {
@@ -270,15 +354,35 @@ namespace OgreSceneImporter
                             m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", objPos.Z, ent.MeshName);
 
                         //Add object to scene
-                        Quaternion rot = new Quaternion(node.Orientation.X, node.Orientation.Y, node.Orientation.Z, node.Orientation.W);
-                        rot *= new Quaternion(1, 0, 0);
-                        rot *= new Quaternion(0, 1, 0);
+                        Quaternion rot = new Quaternion(node.DerivedOrientation.X, node.DerivedOrientation.Y, node.DerivedOrientation.Z, node.DerivedOrientation.W);
+                        if (m_swapAxes == true)
+                        {
+                            Vector3 temp = new Vector3(rot.X, rot.Y, rot.Z);
+                            rot.X = -temp.X;
+                            rot.Y = temp.Z;
+                            rot.Z = temp.Y;
+                        }
+                        else
+                        {
+                            // Do the rotation adjust as in original importer
+                            rot *= new Quaternion(1, 0, 0);
+                            rot *= new Quaternion(0, 1, 0);
+                        }
+                        rot = sceneRotQuat * rot;
+                        
                         SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
                             m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
                         Vector3 newScale = new Vector3();
-                        newScale.X = node.Scale.X * m_objectImportScale;
-                        newScale.Y = node.Scale.Y * m_objectImportScale;
-                        newScale.Z = node.Scale.Z * m_objectImportScale;
+                        newScale.X = node.DerivedScale.X * m_objectScale;
+                        newScale.Y = node.DerivedScale.Y * m_objectScale;
+                        newScale.Z = node.DerivedScale.Z * m_objectScale;
+                        if (m_swapAxes == true)
+                        {
+                            Vector3 temp = new Vector3(newScale);
+                            newScale.X = temp.X;
+                            newScale.Y = temp.Z;
+                            newScale.Z = temp.Y;
+                        } 
                         sceneObject.RootPart.Scale = newScale;
 
                         //Add refs to materials, mesh etc.
@@ -288,7 +392,19 @@ namespace OgreSceneImporter
                         robject.RexDrawDistance = ent.RenderingDistance;
                         robject.RexCastShadows = ent.CastShadows;
                         robject.RexDrawType = 1;
-                        robject.RexCollisionMeshUUID = asset.FullID;
+                        
+                        // Only assign physics mesh if no error
+                        if ((meshLoaderError == "") && (m_useCollisionMesh == true))
+                        {
+                            try
+                            {
+                                robject.RexCollisionMeshUUID = asset.FullID;
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                        
                         for (int i = 0; i < materialNames.Count; i++)
                         {
                             UUID materilUUID;
