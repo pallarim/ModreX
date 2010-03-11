@@ -196,7 +196,7 @@ namespace OgreSceneImporter
                     data = OpenMetaverse.Imaging.OpenJPEG.EncodeFromImage(image, true);
 
                     //Create asset
-                    AssetBase asset = new AssetBase(texture.Value, texture.Key, (sbyte)AssetType.Texture);
+                    AssetBase asset = new AssetBase(texture.Value, texture.Key, (sbyte)AssetType.Texture, m_scene.RegionInfo.EstateSettings.EstateOwner.ToString());
                     asset.Data = data;
 
                     m_scene.AssetService.Store(asset);
@@ -242,7 +242,7 @@ namespace OgreSceneImporter
                     byte[] data = System.IO.File.ReadAllBytes(ent.MeshName);
 
                     //Add mesh to asset db
-                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43, m_scene.RegionInfo.EstateSettings.EstateOwner.ToString());
                     asset.Description = ent.Name;
                     asset.Data = data;
                     m_scene.AssetService.Store(asset);
@@ -273,8 +273,8 @@ namespace OgreSceneImporter
                         Quaternion rot = new Quaternion(node.Orientation.X, node.Orientation.Y, node.Orientation.Z, node.Orientation.W);
                         rot *= new Quaternion(1, 0, 0);
                         rot *= new Quaternion(0, 1, 0);
-                        SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
-                            m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
+                        SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.EstateSettings.EstateOwner,
+                            m_scene.RegionInfo.EstateSettings.EstateOwner, objPos, rot, PrimitiveBaseShape.CreateBox());
                         Vector3 newScale = new Vector3();
                         newScale.X = node.Scale.X * m_objectImportScale;
                         newScale.Y = node.Scale.Y * m_objectImportScale;

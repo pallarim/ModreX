@@ -4,7 +4,6 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using OpenSim.Framework;
-using OpenSim.Framework.Communications.Cache;
 
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Scripting;
@@ -318,7 +317,7 @@ namespace ModularRex.RexParts.RexPython
 
         public string SpawnActor(LSL_Types.Vector3 location, int shape, bool temporary, string pythonClass)
         {
-            UUID TempID = myScriptEngine.World.RegionInfo.MasterAvatarAssignedUUID;
+            UUID TempID = myScriptEngine.World.RegionInfo.EstateSettings.EstateOwner;
             Vector3 pos = new Vector3((float)location.x, (float)location.y, (float)location.z);
             Quaternion rot = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 

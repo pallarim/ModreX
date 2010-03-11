@@ -10,7 +10,6 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenSim.Framework;
-using OpenSim.Framework.Communications.Cache;
 using OpenSim.Region.ClientStack;
 using OpenSim.Region.ClientStack.LindenUDP;
 using ModularRex.RexNetwork.RexLogin;

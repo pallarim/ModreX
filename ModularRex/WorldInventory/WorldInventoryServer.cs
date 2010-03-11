@@ -366,7 +366,7 @@ namespace ModularRex.WorldInventory
                     contentType = MimeTypeConverter.GetContentType(assetType);
                 }
 
-                AssetBase asset = new AssetBase(UUID.Random(), pathParts[pathParts.Length - 1], (sbyte)assetType);
+                AssetBase asset = new AssetBase(UUID.Random(), pathParts[pathParts.Length - 1], (sbyte)assetType, m_scenes[0].RegionInfo.EstateSettings.EstateOwner.ToString());
                 asset.Local = false;
 
                 if (m_autoconvertJpgToJ2k && assetType == (int)AssetType.ImageJPEG)

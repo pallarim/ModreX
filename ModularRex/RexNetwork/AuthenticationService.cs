@@ -741,7 +741,6 @@ namespace ModularRex.RexNetwork
                             friend.FriendListOwnerPerms = Convert.ToUInt32(responseData["ownerPerms" + i].ToString());
                             friend.FriendPerms = Convert.ToUInt32(responseData["friendPerms"+i].ToString());
                             friend.AuthAddress = responseData["authAddr"+i].ToString();
-                            friend.onlinestatus = Convert.ToBoolean(responseData["online"+i].ToString());
                             
                         }
                         return friends;

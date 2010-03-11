@@ -241,7 +241,7 @@ namespace ModularRex.RexNetwork
             }
 
             AssetBase asset;
-            asset = new AssetBase(assetID, assetName, assType);
+            asset = new AssetBase(assetID, assetName, assType, m_agentID.ToString());
             asset.Data = data;
             if (Caps.AddNewAsset != null)
                 Caps.AddNewAsset(asset);

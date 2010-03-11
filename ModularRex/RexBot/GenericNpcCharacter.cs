@@ -76,7 +76,6 @@ namespace OpenSim.Region.Examples.RexBot
         public event DeRezObject OnDeRezObject;
         public event Action<IClientAPI> OnRegionHandShakeReply;
         public event GenericCall2 OnRequestWearables;
-        public event GenericCall2 OnCompleteMovementToRegion;
         public event UpdateAgent OnAgentUpdate;
         public event AgentRequestSit OnAgentRequestSit;
         public event AgentSit OnAgentSit;
@@ -309,7 +308,8 @@ namespace OpenSim.Region.Examples.RexBot
         public event AgentSit OnRedo;
 
         public event LandUndo OnLandUndo;
-
+        public event GenericCall1 OnCompleteMovementToRegion;
+        public event UpdateAgent OnPreAgentUpdate;
 
 #pragma warning restore 67
 
@@ -709,7 +709,7 @@ namespace OpenSim.Region.Examples.RexBot
 
             if (OnCompleteMovementToRegion != null)
             {
-                OnCompleteMovementToRegion();
+                OnCompleteMovementToRegion(this);
             }
         }
         public void SendAssetUploadCompleteMessage(sbyte AssetType, bool Success, UUID AssetFullID)
@@ -1198,6 +1198,28 @@ namespace OpenSim.Region.Examples.RexBot
         }
 
         public void SendGroupVoteHistory(UUID groupID, UUID transactionID, GroupVoteHistory[] Votes)
+        {
+        }
+
+        private bool m_isLoggingOut = false;
+
+        public bool IsLoggingOut
+        {
+            get
+            {
+                return m_isLoggingOut;
+            }
+            set
+            {
+                m_isLoggingOut = value;
+            }
+        }
+
+        public void SendChangeUserRights(UUID agentID, UUID friendID, int rights)
+        {
+        }
+
+        public void SendTextBoxRequest(string message, int chatChannel, string objectname, string ownerFirstName, string ownerLastName, UUID objectId)
         {
         }
 

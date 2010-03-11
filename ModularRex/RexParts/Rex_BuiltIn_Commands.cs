@@ -1326,8 +1326,12 @@ namespace ModularRex.RexParts
                 }
 
                 Vector3 position = new Vector3((float)pos.x, (float)pos.y, (float)pos.z);
-                m_ScriptEngine.World.AttachObject(agent, primLocalId, (uint)attachmentPoint, new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s), position, silent);
-                m_ScriptEngine.World.EventManager.TriggerOnAttach(primLocalId, part.ParentGroup.GetFromItemID(), agent.AgentId);
+                IAttachmentsModule attachmentsModule = m_ScriptEngine.World.AttachmentsModule;
+                if (attachmentsModule != null)
+                {
+                    attachmentsModule.AttachObject(agent, primLocalId, (uint)attachmentPoint, new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s), position, silent);
+                    m_ScriptEngine.World.EventManager.TriggerOnAttach(primLocalId, part.ParentGroup.GetFromItemID(), agent.AgentId);
+                }
             }
             catch (Exception e)
             {

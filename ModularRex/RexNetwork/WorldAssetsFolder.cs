@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenSim.Framework.Communications.Cache;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
@@ -10,6 +9,7 @@ using Nini.Config;
 using ModularRex.RexParts;
 using ModularRex.RexFramework;
 using ModularRex.RexParts.Helpers;
+using OpenSim.Services.Interfaces;
 
 namespace ModularRex.RexNetwork
 {
@@ -82,8 +82,8 @@ namespace ModularRex.RexNetwork
                 return ret;
             }
             // rex-end 
-            
-            if ((fold = m_scenes[0].CommsManager.UserProfileCacheService.LibraryRoot.FindFolder(folderID)) != null)
+            ILibraryService lib = m_scenes[0].RequestModuleInterface<ILibraryService>();
+            if (lib != null && (fold = lib.LibraryRootFolder.FindFolder(folderID)) != null)
             {
                 version = 0;
                 InventoryCollection ret = new InventoryCollection();
@@ -223,8 +223,9 @@ namespace ModularRex.RexNetwork
 
                 return;
             }
-            
-            if ((fold = scene.CommsManager.UserProfileCacheService.LibraryRoot.FindFolder(folderID)) != null)
+
+            ILibraryService lib = scene.RequestModuleInterface<ILibraryService>();
+            if (lib != null && (fold = lib.LibraryRootFolder.FindFolder(folderID)) != null)
             {
                 remoteClient.SendInventoryFolderDetails(
                     fold.Owner, folderID, fold.RequestListOfItems(),
@@ -385,11 +386,12 @@ namespace ModularRex.RexNetwork
             // Flash anims
             Dictionary<UUID, AssetBase> allFlashs = AssetsHelper.GetAssetList(scene, 42);
             m_WorldFlashFolder.Purge();
-            AssetBase ass = new AssetBase(UUID.Random(), "README", (sbyte)AssetType.Notecard);
-            ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");
-            scene.AssetService.Store(ass);
-            item = CreateItem(UUID.Random(), ass.FullID, ass.Name, ass.Description, (int)AssetType.Notecard, (int)InventoryType.Notecard, m_WorldFlashFolder.ID);
-            m_WorldFlashFolder.Items.Add(item.ID, item);
+            //AssetBase ass = new AssetBase(UUID.Random(), "README", (sbyte)AssetType.Notecard);
+            //ass.Data = Utils.StringToBytes("Flash folder in World Library not in use with ModreX.");
+            //scene.AssetService.Store(ass);
+            //item = CreateItem(UUID.Random(), ass.FullID, ass.Name, ass.Description, (int)AssetType.Notecard, (int)InventoryType.Notecard, m_WorldFlashFolder.ID);
+            //m_WorldFlashFolder.Items.Add(item.ID, item);
+
             //foreach (AssetBase asset in allFlashs)
             //{
             //    if (asset.Type == 49)

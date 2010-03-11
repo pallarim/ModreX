@@ -11,7 +11,6 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
 using ModularRex.NHibernate;
-using OpenSim.Framework.Communications.Cache;
 
 namespace ModularRex.RexParts
 {

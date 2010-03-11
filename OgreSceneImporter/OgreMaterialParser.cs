@@ -117,7 +117,7 @@ namespace OgreSceneImporter
                         material.AppendLine(line);
                     } while (!(line.StartsWith("}") && openBracets <= 0));
 
-                    AssetBase asset = new AssetBase(materialID, materialName, 45); //45 is OgreMaterial asset type
+                    AssetBase asset = new AssetBase(materialID, materialName, 45, m_scene.RegionInfo.EstateSettings.EstateOwner.ToString()); //45 is OgreMaterial asset type
                     asset.Data = Utils.StringToBytes(material.ToString());
                     m_scene.AssetService.Store(asset);
                 }
