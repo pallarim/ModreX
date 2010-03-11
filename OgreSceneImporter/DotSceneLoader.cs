@@ -494,7 +494,7 @@ namespace OgreSceneImporter
             pElement = (XmlElement)XMLNode.SelectSingleNode("scale");
             if (pElement != null)
             {
-                pNode.SetScale(parseVector3(pElement));
+                pNode.Scale = parseVector3(pElement);
                 pNode.SetInitialState();
             }
 

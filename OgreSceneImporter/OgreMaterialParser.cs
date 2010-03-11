@@ -59,7 +59,15 @@ namespace OgreSceneImporter
                     }
                     
                     UUID materialID = UUID.Random();
-                    materialUUIDs.Add(materialName, materialID);
+                    try
+                    {
+                        materialUUIDs.Add(materialName, materialID);
+                    }  
+                    catch (Exception e) 
+					{
+						m_log.ErrorFormat("[OGRESCENE]: duplicate material \"{0}\"", materialName);                            
+					}
+                    
                     StringBuilder material = new StringBuilder();
                     material.AppendLine("material " + materialID.ToString());
                     int openBracets = 0;
