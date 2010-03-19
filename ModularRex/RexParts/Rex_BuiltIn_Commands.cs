@@ -240,6 +240,24 @@ namespace ModularRex.RexParts
             catch { }
         }
 
+        public void rexDrawWater(string avatar, bool draw)
+        {
+            try
+            {
+                ScenePresence target = World.GetScenePresence(new UUID(avatar));
+                if (target != null)
+                {
+                    if (target.ControllingClient is RexNetwork.RexClientViewBase)
+                    {
+                        RexNetwork.RexClientViewBase targetClient = (RexNetwork.RexClientViewBase)target.ControllingClient;
+                        targetClient.SendRexDrawWater(draw);
+                    }
+                }
+            }
+            catch { }
+
+        }
+
         public void rexSetPostProcess(string vAvatar, int vEffectId, bool vbToggle) // rex
         {
             try

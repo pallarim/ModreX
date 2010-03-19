@@ -984,6 +984,15 @@ namespace ModularRex.RexNetwork
             SendGenericMessage("RexData", pack);
         }
 
+        public void SendRexDrawWater(bool draw)
+        {
+            List<string> pack = new List<string>();
+
+            pack.Add(draw.ToString());
+
+            SendGenericMessage("RexDrawWater", pack);
+        }
+
         public override void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
         {
             IRexUDPPort module = m_scene.RequestModuleInterface<IRexUDPPort>();
