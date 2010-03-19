@@ -26,6 +26,7 @@
 	 <Reference name="OpenMetaverseTypes.dll"/>
 	 <Reference name="OpenSim"/>
      <Reference name="OpenSim.Services.Interfaces"/>
+	 <Reference name="OpenSim.Server.Handlers"/>
 	 <Reference name="OpenSim.Framework.dll"/>
 	 <Reference name="OpenSim.Framework.Capabilities.dll"/>
 	 <Reference name="OpenSim.Framework.Communications.dll"/>
