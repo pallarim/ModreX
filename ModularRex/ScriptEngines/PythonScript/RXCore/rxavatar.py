@@ -122,6 +122,9 @@ class Avatar(rxactor.Actor):
 
     def rexSetWaterHeight(self,vHeight):
         self.MyWorld.CS.rexSetWaterHeight(self.AgentId,vHeight)
+        
+    def rexDrawWater(self,draw):
+        self.MyWorld.CS.rexDrawWater(self.AgentId,draw)
 
     def rexSetPostProcess(self,vEffectId,vbToggle):
         self.MyWorld.CS.rexSetPostProcess(self.AgentId,vEffectId,vbToggle)
