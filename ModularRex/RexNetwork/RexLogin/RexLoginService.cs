@@ -182,7 +182,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 if (aCircuit == null)
                 {
                     m_PresenceService.LogoutAgent(session, presence.Position, presence.LookAt);
-                    m_log.InfoFormat("[LLOGIN SERVICE]: Login failed, reason: {0}", reason);
+                    m_log.InfoFormat("[REXLOGIN SERVICE]: Login failed, reason: {0}", reason);
                     return LLFailedLoginResponse.AuthorizationProblem;
 
                 }
@@ -191,7 +191,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 if (m_FriendsService != null)
                 {
                     friendsList = m_FriendsService.GetFriends(useraccount.PrincipalID);
-                    m_log.DebugFormat("[LLOGIN SERVICE]: Retrieved {0} friends", friendsList.Length);
+                    m_log.DebugFormat("[REXLOGIN SERVICE]: Retrieved {0} friends", friendsList.Length);
                 }
 
                 //
@@ -200,7 +200,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 RexLoginResponse response = new RexLoginResponse(useraccount, aCircuit, presence, destination, inventorySkel, friendsList, m_LibraryService,
                     where, startLocation, position, lookAt, m_WelcomeMessage, home, clientIP);
 
-                m_log.DebugFormat("[LLOGIN SERVICE]: All clear. Sending login response to client.");
+                m_log.DebugFormat("[REXLOGIN SERVICE]: All clear. Sending login response to client.");
                 return response;
 
             }
