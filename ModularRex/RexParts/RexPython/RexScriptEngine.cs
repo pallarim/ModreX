@@ -278,7 +278,7 @@ namespace ModularRex.RexParts.RexPython
 
                 // Create avatars
                 string PParams = "";
-                ScenePresence[] scenePresencesList = World.GetScenePresences();
+                List<ScenePresence> scenePresencesList = World.GetScenePresences();
                 foreach (ScenePresence avatar in scenePresencesList)
                 {
                     if (avatar.ControllingClient is IRexBot)
