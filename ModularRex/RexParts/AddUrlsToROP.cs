@@ -86,11 +86,12 @@ namespace ModularRex.RexParts
                 rop.RexSoundURI = m_httpbaseurl + rop.RexSoundUUID.ToString() + "/data";
             }
 
-            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> item in rop.GetRexMaterials())
+            RexMaterialsDictionary materials = rop.GetRexMaterials();
+            rop.RexMaterials = new RexMaterialsDictionary();
+            foreach (KeyValuePair<uint, RexMaterialsDictionaryItem> item in materials)
             {
                 string materialUrl = m_httpbaseurl + item.Value.AssetID + "/data";
                 rop.RexMaterials.AddMaterial(item.Key, item.Value.AssetID, materialUrl);
-
             }
         }
     }
