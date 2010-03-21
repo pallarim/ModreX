@@ -234,15 +234,13 @@ namespace OpenSim.Region.Examples.RexBot
 
         public void Initialize()
         {
-            List<ScenePresence> avatars = m_scene.GetAvatars();
-            foreach (ScenePresence avatar in avatars)
+            m_scene.ForEachScenePresence(delegate(ScenePresence avatar)
             {
                 if (avatar.ControllingClient == this)
                 {
                     m_scenePresence = avatar;
-                    break;
                 }
-            }
+            });
 
             m_scenePresence.Teleport(DEFAULT_START_POSITION);
         }

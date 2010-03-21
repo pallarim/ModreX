@@ -142,10 +142,10 @@ namespace ModularRex.RexParts.RexPython
                 paths.Add(PytLibPath);
 
                 m_pyEng.SetSearchPaths(paths);
-                                
+
                 // Import Core and init
                 ScriptSource source = null;
-                source = m_pyEng.CreateScriptSourceFromString("from RXCore import *",SourceCodeKind.Statements);
+                source = m_pyEng.CreateScriptSourceFromString("from RXCore import *", SourceCodeKind.Statements);
                 source.Execute(m_defaultScope);
                 if (!bNewEngine)
                 {
@@ -156,12 +156,12 @@ namespace ModularRex.RexParts.RexPython
                     ExecutePythonStartCommand("reload(rxevent)");
                     ExecutePythonStartCommand("reload(rxeventmanager)");
                     ExecutePythonStartCommand("reload(rxworld)");
-                    ExecutePythonStartCommand("reload(rxworldinfo)");                    
-                    ExecutePythonStartCommand("reload(rxtimer)");                       
+                    ExecutePythonStartCommand("reload(rxworldinfo)");
+                    ExecutePythonStartCommand("reload(rxtimer)");
                     ExecutePythonStartCommand("reload(rxX10)");
                 }
 
-                m_defaultScope.SetVariable("objCSharp", mCSharp);              
+                m_defaultScope.SetVariable("objCSharp", mCSharp);
                 m_pyEng.Runtime.LoadAssembly(typeof(String).Assembly); // Add reference to System 
                 m_pyEng.Runtime.LoadAssembly(typeof(Uri).Assembly); // Add reference to mscorlib 
                 source = m_pyEng.CreateScriptSourceFromFile(PytProjectPath + "/RXCore/rxmain.py");
@@ -278,8 +278,7 @@ namespace ModularRex.RexParts.RexPython
 
                 // Create avatars
                 string PParams = "";
-                List<ScenePresence> scenePresencesList = World.GetScenePresences();
-                foreach (ScenePresence avatar in scenePresencesList)
+                World.ForEachScenePresence(delegate(ScenePresence avatar)
                 {
                     if (avatar.ControllingClient is IRexBot)
                         PParams = "\"add_bot\"," + avatar.LocalId.ToString() + "," + "\"" + avatar.UUID.ToString() + "\"";
@@ -287,8 +286,8 @@ namespace ModularRex.RexParts.RexPython
                         PParams = "\"add_presence\"," + avatar.LocalId.ToString() + "," + "\"" + avatar.UUID.ToString() + "\"";
 
                     ExecutePythonStartCommand("CreateEventWithName(" + PParams + ")");
-                }
-             
+                });
+
                 // start script thread
                 m_EngineStarted = true;
                 source = m_pyEng.CreateScriptSourceFromString("StartMainThread()", SourceCodeKind.SingleStatement);

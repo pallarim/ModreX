@@ -86,13 +86,13 @@ namespace ModularRex.RexParts.Modules
         /// <param name="agentID">User to whom the skype address belongs to</param>
         public void SendSkypeToAllClients(string skypeAddr, UUID agentID)
         {
-            foreach (ScenePresence sp in m_scene.GetScenePresences())
+            m_scene.ForEachClient(delegate(IClientAPI client)
             {
-                if (sp.ControllingClient is RexClientViewLegacy)
+                if (client is RexClientViewLegacy)
                 {
-                    ((RexClientViewLegacy)sp.ControllingClient).SendSkypeAddress(agentID, skypeAddr);
+                    ((RexClientViewLegacy)client).SendSkypeAddress(agentID, skypeAddr);
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -101,17 +101,15 @@ namespace ModularRex.RexParts.Modules
         /// <param name="remoteClient">Client to send to</param>
         public void SendAllOtherSkypeAddressesToClient(RexClientViewLegacy remoteClient)
         {
-            foreach (ScenePresence sp in m_scene.GetScenePresences())
+            m_scene.ForEachClient(delegate(IClientAPI client)
             {
-                if (sp.ControllingClient is RexClientViewLegacy)
+                if (client is RexClientViewLegacy)
                 {
-                    RexClientViewLegacy client = ((RexClientViewLegacy)sp.ControllingClient);
-                    if (client.RexSkypeURL != null && client.RexSkypeURL != string.Empty)
-                    {
-                        remoteClient.SendSkypeAddress(client.AgentId, client.RexSkypeURL);
-                    }
+                    RexClientViewLegacy rexClient = (RexClientViewLegacy)client;
+                    if (rexClient.RexSkypeURL != null && rexClient.RexSkypeURL != string.Empty)
+                        rexClient.SendSkypeAddress(client.AgentId, rexClient.RexSkypeURL);
                 }
-            }
+            });
         }
     }
 }
