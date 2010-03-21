@@ -36,7 +36,7 @@ namespace ModularRex.RexNetwork
             m_scenes.Add(scene);
             if (source.Configs["realXtend"] != null)
             {
-                enabled = !(source.Configs["realXtend"].GetBoolean("ServeHttpAssets", false));
+                enabled = (source.Configs["realXtend"].GetBoolean("ServeHttpAssets", false));
             }
         }
 
