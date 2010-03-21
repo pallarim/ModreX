@@ -324,7 +324,10 @@ namespace ModularRex.RexFramework
             get { return m_rexMeshURL; }
             set
             {
-                m_rexMeshURL = value;
+                if (value != null)
+                    m_rexMeshURL = value;
+                else
+                    m_rexMeshURL = String.Empty;
                 TriggerChangedRexObjectProperties();
             }
         }
@@ -334,7 +337,10 @@ namespace ModularRex.RexFramework
             get { return m_rexCollisionMeshURL; }
             set
             {
-                m_rexCollisionMeshURL = value;
+                if (value != null)
+                    m_rexCollisionMeshURL = value;
+                else
+                    m_rexCollisionMeshURL = String.Empty;
                 TriggerChangedRexObjectProperties();
             }
         }
@@ -344,7 +350,10 @@ namespace ModularRex.RexFramework
             get { return m_rexParticleScriptURL; }
             set
             {
-                m_rexParticleScriptURL = value;
+                if (value != null)
+                    m_rexParticleScriptURL = value;
+                else
+                    m_rexParticleScriptURL = String.Empty;
                 TriggerChangedRexObjectProperties();
             }
         }
@@ -354,7 +363,10 @@ namespace ModularRex.RexFramework
             get { return m_rexAnimationPackageURL; }
             set
             {
-                m_rexAnimationPackageURL = value;
+                if (value != null)
+                    m_rexAnimationPackageURL = value;
+                else
+                    m_rexAnimationPackageURL = String.Empty;
                 TriggerChangedRexObjectProperties();
             }
         }
@@ -364,7 +376,10 @@ namespace ModularRex.RexFramework
             get { return m_rexSoundURL; }
             set
             {
-                m_rexSoundURL = value;
+                if (value != null)
+                    m_rexSoundURL = value;
+                else
+                    m_rexSoundURL = String.Empty;
                 TriggerChangedRexObjectProperties();
             }
         }
