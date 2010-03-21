@@ -442,7 +442,7 @@ namespace ModularRex.RexParts
                                 part.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
                             }
 
-                            TriggerOnChangeRexObjectProperties(part.UUID);
+                            SendPropertiesToAllUsers(part.UUID, p);
                         }
                     }
                 }
