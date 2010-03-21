@@ -166,7 +166,12 @@ namespace ModularRex.RexFramework
         public string AssetURI
         {
             get { return assetUri; }
-            set { assetUri = value; }
+            set {
+                if (value != null)
+                    assetUri = value;
+                else
+                    assetUri = string.Empty;
+            }
         }
 
         private UUID rexObjectUUID;

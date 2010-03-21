@@ -137,6 +137,7 @@ namespace ModularRex.NHibernate
                         else
                         {
                             list[0].AssetID = item.AssetID;
+                            list[0].AssetURI = item.AssetURI;
                             manager.Update(list[0]);
                         }
 
