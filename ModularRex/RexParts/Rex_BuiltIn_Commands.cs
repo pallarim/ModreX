@@ -100,18 +100,11 @@ namespace ModularRex.RexParts
             texasset = World.AssetService.Get(texface.TextureID.ToString());
             if (texasset != null)
             {
-                World.ForEachScenePresence(delegate(ScenePresence controller)
-                {
-                    if (controller.ControllingClient is RexNetwork.RexClientViewBase)
-                    {
-                        ((RexNetwork.RexClientViewBase)controller.ControllingClient).SendMediaURL(texface.TextureID, url, vRefreshRate);
-                    }
-                });
-
                 IRegionModule module = World.Modules["AssetMediaURLModule"];
                 if (module != null && module is ModRexMediaURL)
                 {
                     ((ModRexMediaURL)module).SetAssetData(texface.TextureID, url, vRefreshRate);
+                    ((ModRexMediaURL)module).SendMediaURLtoAll(texface.TextureID);
                 }
                 //Old Rex: World.UpdateAssetMediaURLRequest(texface.TextureID, texasset, url, vRefreshRate);
                 return true;

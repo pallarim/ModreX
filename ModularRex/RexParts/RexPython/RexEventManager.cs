@@ -99,15 +99,7 @@ namespace ModularRex.RexParts.RexPython
 
         private void onPythonClassChange(UUID id)
         {
-            EntityBase entity;
-            if (m_scriptEngine.World.Entities.TryGetValue(id, out entity))
-            {
-                if (entity is SceneObjectGroup)
-                {
-                    OnPythonClassChange(((SceneObjectGroup)entity).LocalId);
-                    return;
-                }
-            }
+            OnPythonClassChange(id);
         }
 
         private void PythonScriptCommand(string module, string[] cmdparams)
@@ -254,7 +246,7 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
-        public void OnPythonClassChange(uint localID)
+        public void OnPythonClassChange(UUID ID)
         {
             try
             {
@@ -262,7 +254,7 @@ namespace ModularRex.RexParts.RexPython
                 string PythonTag = "";
 
                 EntityBase entity;
-                if (m_scriptEngine.World.Entities.TryGetValue(localID, out entity))
+                if (m_scriptEngine.World.Entities.TryGetValue(ID, out entity))
                 {
                     if (entity is SceneObjectGroup)
                     {
@@ -286,7 +278,7 @@ namespace ModularRex.RexParts.RexPython
                             }
                         }
                         if (m_scriptEngine.IsEngineStarted)
-                            m_scriptEngine.CreateActorToPython(localID.ToString(), PythonClassName, PythonTag);
+                            m_scriptEngine.CreateActorToPython(entity.LocalId.ToString(), PythonClassName, PythonTag);
                     }
                 }
             }
