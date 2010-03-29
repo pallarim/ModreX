@@ -96,11 +96,11 @@ namespace ModularRex.RexParts.RexPython
                     m_itemID = sog.UUID;
                     return true;
                 }
-                m_log.DebugFormat("entity not scene object group: {0}", entity.GetType().ToString());
+                m_log.DebugFormat("[PythonScript]: entity not scene object group: {0}", entity.GetType().ToString());
             }
             else
             {
-                m_log.Debug("no entity found with id");
+                m_log.Debug("[PythonScript]: no entity found with id");
             }
             return false;
         }

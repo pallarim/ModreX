@@ -440,6 +440,7 @@ namespace ModularRex.RexParts
                             if (p.RexClassName.Length > 0)
                             {
                                 part.SetScriptEvents(p.ParentObjectID, (int)scriptEvents.touch_start);
+                                TriggerOnChangePythonClass(part.UUID);
                             }
 
                             SendPropertiesToAllUsers(part.UUID, p);
