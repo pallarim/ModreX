@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 # rxevent.py
 # External events that come from rexserver
 # and are handled by rxeventmanager.
@@ -167,9 +168,9 @@ class RexEventListen(RexEvent):
         super(self.__class__,self).__init__()
         self.ObjectId = str(args[0])
         self.Channel = str(args[1])
-        self.EvName = str(args[2])
+        self.EvName = args[2]
         self.OtherId = str(args[3])
-        self.Message = str(args[4])
+        self.Message = args[4]
 
     def PrintDebugStr(self):
         print self.MyName,self.ObjectId,self.Channel,self.EvName,self.OtherId,self.Message
