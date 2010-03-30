@@ -25,7 +25,7 @@ namespace ModularRex.RexNetwork.RexLogin
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly List<Scene> m_scenes = new List<Scene>();
-        private readonly Dictionary<UUID, RexUserProfileData> m_userData = new Dictionary<UUID, RexUserProfileData>();
+        protected readonly Dictionary<UUID, RexUserProfileData> m_userData = new Dictionary<UUID, RexUserProfileData>();
 
         private List<RexUDPServer> m_udpservers = new List<RexUDPServer>();
         private IConfigSource m_config;
