@@ -20,7 +20,7 @@ namespace ModularRex.RexParts.Helpers
         /// <returns>Dictinary of assets found</returns>
         public static Dictionary<UUID, AssetBase> GetAssetList(Scene scene, int assetType)
         {
-            Dictionary<UUID, int> assetUuids = new Dictionary<UUID, int>();
+            Dictionary<UUID, AssetType> assetUuids = new Dictionary<UUID, AssetType>();
 
             List<EntityBase> entities = scene.GetEntities();
             List<SceneObjectGroup> sceneObjects = new List<SceneObjectGroup>();
@@ -138,9 +138,9 @@ namespace ModularRex.RexParts.Helpers
             }
 
 
-            foreach (KeyValuePair<UUID, int> kvp in assetUuids)
+            foreach (KeyValuePair<UUID, AssetType> kvp in assetUuids)
             {
-                if (kvp.Value == assetType)
+                if (kvp.Value == (AssetType)assetType)
                 {
                     AssetBase asset = scene.AssetService.Get(kvp.Key.ToString());
                     if (asset != null && !foundObjects.ContainsKey(asset.FullID))
