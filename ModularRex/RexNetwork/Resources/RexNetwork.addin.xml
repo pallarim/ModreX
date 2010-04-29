@@ -1,4 +1,4 @@
-﻿<Addin id="ModularRex.RexNetwork.RexLogin" version="0.1">
+﻿<Addin id="ModularRex.RexNetwork" version="0.1">
   <Runtime>
     <Import assembly="ModularRex.dll"/>
   </Runtime>
@@ -8,7 +8,8 @@
   </Dependencies>
 
   <Extension path = "/OpenSim/RegionModules">
-    <RegionModule id="RexLoginConfigurationManager" type="ModularRex.RexNetwork.RexLogin.LoginConfigurationManager" />
+    <RegionModule id="RexAvatarUrlReciver" type="ModularRex.RexNetwork.AvatarUrlReciver" />
     <RegionModule id="RexLoginServiceInConnectorModule" type="ModularRex.RexNetwork.RexLogin.RexLoginServiceInConnectorModule" />
+    <RegionModule id="RexLoginConfigurationManager" type="ModularRex.RexNetwork.RexLogin.LoginConfigurationManager" />
   </Extension>
 </Addin>

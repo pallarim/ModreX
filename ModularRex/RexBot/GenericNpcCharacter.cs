@@ -311,6 +311,8 @@ namespace OpenSim.Region.Examples.RexBot
         public event GenericCall1 OnCompleteMovementToRegion;
         public event UpdateAgent OnPreAgentUpdate;
 
+        public event LinkInventoryItem OnLinkInventoryItem;
+
 #pragma warning restore 67
 
         private UUID myID = UUID.Random();
@@ -500,6 +502,10 @@ namespace OpenSim.Region.Examples.RexBot
         public void SendGenericMessage(string method, List<string> message)
         {
 
+        }
+
+        public void SendGenericMessage(string method, List<byte[]> message)
+        {
         }
 
         public virtual void SendLayerData(float[] map)
