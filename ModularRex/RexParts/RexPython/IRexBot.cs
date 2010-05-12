@@ -45,5 +45,6 @@ namespace ModularRex.RexParts.RexPython
         void EnableAutoMove(bool enable, bool stopWarpTimer);
         void StopAutoMove(bool stop);
         void PauseAutoMove(bool pause);
+        void SendChatFromBot(string message);
     }
 }

@@ -66,7 +66,14 @@ namespace OpenSim.Region.Examples.RexBot
         public RexBotState State
         {
             get { return m_currentState; }
-            set { m_previousState = m_currentState;  m_currentState = value; }
+            set
+            {
+                if (m_currentState != value)
+                {
+                    m_previousState = m_currentState;
+                }
+                m_currentState = value;
+            }
         }
         private RexBotState m_previousState = RexBotState.Idle;
         
@@ -289,6 +296,7 @@ namespace OpenSim.Region.Examples.RexBot
         {
             Vector3 bot_forward = new Vector3(1, 0, 0);
             Vector3 bot_toward = Util.GetNormalizedVector(destination - m_scenePresence.AbsolutePosition);
+            bot_toward.Z = 0;
             Quaternion rot_result = llRotBetween(bot_forward, bot_toward);
             m_bodyDirection = rot_result;
             m_movementFlag = (uint)AgentManager.ControlFlags.AGENT_CONTROL_AT_POS;
@@ -773,6 +781,20 @@ namespace OpenSim.Region.Examples.RexBot
                 m_frameCount = 0;
             }
             m_frameCount++;
+        }
+
+        public void SendChatFromBot(string message)
+        {
+            OSChatMessage args = new OSChatMessage();
+            args.Message = message;
+            args.Channel = 0;
+            args.From = FirstName + " " + LastName;
+            args.Position = this.m_scenePresence.AbsolutePosition;
+            args.Sender = this;
+            args.Type = ChatTypeEnum.Say;
+            args.Scene = m_scene;
+
+            OnBotChatFromViewer(this, args);
         }
 
         private uint m_circuitCode;

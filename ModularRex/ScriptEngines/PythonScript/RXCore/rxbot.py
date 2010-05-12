@@ -45,3 +45,6 @@ class Bot(rxavatar.Avatar):
     def StopAutoMove(self,vEnable):
         self.MyWorld.CS.BotStopAutoMove(self.AgentId,vEnable)
         
+    def SendChat(self, message):
+        self.MyWorld.CS.BotSendChatMessage(self.AgentId, message)
+        

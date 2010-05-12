@@ -671,6 +671,16 @@ namespace ModularRex.RexParts.RexPython
             }
         }
 
+        public void BotSendChatMessage(string botId, string message)
+        {
+            UUID TempId = new UUID(botId);
+            ScenePresence temppre = myScriptEngine.World.GetScenePresence(TempId);
+            if (temppre != null && temppre.ControllingClient is IRexBot)
+            {
+                (temppre.ControllingClient as IRexBot).SendChatFromBot(message);
+            }
+        }
+
         public void AddUserGenericPacketHandler(string presenceId, string method, GenericMessage handler)
         {
             UUID userId = new UUID(presenceId);
