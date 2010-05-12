@@ -317,7 +317,21 @@ namespace OpenSim.Region.Examples.RexBot
 
         protected virtual void OnBotChatFromViewer(object sender, OSChatMessage e)
         {
-            OnChatFromClient(sender, e);
+            ChatMessage chatDelegate = OnChatFromClient;
+            if (chatDelegate != null)
+            {
+                foreach (ChatMessage d in chatDelegate.GetInvocationList())
+                {
+                    IAsyncResult ar = d.BeginInvoke(sender, e, ChatCallback, d);
+                    //d(sender, e);
+                }
+            }
+        }
+
+        void ChatCallback(IAsyncResult ar)
+        {
+            ChatMessage d = (ChatMessage)ar.AsyncState;
+            d.EndInvoke(ar);
         }
 
         protected virtual void OnBotAgentUpdate(uint controlFlag, Quaternion bodyRotation)
