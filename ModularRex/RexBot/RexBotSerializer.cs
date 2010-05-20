@@ -48,6 +48,26 @@ namespace OpenSim.Region.Examples.RexBot
             }
         }
 
+        /// <summary>
+        /// Gets the name of the region.
+        /// </summary>
+        /// <param name="node">The node of bot</param>
+        /// <returns>Region name or null if property is not set</returns>
+        public string GetRegionName(XmlNode node)
+        {
+            string regionName = null;
+
+            foreach (XmlNode childNode in node.ChildNodes)
+            {
+                if (childNode.Name == "region")
+                {
+                    regionName = childNode.InnerText;
+                }
+            }
+
+            return regionName;
+        }
+
         // imports rex bot config from xml node. uses strict parsing, throws exception from unknown elements.
         public void ImportRexBot(RexBot bot, XmlNode node)
         {

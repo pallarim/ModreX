@@ -133,8 +133,19 @@ namespace OpenSim.Region.Examples.RexBot
         // read config data for single bot and add the avatar to the scene
         private void createAvatar(XmlNode node)
         {
-            RexBot m_character = new RexBot(m_scene, m_navMeshManager);
             RexBotSerializer serializer = new RexBotSerializer();
+
+            //first get region name so we know if we add this bot to this scene
+            //if value is null we'll add it to all scenes
+            string regionName = serializer.GetRegionName(node);
+            if (regionName != null)
+            {
+                if (regionName != m_scene.RegionInfo.RegionName)
+                    return;
+            }
+
+            RexBot m_character = new RexBot(m_scene, m_navMeshManager);
+            
             serializer.ImportName(m_character, node); // import avatar name from file, we need it early
 
             m_aCircuitData.firstname = m_character.FirstName;
