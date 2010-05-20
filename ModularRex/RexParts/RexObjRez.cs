@@ -308,7 +308,7 @@ namespace ModularRex.RexParts
 
                             //Get the item id of the asset so the RexObjectProperties can be changed to that id
                             CachedUserInfo userInfo = m_scene.CommsManager.UserProfileCacheService.GetUserDetails(x.remoteClient.AgentId);
-                            if (userInfo.RootFolder != null)
+                            if (userInfo != null && userInfo.RootFolder != null)
                             {
                                 InventoryItemBase item = userInfo.RootFolder.FindAsset(assetId);
 
