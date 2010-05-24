@@ -18,6 +18,7 @@ namespace OgreSceneImporter
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private List<Scene> m_scenes = new List<Scene>();
         private Scene m_scene;
         private float m_objectScale = 1.0f;
         private Vector3 m_offset = Vector3.Zero;
@@ -29,12 +30,12 @@ namespace OgreSceneImporter
 
         public void Initialise(Scene scene, Nini.Config.IConfigSource source)
         {
-            m_scene = scene;
+            m_scenes.Add(scene);
+            scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
         }
 
         public void PostInitialise()
         {
-            m_scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
         }
 
         public void Close()
@@ -48,13 +49,29 @@ namespace OgreSceneImporter
 
         public bool IsSharedModule
         {
-            get { return false; }
+            get { return true; }
         }
 
         #endregion
 
         private void OgreSceneCommand(string module, string[] cmdparams)
         {
+            if (OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene != null && OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene is Scene)
+            {
+                m_scene = (Scene)OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene;
+                //current scene to m_scene for time when console comman is processed. This is because current scene can change in between of processing
+            }
+            else
+            {
+                if (m_scenes.Count == 1)
+                    m_scene = m_scenes[0];
+                else
+                {
+                    m_log.ErrorFormat("[OGRESCENE]: More than one scene in region. Set current scene with command \"change region <region name>\"");
+                    return;
+                }
+            }
+
             try
             {
                 bool showHelp = false;
@@ -127,6 +144,8 @@ namespace OgreSceneImporter
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to execute ogrescene command. Exception {0} was thrown.", e);
             }
+
+            m_scene = null;
         }
 
         private float ToRadians(double degrees)
@@ -208,7 +227,10 @@ namespace OgreSceneImporter
             }
             System.IO.StreamReader sreader = System.IO.File.OpenText(fileName+".material");
             string data = sreader.ReadToEnd();
-            OgreMaterialParser parser = new OgreMaterialParser(m_scene);
+
+            OgreMaterialParser parser;
+            parser = new OgreMaterialParser(m_scene);
+
             Dictionary<string, UUID> materials = null;
             Dictionary<string, UUID> textures = null;
             if (!parser.ParseAndSaveMaterial(data, out materials, out textures))
@@ -270,6 +292,7 @@ namespace OgreSceneImporter
                     asset.Data = data;
 
                     m_scene.AssetService.Store(asset);
+                    
                 }
                 catch (Exception e)
                 {
