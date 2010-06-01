@@ -12,6 +12,7 @@
 
 	<ReferencePath>../../../bin/</ReferencePath>
 	<ReferencePath>../ModularRex/bin/</ReferencePath>
+     <Reference name="Ionic.Zip"/>
 	 <Reference name="log4net"/>
 	 <Reference name="OpenMetaverse"/>
 	 <Reference name="OpenMetaverseTypes"/>
@@ -23,7 +24,9 @@
 	 <Reference name="ModularRex.RexFramework"/>
 	 <Reference name="Nini"/>
 	 <Reference name="OpenSim.Framework"/>
+	 <Reference name="OpenSim.Framework.Capabilities"/>
 	 <Reference name="OpenSim.Framework.Console"/>
+	 <Reference name="OpenSim.Framework.Servers.HttpServer"/>
 	 <Reference name="OpenSim.Region.Framework"/>
 	 <Reference name="OpenSim.Services.Interfaces"/>
 	 <Reference name="RexDotMeshLoader" localCopy="true"/>
