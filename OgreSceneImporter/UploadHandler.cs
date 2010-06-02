@@ -53,9 +53,16 @@ namespace OgreSceneImporter
 
         public void AddUploadCap(Scene scene, OgreSceneImportModule osi)
         {
-            m_scene = scene;
-            m_osi = osi;
-            scene.EventManager.OnRegisterCaps += this.RegisterCaps;
+            try
+            {
+                m_scene = scene;
+                m_osi = osi;
+                scene.EventManager.OnRegisterCaps += this.RegisterCaps;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Error starting upload handler: {0}, {1}", e.Message, e.StackTrace);
+            }
         }
 
         public void RegisterCaps(UUID agentID, OpenSim.Framework.Capabilities.Caps caps)

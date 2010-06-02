@@ -34,11 +34,11 @@ namespace OgreSceneImporter
         {
             m_scenes.Add(scene);
             scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
+            m_uploadHandler.AddUploadCap(scene, this);
         }
 
         public void PostInitialise()
         {
-            m_uploadHandler.AddUploadCap(m_scene, this);
         }
 
         public void Close()
