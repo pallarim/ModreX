@@ -66,6 +66,7 @@ namespace OgreSceneImporter
 
             System.IO.StreamReader sreader = System.IO.File.OpenText(SceneName);
             string data = sreader.ReadToEnd();
+            sreader.Close();
 
             //Mogre.StringVectorPtr vectorPtr = Mogre.ResourceGroupManager.Singleton.ListResourceNames(Mogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
             //for (int i = 0; i < vectorPtr.Count; i++)
