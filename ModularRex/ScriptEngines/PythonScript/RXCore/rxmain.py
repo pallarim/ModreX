@@ -52,7 +52,15 @@ class MainThread(Thread):
         
         try:
             for TempId,TempObj in globals()["MyWorld"].AllActors.iteritems():
-                TempObj.EventCreated()
+                try:
+                    TempObj.EventCreated()
+                except:
+                    print "rxmain,MainThread.run, Error in EventCreated in object"
+                    print "class name",TempObj.GetScriptClassName()
+                    print sys.exc_info()[0]
+                    print sys.exc_info()[1]
+                    print sys.exc_info()[2]
+                    
         except:
             print "rxmain,MainThread.run, EventCreated on actors:", sys.exc_info()[0]
             print sys.exc_info()[1]
