@@ -158,9 +158,31 @@ namespace OgreSceneImporter
 
         private void RemoveFolder(string folder)
         {
+            //string path = Path.Combine(Directory.GetCurrentDirectory(), folder);
+            //if (System.IO.Directory.Exists(path))
+            //    System.IO.Directory.Delete(path, true);
+
             string path = Path.Combine(Directory.GetCurrentDirectory(), folder);
             if (System.IO.Directory.Exists(path))
-                System.IO.Directory.Delete(path, true);        
+            {
+                //    System.IO.Directory.Delete(path, true);
+
+                string[] files = Directory.GetFiles(folder);
+                string[] dirs = Directory.GetDirectories(folder);
+
+                foreach (string file in files)
+                {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                    File.Delete(file);
+                }
+
+                foreach (string dir in dirs)
+                {
+                    RemoveFolder(dir);
+                }
+
+                Directory.Delete(folder, false);
+            }
         }
 
         private bool CheckRights(UUID agentID)
