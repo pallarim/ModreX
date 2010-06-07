@@ -483,9 +483,13 @@ namespace OgreSceneImporter
             }
         }
 
-        public void ImportUploadedOgreScene(string fileName)
+        public void ImportUploadedOgreScene(string fileName, Scene scene)
         {
+            // Temporary fix for scene being null, should make scene a method variable, passed forward in callstack where needed
+            Scene temp = m_scene;
+            m_scene = scene;
             ImportOgreScene(fileName);
+            m_scene = temp;
         }
 
         private string PathFromFileName(string fileName)
