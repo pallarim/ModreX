@@ -47,6 +47,8 @@ namespace OgreSceneImporter
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
+        
+        
         private OgreSceneImportModule m_osi;
 
         private const string EXTRACT_FOLDER_NAME = "SceneUploadZipFiles";
@@ -263,7 +265,7 @@ namespace OgreSceneImporter
             CreateSceneMaterialFileIfNeeded(fi.Name, di);
             try
             {
-                m_osi.ImportUploadedOgreScene(loadName);
+                m_osi.ImportUploadedOgreScene(loadName, m_scene);
             }
             catch (Exception exp)
             {
