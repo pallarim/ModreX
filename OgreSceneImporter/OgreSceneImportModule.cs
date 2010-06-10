@@ -18,23 +18,27 @@ namespace OgreSceneImporter
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private List<Scene> m_scenes = new List<Scene>();
         private Scene m_scene;
         private float m_objectScale = 1.0f;
         private Vector3 m_offset = Vector3.Zero;
         private bool m_swapAxes = false;
         private bool m_useCollisionMesh = true;
         private float m_sceneRotation = 0.0f;
-                                      
+
+        private UploadHandler m_uploadHandler = new UploadHandler();
+
         #region IRegionModule Members
 
         public void Initialise(Scene scene, Nini.Config.IConfigSource source)
         {
-            m_scene = scene;
+            m_scenes.Add(scene);
+            scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
+            m_uploadHandler.AddUploadCap(scene, this);
         }
 
         public void PostInitialise()
         {
-            m_scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
         }
 
         public void Close()
@@ -48,13 +52,29 @@ namespace OgreSceneImporter
 
         public bool IsSharedModule
         {
-            get { return false; }
+            get { return true; }
         }
 
         #endregion
 
         private void OgreSceneCommand(string module, string[] cmdparams)
         {
+            if (OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene != null && OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene is Scene)
+            {
+                m_scene = (Scene)OpenSim.Framework.Console.MainConsole.Instance.ConsoleScene;
+                //current scene to m_scene for time when console comman is processed. This is because current scene can change in between of processing
+            }
+            else
+            {
+                if (m_scenes.Count == 1)
+                    m_scene = m_scenes[0];
+                else
+                {
+                    m_log.ErrorFormat("[OGRESCENE]: More than one scene in region. Set current scene with command \"change region <region name>\"");
+                    return;
+                }
+            }
+
             try
             {
                 bool showHelp = false;
@@ -127,9 +147,11 @@ namespace OgreSceneImporter
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to execute ogrescene command. Exception {0} was thrown.", e);
             }
+
+            m_scene = null;
         }
 
-        private float ToRadians(double degrees)
+        public float ToRadians(double degrees)
         {
             return (float)(Math.PI * degrees / 180);
         }
@@ -208,7 +230,9 @@ namespace OgreSceneImporter
             }
             System.IO.StreamReader sreader = System.IO.File.OpenText(fileName+".material");
             string data = sreader.ReadToEnd();
+            sreader.Close();
             OgreMaterialParser parser = new OgreMaterialParser(m_scene);
+            string filepath = PathFromFileName(fileName);
             Dictionary<string, UUID> materials = null;
             Dictionary<string, UUID> textures = null;
             if (!parser.ParseAndSaveMaterial(data, out materials, out textures))
@@ -217,7 +241,7 @@ namespace OgreSceneImporter
                 return;
             }
 
-            if (!LoadAndSaveTextures(textures))
+            if (!LoadAndSaveTextures(textures, filepath))
             {
                 m_log.ErrorFormat("[OGRESCENE]: Aborting ogre scene importing, because there were some errors in loading textures");
                 return;
@@ -226,24 +250,38 @@ namespace OgreSceneImporter
 
             //Load&parse meshes and add them to scene
             m_log.Info("[OGRESCENE]: Loading OGRE stuff to scene");
-            AddObjectsToScene(ogreSceneManager.RootSceneNode, materials);
+
+            AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, filepath);
+            //AddObjectsToScene(ogreSceneManager.RootSceneNode, materials);
         }
 
-        private bool LoadAndSaveTextures(Dictionary<string, UUID> textures)
+        private bool LoadAndSaveTextures(Dictionary<string, UUID> textures, string additionalPath)
         {
             foreach (KeyValuePair<string, UUID> texture in textures)
             {
                 try
                 {
                     //check that file exists
-                    if (!System.IO.File.Exists(texture.Key))
+                    bool usePath = false;
+                    string p = System.IO.Path.Combine(additionalPath, texture.Key);
+                    if (!System.IO.File.Exists(texture.Key) && System.IO.File.Exists(p)) { usePath = true; }
+
+                    if (!System.IO.File.Exists(texture.Key)&&usePath==false)
                     {
                         m_log.ErrorFormat("[OGRESCENE]: Could not load file {0}, because it doesn't exist in working directory", texture.Key);
                         continue;
                     }
 
                     //Load file
-                    byte[] data = System.IO.File.ReadAllBytes(texture.Key);
+                    byte[] data;
+                    if (!usePath)
+                    {
+                        data = System.IO.File.ReadAllBytes(texture.Key);
+                    }
+                    else
+                    {
+                        data = System.IO.File.ReadAllBytes(p);
+                    }
 
                     //resize asset if needed
                     System.IO.MemoryStream stream = new System.IO.MemoryStream(data);
@@ -270,6 +308,7 @@ namespace OgreSceneImporter
                     asset.Data = data;
 
                     m_scene.AssetService.Store(asset);
+                    
                 }
                 catch (Exception e)
                 {
@@ -280,7 +319,7 @@ namespace OgreSceneImporter
             return true;
         }
 
-        private Bitmap ResizeImage(Bitmap imgToResize, Size size)
+        public Bitmap ResizeImage(Bitmap imgToResize, Size size)
         {
             int destWidth = size.Width;
             int destHeight = size.Height;
@@ -295,7 +334,7 @@ namespace OgreSceneImporter
             return b;
         }
 
-        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials)
+        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath)
         {
 
 			// Quaternion for whole scene rotation
@@ -309,14 +348,22 @@ namespace OgreSceneImporter
                 foreach (Entity ent in node.Entities)
                 {
                     //first check that file exists
-                    if (!System.IO.File.Exists(ent.MeshName))
+                    bool usePath = false;
+                    string p = System.IO.Path.Combine(additionalSearchPath, ent.MeshName);
+                    if (!System.IO.File.Exists(ent.MeshName) && System.IO.File.Exists(p)) { usePath = true; }
+
+                    if (!System.IO.File.Exists(ent.MeshName) && !System.IO.File.Exists(p))
                     {
                         m_log.ErrorFormat("[OGRESCENE]: Could not find mesh file {0}. Skipping", ent.MeshName);
                         continue;
                     }
 
                     //Load mesh object
-                    byte[] data = System.IO.File.ReadAllBytes(ent.MeshName);
+                    byte[] data;
+                    if (!usePath)
+                        data = System.IO.File.ReadAllBytes(ent.MeshName);
+                    else
+                        data = System.IO.File.ReadAllBytes(p);
 
                     //Add mesh to asset db
                     AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43, m_scene.RegionInfo.EstateSettings.EstateOwner.ToString());
@@ -431,9 +478,36 @@ namespace OgreSceneImporter
             {
                 foreach (SceneNode child in node.Children)
                 {
-                    AddObjectsToScene(child, materials);
+                    AddObjectsToScene(child, materials, additionalSearchPath);
                 }
             }
         }
+
+        public void ImportUploadedOgreScene(string fileName, Scene scene)
+        {
+            // Temporary fix for scene being null, should make scene a method variable, passed forward in callstack where needed
+            Scene temp = m_scene;
+            m_scene = scene;
+            ImportOgreScene(fileName);
+            m_scene = temp;
+        }
+
+        private string PathFromFileName(string fileName)
+        {
+            string[] split = fileName.Split(System.IO.Path.DirectorySeparatorChar);
+            if (split.Length == 1)
+            {
+                split = fileName.Split(System.IO.Path.AltDirectorySeparatorChar);
+                if (split.Length == 1)
+                {
+                    return "";
+                }
+            }
+            List<string> list = new List<string>(split);
+            list.RemoveAt(list.Count - 1);
+            split = list.ToArray();
+            return String.Join(System.IO.Path.DirectorySeparatorChar.ToString(), split);
+        }
+
     }
 }

@@ -62,9 +62,17 @@ namespace RexDotMeshLoader
             MeshChunkID cid = 0;
             while (!IsEOF(reader))
             {
-                cid = ReadChunk(reader);
-                if (cid == MeshChunkID.Mesh)
-                    ReadMesh(reader);
+                try
+                {
+                    cid = ReadChunk(reader);
+                    if (cid == MeshChunkID.Mesh)
+                        ReadMesh(reader);
+
+                }
+                catch (System.IO.EndOfStreamException e)
+                {
+                    return mesh;
+                }
             }
             return mesh;
         }

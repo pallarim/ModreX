@@ -26,111 +26,120 @@ namespace OgreSceneImporter
             materialUUIDs = new Dictionary<string, UUID>();
             textureUUIDs = new Dictionary<string, UUID>();
             System.IO.StringReader reader = new System.IO.StringReader(materialScript);
-            string line = reader.ReadLine();
-            while (line != null)
+            try
             {
-                if (line.StartsWith("material"))
+                string line = reader.ReadLine();
+                while (line != null)
                 {
-                    string[] matStrParts = line.Split(' ');
-                    string materialName = String.Empty;
-                    if (matStrParts.Length > 2)
+                    if (line.StartsWith("material"))
                     {
-                        if (matStrParts[1].StartsWith("\""))
+                        string[] matStrParts = line.Split(' ');
+                        string materialName = String.Empty;
+                        if (matStrParts.Length > 2)
                         {
-                            //combine rest of the parts together
-                            for (int i = 1; i < matStrParts.Length; i++)
+                            if (matStrParts[1].StartsWith("\""))
                             {
-                                materialName += matStrParts[i];
-                                if (i < matStrParts.Length - 1)
-                                    materialName += " ";
+                                //combine rest of the parts together
+                                for (int i = 1; i < matStrParts.Length; i++)
+                                {
+                                    materialName += matStrParts[i];
+                                    if (i < matStrParts.Length - 1)
+                                        materialName += " ";
+                                }
+                                //and remove the quotes from it
+                                materialName = materialName.Replace("\"", "");
                             }
-                            //and remove the quotes from it
-                            materialName = materialName.Replace("\"", "");
+                            else
+                            {
+                                m_log.ErrorFormat("[OGRESCENE]: Could not parse material name from malformed material file line \"{0}\"", line);
+                                return false;
+                            }
                         }
                         else
                         {
-                            m_log.ErrorFormat("[OGRESCENE]: Could not parse material name from malformed material file line \"{0}\"", line);
-                            return false;
+                            materialName = matStrParts[1];
                         }
-                    }
-                    else
-                    {
-                        materialName = matStrParts[1];
-                    }
-                    
-                    UUID materialID = UUID.Random();
-                    try
-                    {
-                        materialUUIDs.Add(materialName, materialID);
-                    }  
-                    catch (Exception e) 
-					{
-						m_log.ErrorFormat("[OGRESCENE]: duplicate material \"{0}\"", materialName);                            
-					}
-                    
-                    StringBuilder material = new StringBuilder();
-                    material.AppendLine("material " + materialID.ToString());
-                    int openBracets = 0;
-                    do
-                    {
-                        line = reader.ReadLine();
-                        if (line.StartsWith("{"))
-                            openBracets++;
-                        if (line.StartsWith("}"))
-                            openBracets--;
 
-                        string tempLine = line.TrimStart(' ', '\t');
-                        if (tempLine.StartsWith("texture "))
+                        UUID materialID = UUID.Random();
+                        try
                         {
-                            string[] tempLineParts = tempLine.Split(' ');
-                            string textName = String.Empty;
-                            if (tempLineParts.Length > 2)
+                            materialUUIDs.Add(materialName, materialID);
+                        }
+                        catch (Exception e)
+                        {
+                            m_log.ErrorFormat("[OGRESCENE]: duplicate material \"{0}\"", materialName);
+                        }
+
+                        StringBuilder material = new StringBuilder();
+                        material.AppendLine("material " + materialID.ToString());
+                        int openBracets = 0;
+                        do
+                        {
+                            line = reader.ReadLine();
+                            if (line.StartsWith("{"))
+                                openBracets++;
+                            if (line.StartsWith("}"))
+                                openBracets--;
+
+                            string tempLine = line.TrimStart(' ', '\t');
+                            if (tempLine.StartsWith("texture "))
                             {
-                                if (tempLineParts[1].StartsWith("\""))
+                                string[] tempLineParts = tempLine.Split(' ');
+                                string textName = String.Empty;
+                                if (tempLineParts.Length > 2)
                                 {
-                                    //combine rest of the parts together
-                                    for (int i = 1; i < tempLineParts.Length; i++)
+                                    if (tempLineParts[1].StartsWith("\""))
                                     {
-                                        textName += tempLineParts[i];
-                                        if (i < tempLineParts.Length - 1)
-                                            textName += " ";
+                                        //combine rest of the parts together
+                                        for (int i = 1; i < tempLineParts.Length; i++)
+                                        {
+                                            textName += tempLineParts[i];
+                                            if (i < tempLineParts.Length - 1)
+                                                textName += " ";
+                                        }
+                                        //and remove the quotes from it
+                                        textName = textName.Replace("\"", "");
                                     }
-                                    //and remove the quotes from it
-                                    textName = textName.Replace("\"", "");
+                                    else
+                                    {
+                                        m_log.ErrorFormat("[OGRESCENE]: Could not parse texture name from malformed material file line \"{0}\"", line);
+                                        return false;
+                                    }
                                 }
                                 else
                                 {
-                                    m_log.ErrorFormat("[OGRESCENE]: Could not parse texture name from malformed material file line \"{0}\"", line);
-                                    return false;
+                                    textName = tempLineParts[1];
                                 }
-                            }
-                            else
-                            {
-                                textName = tempLineParts[1];
-                            }
-                            
-                            UUID textUUID;
-                            if (!textureUUIDs.ContainsKey(textName))
-                            {
-                                textUUID = UUID.Random();
-                                textureUUIDs.Add(textName, textUUID);
-                            }
-                            else
-                            {
-                                textUUID = textureUUIDs[textName];
-                            }
 
-                            line = line.Replace(textName, textUUID.ToString());
-                        }
-                        material.AppendLine(line);
-                    } while (!(line.StartsWith("}") && openBracets <= 0));
+                                UUID textUUID;
+                                if (!textureUUIDs.ContainsKey(textName))
+                                {
+                                    textUUID = UUID.Random();
+                                    textureUUIDs.Add(textName, textUUID);
+                                }
+                                else
+                                {
+                                    textUUID = textureUUIDs[textName];
+                                }
 
-                    AssetBase asset = new AssetBase(materialID, materialName, 45, m_scene.RegionInfo.EstateSettings.EstateOwner.ToString()); //45 is OgreMaterial asset type
-                    asset.Data = Utils.StringToBytes(material.ToString());
-                    m_scene.AssetService.Store(asset);
+                                line = line.Replace(textName, textUUID.ToString());
+                            }
+                            material.AppendLine(line);
+                        } while (!(line.StartsWith("}") && openBracets <= 0));
+
+                        AssetBase asset = new AssetBase(materialID, materialName, 45); //45 is OgreMaterial asset type
+                        asset.Data = Utils.StringToBytes(material.ToString());
+                        m_scene.AssetService.Store(asset);
+                    }
+
+                    line = reader.ReadLine();
                 }
-
-                line = reader.ReadLine();
+            }
+            catch (Exception exp)
+            {
+                m_log.WarnFormat("Exception while parsing materials, closing filereader: {0}", exp.Message);
+                reader.Close();
+                throw;
             }
 
             return true;
