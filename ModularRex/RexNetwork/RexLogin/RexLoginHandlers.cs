@@ -62,7 +62,7 @@ namespace ModularRex.RexNetwork.RexLogin
                         m_log.InfoFormat("[LOGIN]: XMLRPC Login Requested for {0} {1}, starting in {2}, using {3}", first, last, startLocation, clientVersion);
 
                         LoginResponse reply = null;
-                        reply = m_LocalService.Login(first, last, passwd, startLocation, remoteClient);
+                        reply = m_LocalService.Login(first, last, passwd, startLocation, UUID.Zero, clientVersion, remoteClient);
 
                         XmlRpcResponse response = new XmlRpcResponse();
                         response.Value = reply.ToHashtable();

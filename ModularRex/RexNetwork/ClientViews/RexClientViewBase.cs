@@ -1055,33 +1055,33 @@ namespace ModularRex.RexNetwork
         /// Send a terse positional/rotation/velocity update about an avatar
         /// to the client.  This avatar can be that of the client itself.
         /// </summary>
-        public override void SendAvatarTerseUpdate(SendAvatarTerseData data)
-        {
-            if (data.Priority == double.NaN)
-            {
-                m_log.Error("[LLClientView] SendAvatarTerseUpdate received a NaN priority, dropping update");
-                return;
-            }
+        //public override void SendAvatarTerseUpdate(SendAvatarTerseData data)
+        //{
+        //    if (data.Priority == double.NaN)
+        //    {
+        //        m_log.Error("[LLClientView] SendAvatarTerseUpdate received a NaN priority, dropping update");
+        //        return;
+        //    }
 
-            Quaternion rotation = data.Rotation;
-            if (rotation.W == 0.0f && rotation.X == 0.0f && rotation.Y == 0.0f && rotation.Z == 0.0f)
-                rotation = Quaternion.Identity;
+        //    Quaternion rotation = data.Rotation;
+        //    if (rotation.W == 0.0f && rotation.X == 0.0f && rotation.Y == 0.0f && rotation.Z == 0.0f)
+        //        rotation = Quaternion.Identity;
 
-            ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock = RexCreateImprovedTerseBlock(data);
+        //    ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock = RexCreateImprovedTerseBlock(data);
 
-            lock (m_avatarTerseUpdates.SyncRoot)
-                m_avatarTerseUpdates.Enqueue(data.Priority, terseBlock, data.LocalID);
+        //    lock (m_avatarTerseUpdates.SyncRoot)
+        //        m_avatarTerseUpdates.Enqueue(data.Priority, terseBlock, data.LocalID);
 
-            // If we received an update about our own avatar, process the avatar update priority queue immediately
-            if (data.AgentID == m_agentId)
-                ProcessAvatarTerseUpdates();
-        }
+        //    // If we received an update about our own avatar, process the avatar update priority queue immediately
+        //    if (data.AgentID == m_agentId)
+        //        ProcessAvatarTerseUpdates();
+        //}
 
-        protected ImprovedTerseObjectUpdatePacket.ObjectDataBlock RexCreateImprovedTerseBlock(SendAvatarTerseData data)
-        {
-            return RexCreateAvatarImprovedBlock(true, data.LocalID, 0, data.CollisionPlane, data.Position, data.Velocity,
-                data.Acceleration, data.Rotation, Vector3.Zero, data.TextureEntry);
-        }
+        //protected ImprovedTerseObjectUpdatePacket.ObjectDataBlock RexCreateImprovedTerseBlock(SendAvatarTerseData data)
+        //{
+        //    return RexCreateAvatarImprovedBlock(true, data.LocalID, 0, data.CollisionPlane, data.Position, data.Velocity,
+        //        data.Acceleration, data.Rotation, Vector3.Zero, data.TextureEntry);
+        //}
 
         private ImprovedTerseObjectUpdatePacket.ObjectDataBlock RexCreateAvatarImprovedBlock(bool avatar, uint localID, byte state,
             Vector4 collisionPlane, Vector3 position, Vector3 velocity, Vector3 acceleration, Quaternion rotation,

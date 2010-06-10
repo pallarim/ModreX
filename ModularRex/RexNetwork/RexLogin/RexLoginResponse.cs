@@ -33,11 +33,11 @@ namespace ModularRex.RexNetwork.RexLogin
 
     public class RexLoginResponse : LLLoginResponse
     {
-        public RexLoginResponse(UserAccount account, AgentCircuitData aCircuit, PresenceInfo pinfo,
+        public RexLoginResponse(UserAccount account, AgentCircuitData aCircuit, GridUserInfo pinfo,
             GridRegion destination, List<InventoryFolderBase> invSkel, FriendInfo[] friendsList, ILibraryService libService,
-            string where, string startlocation, Vector3 position, Vector3 lookAt, string message,
+            string where, string startlocation, Vector3 position, Vector3 lookAt, List<InventoryItemBase> gestures, string message,
             GridRegion home, IPEndPoint clientIP)
-            : base(account, aCircuit, pinfo, destination, invSkel, friendsList, libService, where, startlocation, position, lookAt, message, home, clientIP)
+            : base(account, aCircuit, pinfo, destination, invSkel, friendsList, libService, where, startlocation, position, lookAt, gestures, message, home, clientIP)
         {
         }
 

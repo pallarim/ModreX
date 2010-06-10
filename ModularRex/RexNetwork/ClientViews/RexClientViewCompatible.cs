@@ -25,27 +25,27 @@ namespace ModularRex.RexNetwork
         {
         }
 
-        public override void SendAvatarTerseUpdate(SendAvatarTerseData data)
-        {
-            if (data.Priority == double.NaN)
-            {
-                //m_log.Error("[LLClientView] SendAvatarTerseUpdate received a NaN priority, dropping update");
-                return;
-            }
+        //public override void SendAvatarTerseUpdate(SendAvatarTerseData data)
+        //{
+        //    if (data.Priority == double.NaN)
+        //    {
+        //        //m_log.Error("[LLClientView] SendAvatarTerseUpdate received a NaN priority, dropping update");
+        //        return;
+        //    }
 
-            Quaternion rotation = data.Rotation;
-            if (rotation.W == 0.0f && rotation.X == 0.0f && rotation.Y == 0.0f && rotation.Z == 0.0f)
-                rotation = Quaternion.Identity;
+        //    Quaternion rotation = data.Rotation;
+        //    if (rotation.W == 0.0f && rotation.X == 0.0f && rotation.Y == 0.0f && rotation.Z == 0.0f)
+        //        rotation = Quaternion.Identity;
 
-            ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock = CreateImprovedTerseBlock(data);
+        //    ImprovedTerseObjectUpdatePacket.ObjectDataBlock terseBlock = CreateImprovedTerseBlock(data);
 
-            lock (m_avatarTerseUpdates.SyncRoot)
-                m_avatarTerseUpdates.Enqueue(data.Priority, terseBlock, data.LocalID);
+        //    lock (m_avatarTerseUpdates.SyncRoot)
+        //        m_avatarTerseUpdates.Enqueue(data.Priority, terseBlock, data.LocalID);
 
-            // If we received an update about our own avatar, process the avatar update priority queue immediately
-            if (data.AgentID == m_agentId)
-                ProcessAvatarTerseUpdates();
-        }
+        //    // If we received an update about our own avatar, process the avatar update priority queue immediately
+        //    if (data.AgentID == m_agentId)
+        //        ProcessAvatarTerseUpdates();
+        //}
 
         //public override void SendAvatarTerseUpdate(ulong regionHandle,
         //        ushort timeDilation, uint localID, Vector3 position,

@@ -79,7 +79,12 @@ namespace OgreSceneImporter
 
         private byte[] ProcessUploadScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
-            byte[] data = httpRequest.GetBody();
+            byte[] data = new byte[httpRequest.ContentLength];
+
+            int r;
+            int offset = 0;
+            while ((r = httpRequest.InputStream.Read(data, offset, data.Length - offset)) > 0)
+                offset += r;
             
             m_log.Info("[OGRESCENE]: Processing UploadScene packet");
 

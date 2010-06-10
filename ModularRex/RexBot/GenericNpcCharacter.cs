@@ -1169,26 +1169,6 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
-        public void SendAvatarData(SendAvatarData data)
-        {
-        }
-
-        public void SendAvatarTerseUpdate(SendAvatarTerseData data)
-        {
-        }
-
-        public void SendPrimitiveToClient(SendPrimitiveData data)
-        {
-        }
-
-        public void SendPrimTerseUpdate(SendPrimitiveTerseData data)
-        {
-        }
-
-        public void ReprioritizeUpdates(StateUpdateTypes type, UpdatePriorityHandler handler)
-        {
-        }
-
         public void SendInventoryFolderDetails(UUID ownerID, UUID folderID, List<InventoryItemBase> items, List<InventoryFolderBase> folders, int version, bool fetchFolders, bool fetchItems)
         {
         }
@@ -1240,6 +1220,18 @@ namespace OpenSim.Region.Examples.RexBot
         }
 
         public void SendTextBoxRequest(string message, int chatChannel, string objectname, string ownerFirstName, string ownerLastName, UUID objectId)
+        {
+        }
+
+        public void SendAvatarDataImmediate(ISceneEntity avatar)
+        {
+        }
+
+        public void SendPrimUpdate(ISceneEntity entity, PrimUpdateFlags updateFlags)
+        {
+        }
+
+        public void ReprioritizeUpdates()
         {
         }
 
