@@ -13,7 +13,7 @@ namespace ModularRex.RexFramework
         void TriggerOnChangeRexObjectProperties(UUID id);
         void TriggerOnChangeRexObjectMetaData(UUID id);
         
-        byte GetAssetType(UUID assetid);
+        sbyte GetAssetType(UUID assetid);
 
         void TriggerOnSaveObject(UUID id);
     }

@@ -613,8 +613,11 @@ namespace ModularRex.RexFramework
                 {
                     // Client needs assettype so that it knows if this is texture or material script
                     byte assettype = 0;
-                    if(RexEventManager != null)
-                        assettype = RexEventManager.GetAssetType(kvp.Value.AssetID);
+                    if (RexEventManager != null)
+                    {
+                        sbyte asstype = RexEventManager.GetAssetType(kvp.Value.AssetID);
+                        assettype = (asstype == -1) ? (byte)0 : (byte)asstype;
+                    }
                                             
                     buffer[idx++] = assettype;
                     kvp.Value.AssetID.GetBytes().CopyTo(buffer, idx); // matuuid 

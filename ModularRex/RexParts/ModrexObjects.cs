@@ -386,14 +386,14 @@ namespace ModularRex.RexParts
             }
         }
         
-        public byte GetAssetType(UUID assetid)
+        public sbyte GetAssetType(UUID assetid)
         {
             AssetBase tempmodel = m_scenes[0].AssetService.Get(assetid.ToString());
             if (tempmodel == null)
                 m_scenes[0].AssetService.Get(assetid.ToString());
 
             if (tempmodel != null)
-                return(byte)(tempmodel.Type);
+                return tempmodel.Type;
             else
                 return 0;
         }
