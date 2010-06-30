@@ -117,7 +117,7 @@ namespace ModularRex.RexParts
             }
         }
 
-        void SendPrimFreeDataToAllUsers(UUID id, string data)
+        public void SendPrimFreeDataToAllUsers(UUID id, string data)
         {
             foreach (Scene scene in m_scenes)
             {

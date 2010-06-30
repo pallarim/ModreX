@@ -250,7 +250,11 @@ class Actor(rxlslobject.LSLObject):
     def AttachObjectToAvatar(self, avatarId, attachmentPoint, pos=Vector3(0,0,0), rot=Quaternion(0,0,0,1), silent=False):
         self.MyWorld.CS.rexAttachObjectToAvatar(self.Id, avatarId, attachmentPoint, pos, rot, silent)
 
-
+    # EC-Attribute access
+    def rexGetECAttributes(self, typeName, name = ""):
+        return self.MyWorld.CS.rexGetECAttributes(self.Id, typeName, name)
+    def rexSetECAttributes(self, attributes, typeName, name = ""):
+        return self.MyWorld.CS.rexSetECAttributes(self.Id, attributes, typeName, name)
 
     # Deprecated functions
     def SetMesh(self,vMeshName):
