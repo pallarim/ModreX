@@ -1235,6 +1235,10 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void StopFlying(ISceneEntity presence)
+        {
+        }
+
         #endregion
     }
 }

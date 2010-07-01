@@ -1,6 +1,6 @@
 # -*-mode: python; fill-column: 75; tab-width: 8; coding: iso-latin-1-unix -*-
 #
-# $Id: Tix.py 52785 2006-11-18 18:42:22Z martin.v.loewis $
+# $Id: Tix.py 72279 2009-05-04 16:06:12Z walter.doerwald $
 #
 # Tix.py -- Tix widget wrappers.
 #
@@ -1544,8 +1544,8 @@ class Tree(TixWidget):
         '''This command is used to indicate whether the entry given by
      entryPath has children entries and whether the children are visible. mode
      must be one of open, close or none. If mode is set to open, a (+)
-     indicator is drawn next the the entry. If mode is set to close, a (-)
-     indicator is drawn next the the entry. If mode is set to none, no
+     indicator is drawn next to the entry. If mode is set to close, a (-)
+     indicator is drawn next to the entry. If mode is set to none, no
      indicators will be drawn for this entry. The default mode is none. The
      open mode indicates the entry has hidden children and this entry can be
      opened by the user. The close mode indicates that all the children of the

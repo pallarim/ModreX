@@ -95,5 +95,8 @@ namespace ModularRex.RexParts
         void rexSetPrimFreeData(string vPrimLocalId, string vData);
         int GetRexSelectPriority(string vPrimLocalId);
         void SetRexSelectPriority(string vPrimLocalId, int vValue);
+        
+        Dictionary<string, string> rexGetECAttributes(string vPrimLocalId, string typeName, string name);
+        void rexSetECAttributes(string vPrimLocalId, Dictionary<string, string> attributes, string typeName, string name);
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Xml;
 using OpenMetaverse;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
@@ -656,6 +657,9 @@ namespace ModularRex.RexParts
                 rop.RexData = vData;
                 //RexObjects.RexObjectPart rexobject = (RexObjects.RexObjectPart)target;
                 //rexobject.RexData = vData;
+            
+                // Need to manually replicate to all users on change
+                m_rexObjects.SendPrimFreeDataToAllUsers(target.UUID, vData);
             }
             else
             {
@@ -1349,5 +1353,170 @@ namespace ModularRex.RexParts
                 m_log.Error("[REXSCRIPT] Error attaching object to avatar: " + e.ToString());
             }
         }
+
+        #region EC attributes
+        
+        public Dictionary<string, string> rexGetECAttributes(string vPrimLocalId, string typeName, string name)
+        {
+            Dictionary<string, string> dest = new Dictionary<string, string>();
+            
+            SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
+            if (target != null)
+            {
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
+                if (rop != null)
+                {
+                    // Try to parse the freedata as xml
+                    XmlDocument xml = new XmlDocument();
+                    try
+                    {
+                        xml.LoadXml(rop.RexData);
+                        XmlNodeList components = xml.GetElementsByTagName("component");
+                        // Search for the component
+                        foreach (XmlNode node in components)
+                        {
+                            // Check for component typename match
+                            XmlAttribute typeAttr = node.Attributes["type"];
+                            if ((typeAttr != null) && (typeAttr.Value == typeName))
+                            {
+                                String compName = "";
+                                if (node.Attributes["name"] != null)
+                                    compName = node.Attributes["name"].Value;
+                                
+                                // Check for component name match, or empty search name
+                                if ((name.Length == 0) || (name == compName))
+                                {
+                                    XmlNodeList attributes = node.ChildNodes;
+                                    // Fill the dictionary
+                                    foreach (XmlNode attrNode in attributes)
+                                    {
+                                        XmlAttribute nameAttr = attrNode.Attributes["name"];
+                                        XmlAttribute valueAttr = attrNode.Attributes["value"];
+                                        if ((nameAttr != null) && (valueAttr != null))
+                                        dest[nameAttr.Value] = valueAttr.Value;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        m_log.Warn("[REXSCRIPT]: rexGetECAttributes exception: " + e.Message);
+                    }
+                }
+            }
+            else
+            {
+                m_log.Warn("[REXSCRIPT]: rexGetECAttributes, prim not found:" + vPrimLocalId);
+            }
+            
+            return dest;
+        }
+
+        public void rexSetECAttributes(string vPrimLocalId, Dictionary<string, string> attributes, string typeName, string name)
+        {
+            SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
+            if (target != null)
+            {
+                RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
+                if (rop != null)
+                {
+                    try
+                    {
+                        // Parse the old xmldata for modifications
+                        XmlDocument xml = new XmlDocument();
+                        XmlElement compElem = null;
+                        XmlElement entityElem = null;
+                        try
+                        {
+                            xml.LoadXml(rop.RexData);
+                            entityElem = (XmlElement)xml.GetElementsByTagName("entity")[0];
+                        }
+                        catch (Exception)
+                        {
+                            // If parsing fails, we'll just create a new empty entity element (no previous xml data or it was malformed)
+                            xml.RemoveAll();
+                        }
+                        
+                        // Search for the component
+                        if (entityElem == null)
+                        {
+                            entityElem = xml.CreateElement("entity");
+                            xml.AppendChild(entityElem);
+                        }
+                        XmlNodeList components = entityElem.GetElementsByTagName("component");
+                        foreach (XmlNode node in components)
+                        {
+                            // Check for component typename match
+                            XmlAttribute typeAttr = node.Attributes["type"];
+                            if ((typeAttr != null) && (typeAttr.Value == typeName))
+                            {
+                                String compName = "";
+                                if (node.Attributes["name"] != null)
+                                    compName = node.Attributes["name"].Value;
+                                
+                                // Check for component name match, or empty search name
+                                if ((name.Length == 0) || (name == compName))
+                                {
+                                    compElem = (XmlElement)node;
+                                    break;
+                                }
+                            }
+                        }
+                        // If component not found, prepare new
+                        if (compElem == null)
+                        {
+                            compElem = xml.CreateElement("component");
+                            compElem.SetAttribute("type", typeName);
+                            if (name.Length > 0)
+                                compElem.SetAttribute("name", name);
+                            entityElem.AppendChild(compElem);
+                        }
+                        // Remove any existing attributes
+                        while (compElem.FirstChild != null)
+                        {
+                            compElem.RemoveChild(compElem.FirstChild);
+                        }
+                        // Fill the attributes from the dictionary
+                        foreach (KeyValuePair<String, String> kvp in attributes)
+                        {
+                            XmlElement attributeElem = xml.CreateElement("attribute");
+                            attributeElem.SetAttribute("name", kvp.Key);
+                            attributeElem.SetAttribute("value", kvp.Value);
+                            compElem.AppendChild(attributeElem);
+                        }
+                        // Convert xml to string
+                        StringBuilder xmlText = new StringBuilder();
+                        XmlWriter writer = XmlWriter.Create(xmlText);
+                        xml.Save(writer);
+                        String text = xmlText.ToString();
+                        // Remove the encoding tag, for some reason Naali doesn't like it
+                        int idx = text.IndexOf("?>");
+                        if ((idx >= 0) && (idx < text.Length))
+                            text = text.Substring(idx + 2);
+                        // Check for reasonable data size before setting rexfreedata
+                        if (text.Length <= 1000)
+                        {
+                            rop.RexData = text;
+                            // Need to manually replicate to all users
+                            m_rexObjects.SendPrimFreeDataToAllUsers(target.UUID, text);
+                        }
+                        else
+                            m_log.Warn("[REXSCRIPT]: Too long (over 1000 chars) output data from rexSetECAttributes, not setting");
+                    }
+                    catch (Exception e)
+                    {
+                        m_log.Warn("[REXSCRIPT]: rexSetECAttributes exception: " + e.Message);
+                    }
+                }
+            }
+            else
+            {
+                m_log.Warn("[REXSCRIPT]: rexSetECAttributes, target prim not found:" + vPrimLocalId);
+            }
+        }
+        
+        #endregion
     }
 }
