@@ -32,6 +32,7 @@ namespace OpenSim.Region.Communications.VoiceChat
         Dictionary<Socket, VoiceClient> m_clients;
         Dictionary<UUID, VoiceClient> m_uuidToClient;
 
+        bool m_enabled = true;
 
         public VoiceChatServer()
         {            
@@ -313,50 +314,61 @@ namespace OpenSim.Region.Communications.VoiceChat
                 m_log.Warn("[VOICECHAT]: Could not find realXtend configuration from OpenSim.ini");
                 m_voiceServerUrl = String.Empty;
             }
+
+            if (String.IsNullOrEmpty(m_voiceServerUrl))
+            {
+                m_enabled = false;
+            }
         }
 
         public void PostInitialise()
         {
-            m_clients = new Dictionary<Socket, VoiceClient>();
-            m_uuidToClient = new Dictionary<UUID, VoiceClient>();
-
-            ExctractPortNumberAndValidateUrl(ref m_voiceServerUrl, ref m_voiceServerPort);
-            foreach (Scene s in m_scenes)
+            if (m_enabled)
             {
-                s.EventManager.OnNewClient += NewClient;
-                s.EventManager.OnRemovePresence += RemovePresence;
-                MainServer.Instance.AddXmlRPCHandler("voice_chat_server_address_request", this.XmlRpcVoiceServerAddressRequestHandler);
-            }
-            
-            try
-            {
-                CreateListeningSocket(m_voiceServerPort);
-            }
-            catch (Exception e)
-            {
-                m_log.Error("[VOICECHAT]: Unable to start listening", e);
-                return;
-            }
+                m_clients = new Dictionary<Socket, VoiceClient>();
+                m_uuidToClient = new Dictionary<UUID, VoiceClient>();
 
-            m_listenerThread = new Thread(new ThreadStart(ListenIncomingConnections));
-            m_listenerThread.IsBackground = true;
-            m_listenerThread.Start();
+                ExctractPortNumberAndValidateUrl(ref m_voiceServerUrl, ref m_voiceServerPort);
+                foreach (Scene s in m_scenes)
+                {
+                    s.EventManager.OnNewClient += NewClient;
+                    s.EventManager.OnRemovePresence += RemovePresence;
+                    MainServer.Instance.AddXmlRPCHandler("voice_chat_server_address_request", this.XmlRpcVoiceServerAddressRequestHandler);
+                }
 
-            m_mainThread = new Thread(new ThreadStart(RunVoiceChat));
-            m_mainThread.IsBackground = true;
-            m_mainThread.Start();
+                try
+                {
+                    CreateListeningSocket(m_voiceServerPort);
+                }
+                catch (Exception e)
+                {
+                    m_log.Error("[VOICECHAT]: Unable to start listening", e);
+                    return;
+                }
 
-            Thread.Sleep(500);
-            m_selectCancel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            m_selectCancel.Connect("localhost", m_dummySocketPort);
+                m_listenerThread = new Thread(new ThreadStart(ListenIncomingConnections));
+                m_listenerThread.IsBackground = true;
+                m_listenerThread.Start();
+
+                m_mainThread = new Thread(new ThreadStart(RunVoiceChat));
+                m_mainThread.IsBackground = true;
+                m_mainThread.Start();
+
+                Thread.Sleep(500);
+                m_selectCancel = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                m_selectCancel.Connect("localhost", m_dummySocketPort);
+            }
         }
 
         public void Close()
         {
-            foreach (Scene s in m_scenes)
+            if (m_enabled)
             {
-                s.EventManager.OnNewClient -= NewClient;
-                s.EventManager.OnRemovePresence -= RemovePresence;
+                foreach (Scene s in m_scenes)
+                {
+                    s.EventManager.OnNewClient -= NewClient;
+                    s.EventManager.OnRemovePresence -= RemovePresence;
+                }
             }
         }
 
