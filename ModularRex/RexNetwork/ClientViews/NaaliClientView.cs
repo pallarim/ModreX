@@ -34,6 +34,11 @@ namespace ModularRex.RexNetwork
                 HandleRexPrimData(args);
                 return;
             }
+            else if (method.ToLower() == "rexdata")
+            {
+                HandleRexPrimFreeData(sender, method, args);
+                return;
+            }
         }
 
         private void HandleRexPrimData(byte[][] args)

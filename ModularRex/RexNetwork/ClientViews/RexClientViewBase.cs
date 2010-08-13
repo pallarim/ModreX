@@ -111,7 +111,7 @@ namespace ModularRex.RexNetwork
         /// <param name="sender">The sender.</param>
         /// <param name="method">The name of the method.</param>
         /// <param name="args">Generic message data in bytes</param>
-        private void HandleRexPrimFreeData(object sender, string method, byte[][] args)
+        protected void HandleRexPrimFreeData(object sender, string method, byte[][] args)
         {
             //parse byte data to strings
             List<string> sargs = new List<string>();
@@ -264,12 +264,12 @@ namespace ModularRex.RexNetwork
 
         protected void RexClientView_BinaryGenericMessage(Object sender, string method, byte[][] args)
         {
-            if (method == "RexPrimData".ToLower())
+            if (method.ToLower() == "rexprimdata")
             {
                 HandleRexPrimData(args);
                 return;
             }
-            else if (method == "rexdata")
+            else if (method.ToLower() == "rexdata")
             {
                 HandleRexPrimFreeData(sender, method, args);
                 return;
