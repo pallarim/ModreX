@@ -36,8 +36,9 @@ namespace ModularRex.RexNetwork.RexLogin
         public RexLoginResponse(UserAccount account, AgentCircuitData aCircuit, GridUserInfo pinfo,
             GridRegion destination, List<InventoryFolderBase> invSkel, FriendInfo[] friendsList, ILibraryService libService,
             string where, string startlocation, Vector3 position, Vector3 lookAt, List<InventoryItemBase> gestures, string message,
-            GridRegion home, IPEndPoint clientIP)
-            : base(account, aCircuit, pinfo, destination, invSkel, friendsList, libService, where, startlocation, position, lookAt, gestures, message, home, clientIP)
+            GridRegion home, IPEndPoint clientIP, string mapTileURL, string searchURL) :
+            base(account, aCircuit, pinfo, destination, invSkel, friendsList, libService, where, startlocation,
+            position, lookAt, gestures, message, home, clientIP, mapTileURL, searchURL)
         {
         }
 

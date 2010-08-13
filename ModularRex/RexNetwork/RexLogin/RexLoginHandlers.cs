@@ -78,11 +78,14 @@ namespace ModularRex.RexNetwork.RexLogin
                     string startLocation = string.Empty;
                     if (requestData.ContainsKey("start"))
                         startLocation = requestData["start"].ToString();
+                    UUID scopeID = UUID.Zero;
+                    if (requestData["scope_id"] != null)
+                        scopeID = new UUID(requestData["scope_id"].ToString());
 
                     m_log.InfoFormat("[REX LOGIN BEGIN]: XMLRPC Received login request message from user '{0}' '{1}'", account, sessionHash);
 
                     LoginResponse reply = null;
-                    reply = m_RexService.Login(account, sessionHash, startLocation, remoteClient);
+                    reply = m_RexService.Login(account, sessionHash, startLocation, scopeID, clientVersion, remoteClient);
                     XmlRpcResponse response = new XmlRpcResponse();
                     response.Value = reply.ToHashtable();
                     return response;
