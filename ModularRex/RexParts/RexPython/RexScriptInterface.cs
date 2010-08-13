@@ -122,7 +122,7 @@ namespace ModularRex.RexParts.RexPython
         {
             SceneObjectPart tempobj = myScriptEngine.World.GetSceneObjectPart(System.Convert.ToUInt32(vId, 10));
             if (tempobj != null)
-                return ((tempobj.ObjectFlags & (uint)PrimFlags.Physics) != 0);
+                return ((tempobj.Flags & PrimFlags.Physics) != 0);
             else
                 return false;
         }

@@ -139,6 +139,7 @@ namespace ModularRex.RexNetwork
             #endregion
 
             #region Fancy money module stuff:
+            /*
             if (llsdRequest.asset_type == "texture" ||
                 llsdRequest.asset_type == "animation" ||
                 llsdRequest.asset_type == "sound" ||
@@ -167,6 +168,7 @@ namespace ModularRex.RexNetwork
                     }
                 }
             }
+             * */
             #endregion
 
             string assetName = llsdRequest.name;

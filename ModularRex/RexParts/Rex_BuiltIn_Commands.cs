@@ -1344,7 +1344,7 @@ namespace ModularRex.RexParts
                 IAttachmentsModule attachmentsModule = m_ScriptEngine.World.AttachmentsModule;
                 if (attachmentsModule != null)
                 {
-                    attachmentsModule.AttachObject(agent, primLocalId, (uint)attachmentPoint, new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s), position, silent);
+                    attachmentsModule.AttachObject(agent, primLocalId, (uint)attachmentPoint, silent);
                     m_ScriptEngine.World.EventManager.TriggerOnAttach(primLocalId, part.ParentGroup.GetFromItemID(), agent.AgentId);
                 }
             }

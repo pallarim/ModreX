@@ -195,7 +195,6 @@ namespace ModularRex.RexParts.RexPython
                 // Create objects
                 string PythonClassName = "";
                 string PythonTag = "";
-                string PyText = "";
                 int tagindex = 0;
 
                 foreach (EntityBase ent in World.GetEntities())
