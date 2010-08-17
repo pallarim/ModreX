@@ -34,9 +34,14 @@ namespace ModularRex.RexNetwork.RexLogin
             //TODO: Load rexavatar plugin
         }
 
-    //    public RexLoginService(IConfigSource config) : this(config, null, null)
-    //    {
-    //    }
+        /// <summary>
+        /// Constructor used by ServerPluginLoader
+        /// </summary>
+        /// <param name="config"></param>
+        public RexLoginService(IConfigSource config)
+            : this(config, null, null)
+        {
+        }
 
         public LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP)
         {

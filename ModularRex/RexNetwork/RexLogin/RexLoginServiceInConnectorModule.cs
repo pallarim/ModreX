@@ -32,7 +32,7 @@ namespace ModularRex.RexNetwork.RexLogin
             IConfig moduleConfig = config.Configs["Modules"];
             if (moduleConfig != null)
             {
-                m_Enabled = moduleConfig.GetBoolean("REXLoginServiceInConnector", true);
+                m_Enabled = moduleConfig.GetBoolean("REXLoginServiceInConnector", false);
                 if (m_Enabled)
                 {
                     m_log.Info("[REXLOGIN IN CONNECTOR]: REXLoginerviceInConnector enabled");
