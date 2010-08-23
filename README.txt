@@ -50,14 +50,14 @@ See: http://opensimulator.org/wiki/Dependencies#Linux and http://opensimulator.o
 
  2. After getting the OpenSim source, get the ModreX sources. To do this, follow these instructions:
   * Navigate to addon-modules directory under OpenSim trunk
-  * Check out the ModreX source to directory ModreX with command: svn checkout http://forge.opensimulator.org/svn/modrex/trunk ModreX
-  * To access the svn use 'anonymous' as the username and a blank password
+  * Check out the ModreX source to directory ModreX with command: git clone git://github.com/mikkopa/ModreX.git ModreX
   * Note: it is very important that you check out the source to precisely the "addon-modules/ModreX" directory (not to be confused with "bin/addon-modules/ModreX")! If this is not done properly next steps will not work.
+  * Note: you can also use the above repository as git submodule. For more information how to use git submodules, see: http://www.kernel.org/pub/software/scm/git/docs/git-submodule.html
 
  3. Now before building, you must run the prebuilding script that will create the project files from the prebuild.xml. Go to OpenSim trunk root directory and run the runprebuild.bat or ./runprebuild.sh depending from the operating system you are using.
 
  4. Now the project files should be successfully built and the project is ready for building.
-  * With Visual C#, open OpenSim.sln and build it. ModreX projects should be inside the solution under ModularRex sub-solution.
+  * With Visual C#, open OpenSim.sln and build it. ModreX projects should be inside the OpenSim solution.
   * With mono/nant, run nant
 
  5. After successful build, some dependency files should have been automaticly copied to bin/ScriptEngines/Lib and bin/ScriptEngines/PythonScript directories. If they however do not exist, manually copy them from addon-modules/ModreX/ModularRex/ScriptEngines/.
