@@ -437,7 +437,6 @@ namespace ModularRex.RexParts.RexPython
             {
                 Vector3 position = new Vector3((float)vLocation.x, (float)vLocation.y, (float)vLocation.z);
                 Vector3 lookAt = new Vector3(0,0,0);
-                temppre.ControllingClient.SendTeleportLocationStart();
                 temppre.ControllingClient.SendLocalTeleport(position, lookAt,0);
                 temppre.Teleport(position);
             }

@@ -1239,6 +1239,14 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
+        public void SendTeleportStart(uint flags)
+        {
+        }
+
+        public void SendTeleportProgress(uint flags, string message)
+        {
+        }
+
         #endregion
     }
 }
