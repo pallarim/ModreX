@@ -12,6 +12,8 @@ using System.Reflection;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
 using OpenSim.Framework;
+using System.Collections;
+using Nwc.XmlRpc;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
@@ -193,7 +195,7 @@ namespace ModularRex.RexNetwork.RexLogin
                 string reason = string.Empty;
                 GridRegion dest;
                 AgentCircuitData aCircuit = LaunchAgentAtGrid(gatekeeper, destination, useraccount, avatar, session, secureSession, position, where, clientVersion, clientIP, out where, out reason, out dest);
-
+                destination = dest;
                 if (aCircuit == null)
                 {
                     m_PresenceService.LogoutAgent(session);
@@ -201,6 +203,8 @@ namespace ModularRex.RexNetwork.RexLogin
                     return new LLFailedLoginResponse("key", reason, "false");
 
                 }
+                SendAvatarUrlXmlRpc(destination.ExternalHostName, (int)destination.HttpPort, useraccount.PrincipalID, rap.AvatarStorageUrl);
+
                 // Get Friends list 
                 FriendInfo[] friendsList = new FriendInfo[0];
                 if (m_FriendsService != null)
@@ -281,6 +285,38 @@ namespace ModularRex.RexNetwork.RexLogin
             string actName = account.Split('@')[0];
             string actSrv = account.Split('@')[1];
             return AuthenticationService.SimAuthenticationAccount(actName, sessionHash, actSrv);
+        }
+
+        public void SendAvatarUrlXmlRpc(string ip, int port, UUID agentId, string avatarUrl)
+        {
+            Hashtable parms = new Hashtable();
+            parms.Add("AgentID", agentId.ToString());
+            parms.Add("AvatarURL", avatarUrl);
+            XmlRpcResponse resp = Util.XmlRpcCommand("http://" + ip + ":" + port.ToString(), "realXtend_avatar_url", parms);
+            if (resp.Value is Hashtable)
+            {
+                Hashtable respData = (Hashtable)resp.Value;
+                if (respData.ContainsKey("SUCCESS"))
+                {
+                    bool success;
+                    if (bool.TryParse(respData["SUCCESS"].ToString(), out success))
+                    {
+                        if (success == true)
+                        {
+                            m_log.Info("[REXLOGIN]: Avatar url sent to simulator succesfully");
+                        }
+                    }
+                    else
+                    {
+                        string error = "Unknown";
+                        if (respData.ContainsKey("ERROR"))
+                        {
+                            error = respData["ERROR"].ToString();
+                        }
+                        m_log.ErrorFormat("[REXLOGIN]: Could not deliver avatar url to simulator because of error: {0}", error);
+                    }
+                }
+            }
         }
     }
 }
