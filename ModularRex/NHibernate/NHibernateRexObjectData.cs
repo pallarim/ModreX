@@ -50,10 +50,18 @@ namespace ModularRex.NHibernate
         public bool Inizialized = false;
 
         public NHibernateManager manager;
+        private bool m_nullStorage = false;
 
         public void Initialise(string connect)
         {
             m_log.InfoFormat("[NHIBERNATE] Initializing NHibernateRexObjectData");
+            if (connect.ToLower() == "null")
+            {
+                m_nullStorage = true;
+                Inizialized = true;
+                return;
+            }
+            
             Assembly assembly = GetType().Assembly;
             manager = new NHibernateManager(connect, "RexObjectData", assembly);
             Inizialized = true;
@@ -157,6 +165,8 @@ namespace ModularRex.NHibernate
         /// <param name="regionUUID">the region UUID</param>
         public void StoreObject(RexObjectProperties obj)
         {
+            if (m_nullStorage)
+                return;
             try
             {
                 SaveOrUpdate(obj);
@@ -169,6 +179,8 @@ namespace ModularRex.NHibernate
 
         public RexObjectProperties LoadObject(UUID uuid)
         {
+            if (m_nullStorage)
+                return null;
             try
             {
                 RexObjectProperties obj = null;
@@ -201,6 +213,8 @@ namespace ModularRex.NHibernate
         /// <param name="regionUUID">the region UUID</param>
         public void RemoveObject(UUID obj)
         {
+            if (m_nullStorage)
+                return;
             RexObjectProperties g = LoadObject(obj);
             if (g != null)
                 manager.Delete(g);
