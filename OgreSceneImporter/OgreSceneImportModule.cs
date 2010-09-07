@@ -34,6 +34,7 @@ namespace OgreSceneImporter
         {
             m_scenes.Add(scene);
             scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
+            m_uploadHandler.Configure(source);
             m_uploadHandler.AddUploadCap(scene, this);
         }
 
@@ -87,7 +88,7 @@ namespace OgreSceneImporter
                             showHelp = true;
                             break;
                         case "import":
-                            ImportOgreScene(cmdparams[2]);
+                            ImportOgreScene(cmdparams[2], UUID.Zero);
                             break;
                         case "collisionmesh":
                             if (cmdparams.Length == 2)
@@ -208,7 +209,7 @@ namespace OgreSceneImporter
             }
         }
 
-        private void ImportOgreScene(string fileName)
+        private void ImportOgreScene(string fileName, UUID saveSceneDataID)
         {
             DotSceneLoader loader = new DotSceneLoader();
             SceneManager ogreSceneManager = new SceneManager();
@@ -246,13 +247,19 @@ namespace OgreSceneImporter
                 m_log.ErrorFormat("[OGRESCENE]: Aborting ogre scene importing, because there were some errors in loading textures");
                 return;
             }
+            
+            if (saveSceneDataID != UUID.Zero) // if true save data for later unloading, loading, removing of loaded scene assets
+            {
+                m_uploadHandler.SaveDataFromAssets(materials, saveSceneDataID, 2);
+                m_uploadHandler.SaveDataFromAssets(textures, saveSceneDataID, 3);
+            }
+
             m_log.InfoFormat("[OGRESCENE]: Found and loaded {0} materials and {1} textures", materials.Count, textures.Count);
 
             //Load&parse meshes and add them to scene
             m_log.Info("[OGRESCENE]: Loading OGRE stuff to scene");
 
-            AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, filepath);
-            //AddObjectsToScene(ogreSceneManager.RootSceneNode, materials);
+            AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, filepath, saveSceneDataID);
         }
 
         private bool LoadAndSaveTextures(Dictionary<string, UUID> textures, string additionalPath)
@@ -334,7 +341,7 @@ namespace OgreSceneImporter
             return b;
         }
 
-        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath)
+        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath, UUID sceneDataID)
         {
 
 			// Quaternion for whole scene rotation
@@ -419,6 +426,16 @@ namespace OgreSceneImporter
                         
                         SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
                             m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
+                            
+                        // SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.EstateSettings.EstateOwner,
+                            // m_scene.RegionInfo.EstateSettings.EstateOwner, objPos, rot, PrimitiveBaseShape.CreateBox());
+                            
+                        if (sceneDataID != UUID.Zero)
+                        {
+                            m_uploadHandler.SaveAssetData(asset, sceneDataID, 1, sceneObject); // Store mesh data from uploaded scene
+                        }
+
+
                         Vector3 newScale = new Vector3();
                         newScale.X = node.DerivedScale.X * m_objectScale;
                         newScale.Y = node.DerivedScale.Y * m_objectScale;
@@ -478,17 +495,17 @@ namespace OgreSceneImporter
             {
                 foreach (SceneNode child in node.Children)
                 {
-                    AddObjectsToScene(child, materials, additionalSearchPath);
+                    AddObjectsToScene(child, materials, additionalSearchPath, sceneDataID);
                 }
             }
         }
 
-        public void ImportUploadedOgreScene(string fileName, Scene scene)
+        public void ImportUploadedOgreScene(string fileName, Scene scene, UUID uploadSceneID)
         {
             // Temporary fix for scene being null, should make scene a method variable, passed forward in callstack where needed
             Scene temp = m_scene;
             m_scene = scene;
-            ImportOgreScene(fileName);
+            ImportOgreScene(fileName, uploadSceneID);
             m_scene = temp;
         }
 

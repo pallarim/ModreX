@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="OgreSceneImporter.UploadSceneDB" assembly="OgreSceneImporter">
+
+  <class name="SceneAsset">
+    <id name="Id" type="int" unsaved-value="0">
+      <generator class="identity" />
+    </id>
+
+    <!--<id name="Id" sql-type="char(32)" not-null="true">
+      <generator class="identity" />
+    </id>-->
+
+    <property name="AssetId" length="36"/>
+    <property name="Name"/>
+    <property name="SceneId" length="36"/>
+    <property name="AssetType"/>
+    <property name="longLocalId"/>
+    <property name="EntityId"/>
+    <!--<property name="stringEntityId" length="36"/>-->
+    <!--<property name="AssetStorageId" length="36"/>-->
+    
+  </class>
+
+</hibernate-mapping>

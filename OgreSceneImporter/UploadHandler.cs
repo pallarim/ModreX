@@ -6,12 +6,16 @@ using OpenMetaverse;
 using log4net;
 using System.Reflection;
 using System.IO;
-//using Caps = OpenSim.Framework.Capabilities.Caps;
 using OpenSim.Framework.Servers.HttpServer;
 using Ionic.Zip;
 using System.Drawing;
 using OpenSim.Framework;
 using ModularRex.RexFramework;
+using OgreSceneImporter.UploadSceneDB;
+
+using Newtonsoft.Json;
+using System.Xml.Serialization;
+using System.Xml;
 
 
 namespace OgreSceneImporter
@@ -36,28 +40,55 @@ namespace OgreSceneImporter
         }
     }
 
+    [Serializable()]
+    public class SceneRegion
+    {
+        public string SceneName;
+        public string Region;
+        public string SceneUuid;
+    }
+
 
     /// <summary>
     /// Handle adding caps handlers for uploading scenes, when user, with rights to upload scene files, logs in,
     /// + handle uploads
     /// </summary>
-    public class UploadHandler
+    public class UploadHandler : DotSceneLoader
     {
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
-        
+        private List<Scene> m_scenes = new List<Scene>();
+        private OgreSceneImporter.UploadSceneDB.ISceneStorage m_SceneStorage;
+
         
         private OgreSceneImportModule m_osi;
 
         private const string EXTRACT_FOLDER_NAME = "SceneUploadZipFiles";
 
+        public IAssetDataSaver AssetDataSaver
+        {
+            get { return (IAssetDataSaver)m_SceneStorage; }
+        }
+
+        public void Configure(Nini.Config.IConfigSource source)
+        {
+            m_SceneStorage = new OgreSceneImporter.UploadSceneDB.NHibernateSceneStorage(source);
+        }
+
+        /// <summary>
+        /// Configure must be called before this is called
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="osi"></param>
         public void AddUploadCap(Scene scene, OgreSceneImportModule osi)
         {
             try
             {
+                if (m_SceneStorage == null) { throw new Exception("SceneStorage is null"); }
                 m_scene = scene;
+                m_scenes.Add(scene);
                 m_osi = osi;
                 scene.EventManager.OnRegisterCaps += this.RegisterCaps;
             }
@@ -73,88 +104,412 @@ namespace OgreSceneImporter
             {
                 UUID capID = UUID.Random();
                 m_log.InfoFormat("[OGRESCENE]: Creating capability: /CAPS/{0}", capID);
-                caps.RegisterHandler("UploadScene", new StreamHandler("POST", "/CAPS/" + capID, ProcessUploadScene));
+                caps.RegisterHandler("UploadScene", new StreamHandler("POST", "/CAPS/" + capID, ProcessUploadSceneMessages));
             }
         }
+
+        private byte[] ProcessUploadSceneMessages(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            
+            string mthd = httpRequest.Headers["USceneMethod"];
+            
+            m_log.Info("[OGRESCENE]: Processing UploadScene packet");
+
+            m_log.Info("[OGRESCENE]: UploadScene method: " + mthd);
+
+            // Dispatch
+            if(mthd=="Upload"){
+                return ProcessUploadScene(path, request, httpRequest, httpResponse);
+            }
+            else if(mthd=="GetUploadSceneList")
+            {
+                return ProcessGetUploadSceneList(path, request, httpRequest, httpResponse);
+            }
+            else if(mthd=="DeleteServerScene")
+            {
+                return ProcessDeleteScene(path, request, httpRequest, httpResponse);
+            }
+            else if(mthd=="UnloadServerScene")
+            {
+                return ProcessUnloadServerScene(path, request, httpRequest, httpResponse);
+            }
+            else if(mthd=="LoadServerScene")
+            {
+                return ProcessLoadServerScene(path, request, httpRequest, httpResponse);
+            }
+            return null;
+        }
+
+        private byte[] ProcessLoadServerScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            try
+            {
+                SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
+                // actually returns xmldata
+                string loadscenexml = GetDataFromRequestBody(httpRequest);
+                XmlDocument xDoc = new XmlDocument();
+                xDoc.LoadXml(loadscenexml);
+                XmlNodeList regionNodeList = xDoc.GetElementsByTagName("region");
+                XmlNodeList sceneuuidNodeList = xDoc.GetElementsByTagName("sceneuuid");
+                string regionName = regionNodeList[0].InnerText;
+                string sceneUuidStr = sceneuuidNodeList[0].InnerText;
+                // positions and rotations are in xml scene that is in uploadscene table
+                UploadScene us = m_SceneStorage.GetScene(sceneUuidStr);
+                string regionIdString;
+                ImportOgreSceneFromString(us.XmlFile, sceneUuidStr, regionName, out regionIdString);
+                // push back meshes, that should be stored in asset service (the textures and material files should all be ready in asset service)
+                m_SceneStorage.SetSceneToRegion(sceneUuidStr, regionIdString);
+                responce["error"] = "None";
+                return ConstructResponceBytesFromDictionary(responce);
+            }
+            catch (Exception exp)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Failed to load scene: {0}\n"
+                    + "StackTrace: {1}", exp.Message, exp.StackTrace);
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", exp.Message);
+                return ConstructResponceBytesFromDictionary(errorMessage);
+            }
+        }
+
+        private byte[] ProcessUnloadServerScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            try
+            {
+                SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
+                string sceneUuidAndRegion = GetDataFromRequestBody(httpRequest);
+                m_log.Debug(sceneUuidAndRegion);
+                int ind = sceneUuidAndRegion.IndexOf(':');
+                string uuid = sceneUuidAndRegion.Substring(0, ind);
+                string region = sceneUuidAndRegion.Substring(ind + 1, sceneUuidAndRegion.Length - (ind + 1));
+                m_log.Debug(uuid);
+                m_log.Debug(region);
+                UnloadServerScene(uuid, region);
+
+                responce["error"] = "None";
+                return ConstructResponceBytesFromDictionary(responce);
+
+            }
+            catch (Exception exp)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Failed to unload scene: {0}\n"
+                    + "StackTrace: {1}", exp.Message, exp.StackTrace);
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", exp.Message);
+                return ConstructResponceBytesFromDictionary(errorMessage);
+            }
+        }
+
+        private byte[] ProcessDeleteScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            try
+            {
+                SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
+                string sceneUuidStr = GetDataFromRequestBody(httpRequest);
+
+                // check if its active scene, if so do unload first for each region this scene is in then delete assets
+                List<string> regions = m_SceneStorage.GetScenesRegionIds(sceneUuidStr);
+                foreach (string region in regions)
+                {
+                    this.UnloadServerScene(sceneUuidStr, region);
+                }
+                // now del assets and remove asset references and finally scene
+                List<SceneAsset> sassets = m_SceneStorage.GetSceneAssets(sceneUuidStr);
+                foreach (SceneAsset asset in sassets)
+                {
+                    m_scenes[0].AssetService.Delete(asset.AssetId);
+                }
+
+                bool ret = m_SceneStorage.DeleteScene(sceneUuidStr);
+                if (ret == true)
+                {
+                    responce["error"] = "None";
+                }
+                else
+                {
+                    responce["error"] = "Something went wrong";
+                }
+                return ConstructResponceBytesFromDictionary(responce);
+
+            }
+            catch (Exception exp)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Failed to unload scene: {0}\n"
+                    + "StackTrace: {1}", exp.Message, exp.StackTrace);
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", exp.Message);
+                return ConstructResponceBytesFromDictionary(errorMessage);
+            }
+        }
+
+        private bool UnloadServerScene(string sceneuuid, string region)
+        {
+            // get scene meshes, remove them from scene
+            List<SceneAsset> assets = this.m_SceneStorage.GetSceneAssets(sceneuuid);
+            List<SceneAsset> meshes = new List<SceneAsset>();
+            foreach (SceneAsset sa in assets)
+            {
+                if (sa.AssetType == 1)
+                    meshes.Add(sa);
+            }
+            //get region where uploadscene is located
+            foreach (Scene scene in m_scenes)
+            {
+                if (scene.RegionInfo.RegionName == region)
+                {
+                    try
+                    {
+                        lock (scene.Entities)
+                        {
+                            foreach (SceneAsset mesh_ in meshes)
+                            {
+                                EntityBase eb_ = scene.Entities[new UUID(mesh_.EntityId)];
+                                if (eb_ == null)
+                                {
+                                    m_log.Debug(mesh_.EntityId.ToString() + " not found");
+                                }
+                            }
+
+                            foreach (SceneAsset mesh in meshes)
+                            {
+
+                                EntityBase eb = scene.Entities[new UUID(mesh.EntityId)];
+
+                                if (eb != null)
+                                {
+                                    SceneObjectGroup sog = scene.SceneGraph.GetGroupByPrim(eb.LocalId);
+                                    m_log.Debug("--------------------------------------------");
+                                    m_log.Debug("Removing " + sog.UUID.ToString());
+                                    m_log.Debug("Removing " + mesh.EntityId);
+                                    m_log.Debug("--------------------------------------------");
+
+                                    //SceneObjectGroup sog = (SceneObjectGroup)eb;
+
+
+                                    //scene.RemoveGroupTarget(sog);
+                                    scene.DeleteSceneObject(sog, false);
+
+                                }
+
+                            }
+
+                            string regionid = scene.RegionInfo.RegionID.ToString();
+                            // remove scene from upload scene regionscene db table, leave to other tables since this is just unload
+                            this.m_SceneStorage.RemoveSceneFromRegion(sceneuuid, regionid);
+                            
+                        }
+                    }
+                    catch (Exception exp)
+                    {
+                        m_log.Debug("----------------------------------");
+                        m_log.ErrorFormat("[OGRESCENE]: Error unloading scene: {0}, {1}", exp.Message, exp.StackTrace);
+                        m_log.Debug("----------------------------------");
+                        //m_log.Debug(exp.StackTrace.ToString());
+                        throw;
+                    }
+                }
+            }
+            
+
+            return false;
+        }
+
+        private string GetDataFromRequestBody(OSHttpRequest httpRequest) 
+        {
+            byte[] data = httpRequest.GetBody();
+            byte[] content = ReadContent(data);
+            string retData;
+            System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
+            retData = enc.GetString(content);
+            int end = retData.IndexOf('\r');
+            if (end != -1)
+            {
+                retData = retData.Remove(end);
+            }
+            return retData;
+        }
+
+        private byte[] ProcessGetUploadSceneList(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            try
+            {
+                SerializableDictionary<string, SceneRegion> sceneids = new SerializableDictionary<string, SceneRegion>();
+
+                List<RegionScene> rscenes = m_SceneStorage.GetRegionSceneList();
+                List<UploadScene> uscenes = m_SceneStorage.GetScenes();
+
+                List<string> keys = new List<string>();
+                int i = 0;
+                foreach (RegionScene rs in rscenes)
+                {
+                    // Get region name 
+                    string regionName = "";
+                    foreach (Scene scene in m_scenes)
+                    {
+                        if (scene.RegionInfo.RegionID.ToString() == rs.RegionId)
+                        {
+                            regionName = scene.RegionInfo.RegionName;
+                            break;
+                        }
+                    }
+                    // Get scene name
+                    string sceneName = "";
+                    foreach (UploadScene us in uscenes)
+                    {
+                        if (us.SceneId == rs.SceneId)
+                        {
+                            sceneName = us.Name;
+                            break;
+                        }
+                    }
+
+                    SceneRegion sr = new SceneRegion();
+                    sr.Region = regionName;
+                    sr.SceneName = sceneName;
+                    sr.SceneUuid = rs.SceneId;
+                    keys.Add(rs.SceneId);
+                    sceneids[i.ToString()] = sr;
+                    i++;
+                }
+                List<UploadScene> allScenes = m_SceneStorage.GetScenes();
+                // add unloaded scenes
+                foreach (UploadScene us in allScenes)
+                {
+                    if (!keys.Contains(us.SceneId))
+                    {
+                        SceneRegion sr = new SceneRegion();
+                        sr.Region = "";
+                        sr.SceneName = us.Name;
+                        sr.SceneUuid = us.SceneId;
+                        sceneids[i.ToString()] = sr;
+                        i++;
+                    }
+                }
+
+                return ConstructResponceBytesFromDictionary(sceneids);
+
+            }
+            catch (Exception exp)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Failed to create list of uploaded scenes: {0}\n"
+                    +"StackTrace: {1}", exp.Message, exp.StackTrace);
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", exp.Message);
+                return ConstructResponceBytesFromDictionary(errorMessage);
+            }
+        }
+
 
         private byte[] ProcessUploadScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
             byte[] data = httpRequest.GetBody();
-            
-            m_log.Info("[OGRESCENE]: Processing UploadScene packet");
 
-            string outputFile = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "SceneUploadZipFile.zip";
+            string regionName = httpRequest.Headers["RegionName"];
+            string publishName = httpRequest.Headers["PublishName"];
 
-            m_log.Info("[OGRESCENE]: Writing zip file");
+            bool regionFound = false;
 
-            try
+            if (regionName != null)
             {
-                // need to parse these out from beginning
-                //--0446c18b14c143c3bd0e787cb6ea4c09
-                //Content-Disposition: form-data; name="uploadscene"; filename="C:/CODE/NaaliGit2/naali/bin/test3.scene.zip"
-                //Content-Type: application/zip
-                //Content-Length: 10144449
-
-                // need to parse this out from end
-                //--0446c18b14c143c3bd0e787cb6ea4c09--
-
-                //System.Collections.Specialized.NameValueCollection nvc = httpRequest.Headers;
-                //foreach (string key in nvc.AllKeys)
-                //{
-                //    m_log.Info(key);
-                //}
-
-                byte[] content = ReadContent(data);
-
-                BinaryWriter bw = null;
-                try
+                foreach (Scene sc in m_scenes)
                 {
-                    bw = new BinaryWriter(File.Open(outputFile, FileMode.Create));
-                    bw.Write(content);
-                    bw.Flush();
-                    bw.Close();
-
+                    if (sc.RegionInfo.RegionName == regionName)
+                    {
+                        m_scene = sc;
+                        regionFound = true;
+                        break;
+                    }
                 }
-                catch (Exception)
-                {
-                    if (bw != null) { bw.Close(); }
-                    throw;
-                }
-                RemoveFolder(EXTRACT_FOLDER_NAME);
-
-                Ionic.Zip.ZipFile f = null;
-                try
-                {
-                    f = Ionic.Zip.ZipFile.Read("SceneUploadZipFile.zip");
-                    f.ExtractAll(EXTRACT_FOLDER_NAME);
-                    f.Dispose();
-
-                }
-                catch (Exception)
-                {
-                    if (f != null)
-                        f.Dispose();
-                    throw;
-                }
-                LoadScene(EXTRACT_FOLDER_NAME);
-
-                string respstring = "<Root>";
-                respstring += "Scene upload done";
-                respstring += "</Root>";
-                System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
-                RemoveFolder(EXTRACT_FOLDER_NAME);
-                return encoding.GetBytes(respstring);
             }
-            catch (Exception exp)
-            {
-                m_log.ErrorFormat("[OGRESCENE]: Failing to parse upload scene package: {0}\n"
-                    +"StackTrace: {1}", exp.Message, exp.StackTrace);
-                string respstring = "<Root>";
-                respstring += exp.Message;
-                respstring += "</Root>";
-                System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
-                RemoveFolder(EXTRACT_FOLDER_NAME);
-                return encoding.GetBytes(respstring);
+
+            if (regionFound)
+            {            
+                string outputFile = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "SceneUploadZipFile.zip";
+
+                m_log.Info("[OGRESCENE]: Writing zip file");
+
+                try
+                {
+                    // need to parse these out from beginning
+                    //--0446c18b14c143c3bd0e787cb6ea4c09
+                    //Content-Disposition: form-data; name="uploadscene"; filename="C:/CODE/NaaliGit2/naali/bin/test3.scene.zip"
+                    //Content-Type: application/zip
+                    //Content-Length: 10144449
+
+                    // need to parse this out from end
+                    //--0446c18b14c143c3bd0e787cb6ea4c09--
+
+                    byte[] content = ReadContent(data);
+
+                    BinaryWriter bw = null;
+                    try
+                    {
+                        bw = new BinaryWriter(File.Open(outputFile, FileMode.Create));
+                        bw.Write(content);
+                        bw.Flush();
+                        bw.Close();
+
+                    }
+                    catch (Exception)
+                    {
+                        if (bw != null) { bw.Close(); }
+                        throw;
+                    }
+                    RemoveFolder(EXTRACT_FOLDER_NAME);
+
+                    Ionic.Zip.ZipFile f = null;
+                    try
+                    {
+                        f = Ionic.Zip.ZipFile.Read("SceneUploadZipFile.zip");
+                        f.ExtractAll(EXTRACT_FOLDER_NAME);
+                        f.Dispose();
+
+                    }
+                    catch (Exception)
+                    {
+                        if (f != null)
+                            f.Dispose();
+                        throw;
+                    }
+                    string error = "";
+                    LoadScene(EXTRACT_FOLDER_NAME, publishName, out error);
+
+                    if (error == "")
+                    {
+                        //string respstring = "<Root>";
+                        //respstring += "Scene upload done";
+                        //respstring += "</Root>";
+                        //System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+                        //RemoveFolder(EXTRACT_FOLDER_NAME);
+                        //return encoding.GetBytes(respstring);
+                        SerializableDictionary<string, string> resp = new SerializableDictionary<string, string>();
+                        resp.Add("error", "None");
+                        return ConstructResponceBytesFromDictionary(resp);
+
+
+                    }
+                    else {
+                        SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                        errorMessage.Add("error", error);
+                        return ConstructResponceBytesFromDictionary(errorMessage);                        
+                    }
+                }
+                catch (Exception exp)
+                {
+                    RemoveFolder(EXTRACT_FOLDER_NAME);
+                    
+                    m_log.ErrorFormat("[OGRESCENE]: Failing to parse upload scene package: {0}\n"
+                        +"StackTrace: {1}", exp.Message, exp.StackTrace);
+                    SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                    errorMessage.Add("error", exp.Message);
+                    return ConstructResponceBytesFromDictionary(errorMessage);
+
+                }
+            }
+            else {
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", "No such region found");
+                return ConstructResponceBytesFromDictionary(errorMessage);
             }
         }
 
@@ -251,8 +606,9 @@ namespace OgreSceneImporter
             return fileBuffer;
         }
 
-        private void LoadScene(string extractFolderName)
+        private void LoadScene(string extractFolderName, string publishName, out string error)
         {
+            error = "";
             m_log.Info("[OGRESCENE]: LoadScene");
             string packagePath = Path.Combine(extractFolderName, "UploadPackage");
             DirectoryInfo di = new DirectoryInfo(packagePath);
@@ -263,13 +619,37 @@ namespace OgreSceneImporter
             string loadName = path.Substring(0, path.Length - 6);
             m_log.InfoFormat("[OGRESCENE]: Loading scene file: {0}", fi.FullName);
             CreateSceneMaterialFileIfNeeded(fi.Name, di);
+            FileStream fs;
+            StreamReader sr = null;
             try
             {
-                m_osi.ImportUploadedOgreScene(loadName, m_scene);
+                UUID sceneId = UUID.Random();
+                m_osi.ImportUploadedOgreScene(loadName, m_scene, sceneId);
+                // get scene file
+                fs = File.OpenRead(path);
+                sr = new StreamReader(fs);
+                string xml = sr.ReadToEnd();
+                UploadScene us;
+                if (publishName == null)
+                {
+                    us = new UploadScene(sceneId, fi.Name, xml);
+                }
+                else
+                {
+                    us = new UploadScene(sceneId, publishName, xml);
+                }
+                this.m_SceneStorage.SaveScene(us);
+                m_SceneStorage.SetSceneToRegion(sceneId.ToString(), m_scene.RegionInfo.RegionID.ToString());
+                sr.Close();
             }
             catch (Exception exp)
             {
+                if (sr != null)
+                {
+                    sr.Close();
+                }
                 m_log.ErrorFormat("[OGRESCENE]: Error importing uploaded ogre scene: {0}, {1}", exp.Message, exp.StackTrace);
+                error = exp.Message;                
             }
         }
 
@@ -399,5 +779,237 @@ namespace OgreSceneImporter
             return content.Substring(start + 1, len - 2);
         }
 
+        
+        private byte[] ConstructJSonResponce(Object obj)
+        {
+            //Newtonsoft.Json.JsonConverter jc = new Newtonsoft.Json.JsonConverter();
+            ////jc.WriteJson(
+            //string ans = JsonConvert.SerializeObject(eList, Formatting.Indented);
+
+            return null;
+        }
+
+        //private byte[] ConstructResponceBytesFromStringDictionary(SerializableDictionary<string, string> dictionary)
+        //{
+        //    //System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UploadScene>));
+        //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SerializableDictionary<string, string>));
+        //    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        //    StringWriter sw = new StringWriter(sb);
+        //    serializer.Serialize(sw, dictionary);
+
+        //    System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+        //    return encoding.GetBytes(sb.ToString());
+        //}
+
+        //private byte[] ConstructResponceBytesFromStringSceneRegionDictionary(SerializableDictionary<string, SceneRegion> sceneids)
+        private byte[] ConstructResponceBytesFromDictionary<T, Y>(SerializableDictionary<T, Y> dictionary)
+        {
+            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SerializableDictionary<T, Y>));
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            StringWriter sw = new StringWriter(sb);
+            serializer.Serialize(sw, dictionary);
+            System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+            return encoding.GetBytes(sb.ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assets"></param>
+        /// <param name="sceneDataID"></param>
+        /// <param name="type">1 = mesh, 0 = other</param>
+        public void SaveDataFromAssets(Dictionary<string, UUID> assets, UUID sceneDataID, int type)
+        {
+            foreach (KeyValuePair<string, UUID> kvp in assets)
+            {
+                AssetDataSaver.SaveAssetData(sceneDataID, kvp.Value, kvp.Key, type);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <param name="sceneDataID"></param>
+        /// <param name="type">1 = mesh, 0 = other</param>
+        public void SaveAssetData(AssetBase asset, UUID sceneDataID, int type, SceneObjectGroup sceneObject)
+        {
+            AssetDataSaver.SaveAssetData(sceneDataID, asset.FullID, asset.Name, type, 0, sceneObject.UUID);
+        }
+
+        public void ImportOgreSceneFromString(string xmlString, string saveSceneDataID, string regionName, out string regionId)
+        {
+            regionId = "";
+            //DotSceneLoader loader = new DotSceneLoader();
+            SceneManager ogreSceneManager = new SceneManager();
+            mSceneMgr = ogreSceneManager;
+
+            XmlDocument XMLDoc = new XmlDocument();
+            XMLDoc.LoadXml(xmlString);
+            // Validate the File
+            XmlElement XMLRoot = XMLDoc.DocumentElement;
+            if (XMLRoot.Name != "scene")
+            {
+                m_log.Error("[DotSceneLoader] Error: Invalid .scene File. Missing <scene>");
+                return;
+            }
+            //SceneNode rootSceneNode = new SceneNode();
+            mAttachNode = mSceneMgr.RootSceneNode;
+
+            this.StaticObjects = new List<string>();
+            this.DynamicObjects = new List<string>();
+
+            processScene(XMLRoot);
+
+            Scene scene = null;
+            foreach (Scene s in m_scenes)
+            {
+                if (s.RegionInfo.RegionName==regionName)
+                {
+                    scene = s;
+                    regionId = s.RegionInfo.RegionID.ToString();
+                    break;
+                }
+            }
+            if (scene != null)
+            {
+                UploadSceneLoader usl = new UploadSceneLoader(scene, this.m_osi);
+
+                
+
+                // read scenes assets from db
+                List<SceneAsset> sassets = m_SceneStorage.GetSceneAssets(saveSceneDataID);
+                List<SceneAsset> meshes = new List<SceneAsset>();
+                List<SceneAsset> materialassets = new List<SceneAsset>();
+                List<SceneAsset> textureassets = new List<SceneAsset>();
+                Dictionary<string, UUID> materials = new Dictionary<string,UUID>();
+                foreach (SceneAsset sa in sassets)
+                {
+                    if (sa.AssetType == 1)
+                    {
+                        meshes.Add(sa);
+                    }
+                    if (sa.AssetType == 2)
+                    {
+                        materials.Add(sa.Name, new UUID(sa.AssetId));
+                        //materialassets.Add(sa);
+                    }
+                    if (sa.AssetType == 3)
+                    {
+                        textureassets.Add(sa);
+                    }
+                }
+
+
+                usl.AddObjectsToScene(ogreSceneManager.RootSceneNode, meshes, saveSceneDataID, materials, AssetDataSaver);
+                
+                m_log.Debug("Entity uuids after object add:");
+                foreach (EntityBase eb in scene.Entities)
+                {
+                    m_log.Debug(eb.UUID.ToString());
+                }
+                
+                //AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, saveSceneDataID);
+                //this.m_SceneStorage.SetSceneToRegion(
+            }
+            else { regionId = ""; }
+        }
+
+
+
+        private void TestDB()
+        {
+            try
+            {
+                List<UploadScene> uscenes = m_SceneStorage.GetRegionsScenes(m_scene.RegionInfo.RegionID);
+
+                //UploadScene us = new UploadScene(UUID.Random(), "test", "<xml/>");
+                //this.m_SceneStorage.SaveScene(us);
+            }
+            catch (Exception e)
+            {
+                m_log.Error(e.Message);
+            }
+        }
+
+    }
+
+    [XmlRoot("dictionary")]
+    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
+    {
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
+            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
+
+
+            bool wasEmpty = reader.IsEmptyElement;
+            reader.Read();
+
+
+            if (wasEmpty)
+                return;
+
+
+            while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
+            {
+                reader.ReadStartElement("item");
+
+
+                reader.ReadStartElement("key");
+                TKey key = (TKey)keySerializer.Deserialize(reader);
+                reader.ReadEndElement();
+
+
+                reader.ReadStartElement("value");
+                TValue value = (TValue)valueSerializer.Deserialize(reader);
+
+                reader.ReadEndElement();
+
+                this.Add(key, value);
+
+
+                reader.ReadEndElement();
+                reader.MoveToContent();
+
+            }
+            reader.ReadEndElement();
+        }
+
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
+            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
+            foreach (TKey key in this.Keys)
+            {
+                writer.WriteStartElement("item");
+
+
+                writer.WriteStartElement("key");
+                keySerializer.Serialize(writer, key);
+                writer.WriteEndElement();
+
+                writer.WriteStartElement("value");
+                TValue value = this[key];
+                valueSerializer.Serialize(writer, value);
+                writer.WriteEndElement();
+
+                writer.WriteEndElement();
+
+            }
+
+        }
+
+        #endregion
     }
 }
