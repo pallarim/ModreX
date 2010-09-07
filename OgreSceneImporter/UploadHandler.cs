@@ -13,7 +13,7 @@ using OpenSim.Framework;
 using ModularRex.RexFramework;
 using OgreSceneImporter.UploadSceneDB;
 
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System.Xml.Serialization;
 using System.Xml;
 
