@@ -11,6 +11,7 @@ using Ionic.Zip;
 using System.Drawing;
 using OpenSim.Framework;
 using ModularRex.RexFramework;
+using System.Net;
 using OgreSceneImporter.UploadSceneDB;
 
 //using Newtonsoft.Json;
@@ -403,6 +404,19 @@ namespace OgreSceneImporter
             }
         }
 
+        private bool HandleUploadSceneWithReferences(string basePath, string sceneFileName, Vector3 offset)
+        {
+            Uri sceneFileUri = new Uri(basePath + sceneFileName);
+            WebClient client = new WebClient();
+            byte[] sceneFile = client.DownloadData(sceneFileUri);
+            
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            string scenexml = enc.GetString(sceneFile);
+
+            m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+
+            return true;
+        }
 
         private byte[] ProcessUploadScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {

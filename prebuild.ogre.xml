@@ -34,5 +34,6 @@
       <Files>
       <Match path="UploadSceneDB/Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
       <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
