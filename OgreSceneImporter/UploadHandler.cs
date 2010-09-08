@@ -12,6 +12,7 @@ using Ionic.Zip;
 using System.Drawing;
 using OpenSim.Framework;
 using ModularRex.RexFramework;
+using System.Net;
 
 
 namespace OgreSceneImporter
@@ -156,6 +157,20 @@ namespace OgreSceneImporter
                 RemoveFolder(EXTRACT_FOLDER_NAME);
                 return encoding.GetBytes(respstring);
             }
+        }
+
+        private bool HandleUploadSceneWithReferences(string basePath, string sceneFileName, Vector3 offset)
+        {
+            Uri sceneFileUri = new Uri(basePath + sceneFileName);
+            WebClient client = new WebClient();
+            byte[] sceneFile = client.DownloadData(sceneFileUri);
+            
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            string scenexml = enc.GetString(sceneFile);
+
+            m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+
+            return true;
         }
 
         private void RemoveFolder(string folder)

@@ -336,10 +336,6 @@ namespace OgreSceneImporter
 
         private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath)
         {
-
-			// Quaternion for whole scene rotation
-            Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0,0,1), ToRadians(m_sceneRotation));
-
             // Make sure node global transform is refreshed
             node.RefreshDerivedTransform();
 
@@ -383,93 +379,12 @@ namespace OgreSceneImporter
                         m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh {0}. Error message {1}", ent.MeshName, meshLoaderError);
                     }
 
-                    //check that postition of the object is inside scene
-                    Vector3 objPos = new Vector3(node.DerivedPosition.X, node.DerivedPosition.Y, node.DerivedPosition.Z);
-                    if (m_swapAxes == true)
+                    SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
+                    if (sceneObject != null)
                     {
-                        Vector3 temp = new Vector3(objPos);
-                        objPos.X = -temp.X;
-                        objPos.Y = temp.Z;
-                        objPos.Z = temp.Y;
-                    } 
-                    objPos = objPos * sceneRotQuat; // Apply scene rotation
-                    objPos = (objPos * m_objectScale) + m_offset; // Apply scale and add offset
-                    if (objPos.X >= 0 && objPos.Y >= 0 && objPos.Z >= 0 &&
-                        objPos.X <= 256 && objPos.Y <= 256 && objPos.Z <= 256)
-                    {
-                        if (objPos.Z < 20)
-                            m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", objPos.Z, ent.MeshName);
-
-                        //Add object to scene
-                        Quaternion rot = new Quaternion(node.DerivedOrientation.X, node.DerivedOrientation.Y, node.DerivedOrientation.Z, node.DerivedOrientation.W);
-                        if (m_swapAxes == true)
-                        {
-                            Vector3 temp = new Vector3(rot.X, rot.Y, rot.Z);
-                            rot.X = -temp.X;
-                            rot.Y = temp.Z;
-                            rot.Z = temp.Y;
-                        }
-                        else
-                        {
-                            // Do the rotation adjust as in original importer
-                            rot *= new Quaternion(1, 0, 0);
-                            rot *= new Quaternion(0, 1, 0);
-                        }
-                        rot = sceneRotQuat * rot;
-                        
-                        SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
-                            m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
-                        Vector3 newScale = new Vector3();
-                        newScale.X = node.DerivedScale.X * m_objectScale;
-                        newScale.Y = node.DerivedScale.Y * m_objectScale;
-                        newScale.Z = node.DerivedScale.Z * m_objectScale;
-                        if (m_swapAxes == true)
-                        {
-                            Vector3 temp = new Vector3(newScale);
-                            newScale.X = temp.X;
-                            newScale.Y = temp.Z;
-                            newScale.Z = temp.Y;
-                        } 
-                        sceneObject.RootPart.Scale = newScale;
-
+                        bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
                         //Add refs to materials, mesh etc.
-                        IModrexObjectsProvider rexObjects = m_scene.RequestModuleInterface<IModrexObjectsProvider>();
-                        RexObjectProperties robject = rexObjects.GetObject(sceneObject.RootPart.UUID);
-                        robject.RexMeshUUID = asset.FullID;
-                        robject.RexDrawDistance = ent.RenderingDistance;
-                        robject.RexCastShadows = ent.CastShadows;
-                        robject.RexDrawType = 1;
-                        
-                        // Only assign physics mesh if no error
-                        if ((meshLoaderError == "") && (m_useCollisionMesh == true))
-                        {
-                            try
-                            {
-                                robject.RexCollisionMeshUUID = asset.FullID;
-                            }
-                            catch (Exception)
-                            {
-                            }
-                        }
-                        
-                        for (int i = 0; i < materialNames.Count; i++)
-                        {
-                            UUID materilUUID;
-                            if (materials.TryGetValue(materialNames[i], out materilUUID))
-                            {
-                                robject.RexMaterials.AddMaterial((uint)i, materilUUID);
-                            }
-                            else
-                            {
-                                m_log.ErrorFormat("[OGRESCENE]: Could not find material UUID for material {0}. Skipping material", materialNames[i]);
-                                continue;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        m_log.ErrorFormat("[OGRESCENE]: Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, objPos.ToString());
-                        continue;
+                        AddRexObjectProperties(sceneObject.RootPart.UUID, asset.FullID, ent, materials, materialNames, useCollision);
                     }
                 }
             }
@@ -483,12 +398,244 @@ namespace OgreSceneImporter
             }
         }
 
+        private Vector3 GetObjectScale(Vector3 vector3)
+        {
+            Vector3 newScale = new Vector3();
+            newScale.X = vector3.X * m_objectScale;
+            newScale.Y = vector3.Y * m_objectScale;
+            newScale.Z = vector3.Z * m_objectScale;
+            if (m_swapAxes == true)
+            {
+                Vector3 temp = new Vector3(newScale);
+                newScale.X = temp.X;
+                newScale.Y = temp.Z;
+                newScale.Z = temp.Y;
+            }
+            return newScale;
+        }
+
+        private Quaternion GetSceneObjectRotation(Quaternion quaternion, Quaternion sceneRotQuat)
+        {
+            Quaternion rot = new Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
+            if (m_swapAxes == true)
+            {
+                Vector3 temp = new Vector3(rot.X, rot.Y, rot.Z);
+                rot.X = -temp.X;
+                rot.Y = temp.Z;
+                rot.Z = temp.Y;
+            }
+            else
+            {
+                // Do the rotation adjust as in original importer
+                rot *= new Quaternion(1, 0, 0);
+                rot *= new Quaternion(0, 1, 0);
+            }
+            rot = sceneRotQuat * rot;
+            return rot;
+        }
+
+        private Vector3 GetSceneObjectPosition(Vector3 nodePos, Quaternion sceneRotQuat)
+        {
+            Vector3 objPos = new Vector3(nodePos.X, nodePos.Y, nodePos.Z);
+            if (m_swapAxes == true)
+            {
+                Vector3 temp = new Vector3(objPos);
+                objPos.X = -temp.X;
+                objPos.Y = temp.Z;
+                objPos.Z = temp.Y;
+            }
+            objPos = objPos * sceneRotQuat; // Apply scene rotation
+            objPos = (objPos * m_objectScale) + m_offset; // Apply scale and add offset
+
+            return objPos;
+        }
+
+        private SceneObjectGroup AddObjectToScene(SceneNode node, Entity ent)
+        {
+            // Quaternion for whole scene rotation
+            Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), ToRadians(m_sceneRotation));
+
+            Vector3 objPos = GetSceneObjectPosition(node.DerivedPosition, sceneRotQuat);
+            if (objPos.X >= 0 && objPos.Y >= 0 && objPos.Z >= 0 &&
+                objPos.X <= 256 && objPos.Y <= 256)
+            {
+                if (objPos.Z < 20)
+                    m_log.WarnFormat("[OGRESCENE]: Inserting object {1} to height {0}. This object might be under water", objPos.Z, ent.MeshName);
+
+                //Add object to scene
+                Quaternion rot = GetSceneObjectRotation(node.DerivedOrientation, sceneRotQuat);
+
+                SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID,
+                    m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
+
+                sceneObject.RootPart.Scale = GetObjectScale(node.DerivedScale);
+                return sceneObject;
+            }
+            else
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Node postion was not inside the scene. Skipping object {0} with position {1}", ent.MeshName, objPos.ToString());
+                return null;
+            }
+        }
+
+        private void AddObjectsToScene(SceneNode node, string baseUrl)
+        {
+            // Quaternion for whole scene rotation
+            Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0,0,1), ToRadians(m_sceneRotation));
+
+            // Make sure node global transform is refreshed
+            node.RefreshDerivedTransform();
+
+            if (node.Entities.Count >= 0) //add this to scene and do stuff
+            {
+                foreach (Entity ent in node.Entities)
+                {
+                    System.Net.WebClient client = new System.Net.WebClient();
+                    byte[] data = client.DownloadData(baseUrl + ent.MeshName);
+                    List<string> materialNames;
+                    string meshLoaderError;
+                    UUID collisionId = UUID.Zero;
+                    RexDotMeshLoader.DotMeshLoader.ReadDotMeshMaterialNames(data, out materialNames, out meshLoaderError);
+                    if (meshLoaderError != "")
+                    {
+                        m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh {0}. Error message {1}", ent.MeshName, meshLoaderError);
+                    }
+                    else
+                    {
+                        //Add mesh to asset db
+                        AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                        asset.Description = ent.Name;
+                        asset.Data = data;
+                        m_scene.AssetService.Store(asset);
+                        collisionId = asset.FullID;
+                    }
+
+                    SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
+                    if (sceneObject != null)
+                    {
+                        //Add refs to materials, mesh etc.
+                        AddRexObjectProperties(sceneObject.RootPart.UUID, baseUrl, ent, materialNames, collisionId);
+                    }
+                }
+            }
+
+            if (node.Children.Count >= 0)
+            {
+                foreach (SceneNode child in node.Children)
+                {
+                    AddObjectsToScene(child, baseUrl);
+                }
+            }
+        }
+
+        private RexObjectProperties CreateRexObjectProperties(UUID objectId, Entity ent)
+        {
+            IModrexObjectsProvider rexObjects = m_scene.RequestModuleInterface<IModrexObjectsProvider>();
+            RexObjectProperties robject = rexObjects.GetObject(objectId);
+            robject.RexDrawDistance = ent.RenderingDistance;
+            robject.RexCastShadows = ent.CastShadows;
+            robject.RexDrawType = 1;
+            return robject;
+        }
+
+        private void AddRexObjectProperties(UUID objectId, UUID meshId, Entity ent, Dictionary<string, UUID> materials, List<string> materialNames, bool useCollision)
+        {
+            RexObjectProperties robject = CreateRexObjectProperties(objectId, ent);
+            robject.RexMeshUUID = meshId;
+
+            if (useCollision)
+            {
+                try
+                {
+                    robject.RexCollisionMeshUUID = meshId;
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            for (int i = 0; i < materialNames.Count; i++)
+            {
+                UUID materilUUID;
+                if (materials.TryGetValue(materialNames[i], out materilUUID))
+                {
+                    robject.RexMaterials.AddMaterial((uint)i, materilUUID);
+                }
+                else
+                {
+                    m_log.ErrorFormat("[OGRESCENE]: Could not find material UUID for material {0}. Skipping material", materialNames[i]);
+                    continue;
+                }
+            }
+        }
+
+        private void AddRexObjectProperties(UUID objectId, string baseUrl, Entity ent, List<string> materialNames, UUID collisionId)
+        {
+            RexObjectProperties robject = CreateRexObjectProperties(objectId, ent);
+            robject.RexMeshURI = baseUrl + ent.MeshName;
+
+            for (int i = 0; i < materialNames.Count; i++)
+            {
+                robject.RexMaterials.AddMaterial((uint)i, UUID.Zero, baseUrl + materialNames[i]);
+            }
+
+            if (collisionId != UUID.Zero)
+            {
+                try
+                {
+                    robject.RexCollisionMeshUUID = collisionId;
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+
+        /// <summary>
+        /// Imports the uploaded ogre scene.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="scene">The scene where to put uploaded scene.</param>
         public void ImportUploadedOgreScene(string fileName, Scene scene)
         {
             // Temporary fix for scene being null, should make scene a method variable, passed forward in callstack where needed
             Scene temp = m_scene;
             m_scene = scene;
             ImportOgreScene(fileName);
+            m_scene = temp;
+        }
+
+        /// <summary>
+        /// Imports the uploaded ogre scene.
+        /// </summary>
+        /// <param name="baseUrl">The base URL.</param>
+        /// <param name="sceneFile">The scene filename.</param>
+        /// <param name="scene">The scene where to put uploaded scene.</param>
+        public void ImportUploadedOgreScene(string baseUrl, string sceneFile, Scene scene, Vector3 offSet)
+        {
+            Scene temp = m_scene;
+            m_scene = scene;
+            Vector3 tempOffset = m_offset;
+            m_offset = offSet;
+
+            try
+            {
+                DotSceneLoader loader = new DotSceneLoader();
+                SceneManager ogreSceneManager = new SceneManager();
+
+                System.Xml.XmlDocument XMLDoc = new System.Xml.XmlDocument();
+                XMLDoc.LoadXml(sceneFile);
+
+                loader.ParseDotScene(XMLDoc, "General", ogreSceneManager, null, "");
+
+                AddObjectsToScene(ogreSceneManager.RootSceneNode, baseUrl);
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Error importing uploaded scene file. Exception: {0} {1}", e.Message, e.StackTrace, e);
+            }
+
+            m_offset = tempOffset;
             m_scene = temp;
         }
 

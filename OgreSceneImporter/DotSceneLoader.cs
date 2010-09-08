@@ -50,6 +50,22 @@ namespace OgreSceneImporter
 
         public void ParseDotScene(String SceneName, String groupName, SceneManager yourSceneMgr, SceneNode pAttachNode, String sPrependNode)
         {
+            System.IO.StreamReader sreader = System.IO.File.OpenText(SceneName);
+            string data = sreader.ReadToEnd();
+
+            XmlDocument XMLDoc = null;
+
+            //String data = pStream.AsString;
+            // Open the .scene File
+            XMLDoc = new XmlDocument();
+            XMLDoc.LoadXml(data);
+            //pStream.Close();
+
+            ParseDotScene(XMLDoc, groupName, yourSceneMgr, pAttachNode, sPrependNode);
+        }
+
+        public void ParseDotScene(XmlDocument XMLDoc, String groupName, SceneManager yourSceneMgr, SceneNode pAttachNode, String sPrependNode)
+        {
             //Mogre.Root root = new Mogre.Root();
             if (groupName == null)
                 groupName = "General";// Mogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME;
@@ -60,31 +76,8 @@ namespace OgreSceneImporter
             m_sPrependNode = sPrependNode;
             this.StaticObjects = new List<string>();
             this.DynamicObjects = new List<string>();
-
-            XmlDocument XMLDoc = null;
+            
             XmlElement XMLRoot;
-
-            System.IO.StreamReader sreader = System.IO.File.OpenText(SceneName);
-            string data = sreader.ReadToEnd();
-
-            //Mogre.StringVectorPtr vectorPtr = Mogre.ResourceGroupManager.Singleton.ListResourceNames(Mogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
-            //for (int i = 0; i < vectorPtr.Count; i++)
-            //{
-            //    m_log.Info("res: " + vectorPtr[i]);
-            //}
-            string path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase);
-            if(path.StartsWith("file:\\"))
-            {
-                path = path.Replace("file:\\", "");
-            }
-            //Mogre.ResourceGroupManager.Singleton.AddResourceLocation(path,"FileSystem", "General");
-            //Mogre.DataStreamPtr pStream = Mogre.ResourceGroupManager.Singleton.OpenResource(SceneName, groupName);
-
-            //String data = pStream.AsString;
-            // Open the .scene File
-            XMLDoc = new XmlDocument();
-            XMLDoc.LoadXml(data);
-            //pStream.Close();
 
             // Validate the File
             XMLRoot = XMLDoc.DocumentElement;
