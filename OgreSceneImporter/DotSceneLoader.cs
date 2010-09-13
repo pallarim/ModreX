@@ -96,6 +96,25 @@ namespace OgreSceneImporter
             processScene(XMLRoot);
         }
 
+        public void ImportSceneFromString(string xmlString, SceneManager ogreSceneManager)
+        {
+            XmlDocument XMLDoc = new XmlDocument();
+            XMLDoc.LoadXml(xmlString);
+            XmlElement XMLRoot = XMLDoc.DocumentElement;
+            if (XMLRoot.Name != "scene")
+            {
+                m_log.Error("[DotSceneLoader] Error: Invalid .scene File. Missing <scene>");
+                return;
+            }
+            //SceneNode rootSceneNode = new SceneNode();
+            mAttachNode = mSceneMgr.RootSceneNode;
+
+            this.StaticObjects = new List<string>();
+            this.DynamicObjects = new List<string>();
+
+            processScene(XMLRoot);
+        }
+
         protected float ParseFloat(String s)
         {
             NumberFormatInfo provider = new NumberFormatInfo();

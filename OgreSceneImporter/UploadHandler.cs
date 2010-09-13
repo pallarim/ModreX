@@ -193,14 +193,44 @@ namespace OgreSceneImporter
                 string sceneUuidStr = sceneuuidNodeList[0].InnerText;
                 // positions and rotations are in xml scene that is in uploadscene table
                 UploadScene us = m_SceneStorage.GetScene(sceneUuidStr);
-                string regionIdString = String.Empty;
 
-                //TODO: instead of calling this from this, Call it from DotSceneLoader, then call:
-                //UploadSceneLoader.AddObjectsToScene(ogreSceneManager.RootSceneNode, meshes, saveSceneDataID, materials, AssetDataSaver);
-                //ImportOgreSceneFromString(us.XmlFile, sceneUuidStr, regionName, out regionIdString);
+                DotSceneLoader loader = new DotSceneLoader();
+                SceneManager ogreSceneManager = new SceneManager();
+
+                Scene scene = null;
+                string regionId = String.Empty;
+                foreach (Scene s in m_scenes)
+                {
+                    if (s.RegionInfo.RegionName == regionName)
+                    {
+                        scene = s;
+                        regionId = s.RegionInfo.RegionID.ToString();
+                        break;
+                    }
+                }
+                if (scene != null)
+                {
+                    loader.ImportSceneFromString(us.XmlFile, ogreSceneManager);
+                    List<SceneAsset> meshes = new List<SceneAsset>();
+                    List<SceneAsset> sassets = m_SceneStorage.GetSceneAssets(sceneUuidStr);
+                    Dictionary<string, UUID> materials = new Dictionary<string, UUID>();
+                    foreach (SceneAsset sa in sassets)
+                    {
+                        if (sa.AssetType == 1)
+                        {
+                            meshes.Add(sa);
+                        }
+                        if (sa.AssetType == 2)
+                        {
+                            materials.Add(sa.Name, new UUID(sa.AssetId));
+                        }
+                    }
+                    UploadSceneLoader usl = new UploadSceneLoader(scene, this.m_osi);
+                    usl.AddObjectsToScene(ogreSceneManager.RootSceneNode, meshes, sceneUuidStr, materials, AssetDataSaver);
+                }
                 
                 // push back meshes, that should be stored in asset service (the textures and material files should all be ready in asset service)
-                m_SceneStorage.SetSceneToRegion(sceneUuidStr, regionIdString);
+                m_SceneStorage.SetSceneToRegion(sceneUuidStr, regionId);
                 responce["error"] = "None";
                 return ConstructResponceBytesFromDictionary(responce);
             }
