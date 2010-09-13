@@ -112,33 +112,70 @@ namespace OgreSceneImporter
         private byte[] ProcessUploadSceneMessages(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
             
-            string mthd = httpRequest.Headers["USceneMethod"];
+            string method = httpRequest.Headers["USceneMethod"];
             
-            m_log.Info("[OGRESCENE]: Processing UploadScene packet");
-
-            m_log.Info("[OGRESCENE]: UploadScene method: " + mthd);
+            m_log.InfoFormat("[OGRESCENE]: Processing UploadScene packet with method {0}", method);
 
             // Dispatch
-            if(mthd=="Upload"){
-                return ProcessUploadScene(path, request, httpRequest, httpResponse);
-            }
-            else if(mthd=="GetUploadSceneList")
+            switch (method)
             {
-                return ProcessGetUploadSceneList(path, request, httpRequest, httpResponse);
+                case "Upload": 
+                    return ProcessUploadScene(path, request, httpRequest, httpResponse);
+                case "GetUploadSceneList": 
+                    return ProcessGetUploadSceneList(path, request, httpRequest, httpResponse);
+                case "DeleteServerScene": 
+                    return ProcessDeleteScene(path, request, httpRequest, httpResponse);
+                case "UnloadServerScene": 
+                    return ProcessUnloadServerScene(path, request, httpRequest, httpResponse);
+                case "LoadServerScene": 
+                    return ProcessLoadServerScene(path, request, httpRequest, httpResponse);
+                case "UploadSceneUrl":
+                    return ProcessUploadSceneUrl(path, request, httpRequest, httpResponse);
+                default: return null;
             }
-            else if(mthd=="DeleteServerScene")
+        }
+
+        private byte[] ProcessUploadSceneUrl(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
+            try
             {
-                return ProcessDeleteScene(path, request, httpRequest, httpResponse);
+                string regionName = httpRequest.Headers["RegionName"];
+                string offset = httpRequest.Headers["OffSet"];
+                string url = httpRequest.Headers["SceneUrl"];
+
+                string[] uriParts = url.Split('/');
+                string fileName = uriParts[uriParts.Length - 1];
+                string urlBase = url.Remove(url.LastIndexOf(fileName));
+
+                string[] offsetParts = offset.Replace(" ", String.Empty).Split(',');
+                if (offsetParts.Length != 3)
+                {
+                    httpResponse.StatusCode = 400;
+                    return new byte[0];
+                }
+                Vector3 offsetVector = new Vector3(
+                    Convert.ToSingle(offsetParts[0]),
+                    Convert.ToSingle(offsetParts[1]),
+                    Convert.ToSingle(offsetParts[2]));
+
+                if (HandleUploadSceneWithReferences(urlBase, fileName, offsetVector))
+                {
+                    httpResponse.StatusCode = 201;
+                }
+                else
+                {
+                    httpResponse.StatusCode = 500;
+                }
+                return new byte[0];
             }
-            else if(mthd=="UnloadServerScene")
+            catch (Exception e)
             {
-                return ProcessUnloadServerScene(path, request, httpRequest, httpResponse);
+                m_log.ErrorFormat("[OGRESCENE]: Failed to load scene: {0}\n"
+                    + "StackTrace: {1}", e.Message, e.StackTrace);
+                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
+                errorMessage.Add("error", e.Message);
+                return ConstructResponceBytesFromDictionary(errorMessage);
             }
-            else if(mthd=="LoadServerScene")
-            {
-                return ProcessLoadServerScene(path, request, httpRequest, httpResponse);
-            }
-            return null;
         }
 
         private byte[] ProcessLoadServerScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
