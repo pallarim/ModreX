@@ -94,17 +94,17 @@ namespace OgreSceneImporter.UploadSceneDB
             catch (MappingException mapE)
             {
                 if (mapE.InnerException != null)
-                    Console.WriteLine("[NHIBERNATE]: Mapping not valid: {0}, {1}, {2}", mapE.Message, mapE.StackTrace, mapE.InnerException.ToString());
+                    m_log.ErrorFormat("[NHIBERNATE]: Mapping not valid: {0}, {1}, {2}", mapE.Message, mapE.StackTrace, mapE.InnerException.ToString());
                 else
                     m_log.ErrorFormat("[NHIBERNATE]: Mapping not valid: {0}, {1}", mapE.Message, mapE.StackTrace);
             }
             catch (HibernateException hibE)
             {
-                Console.WriteLine("[NHIBERNATE]: HibernateException: {0}, {1}", hibE.Message, hibE.StackTrace);
+                m_log.ErrorFormat("[NHIBERNATE]: HibernateException: {0}, {1}", hibE.Message, hibE.StackTrace);
             }
             catch (TypeInitializationException tiE)
             {
-                Console.WriteLine("[NHIBERNATE]: TypeInitializationException: {0}, {1}", tiE.Message, tiE.StackTrace);
+                m_log.ErrorFormat("[NHIBERNATE]: TypeInitializationException: {0}, {1}", tiE.Message, tiE.StackTrace);
             }
         }
 
