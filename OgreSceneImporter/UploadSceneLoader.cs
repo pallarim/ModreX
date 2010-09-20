@@ -23,8 +23,6 @@ namespace OgreSceneImporter
         private float m_sceneRotation = 0.0f;
         private OgreSceneImportModule m_osi;
 
-        //private OgreSceneImporter.UploadSceneDB.ISceneStorage m_SceneStorage;
-
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -34,8 +32,6 @@ namespace OgreSceneImporter
             m_osi = osi;
         }
 
-
-        //public void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string uploadsceneid)
         public void AddObjectsToScene(SceneNode node, List<SceneAsset> meshes, string uploadsceneid, Dictionary<string, UUID> materials, IAssetDataSaver ads)
         {
             Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), m_osi.ToRadians(m_sceneRotation));

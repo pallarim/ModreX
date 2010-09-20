@@ -16,8 +16,6 @@
     <property name="AssetType"/>
     <property name="longLocalId"/>
     <property name="EntityId"/>
-    <!--<property name="stringEntityId" length="36"/>-->
-    <!--<property name="AssetStorageId" length="36"/>-->
     
   </class>
 

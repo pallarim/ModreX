@@ -11,8 +11,6 @@ namespace OgreSceneImporter.UploadSceneDB
 
         private UUID assetId; // scnene id 
 
-        private UUID assetStorageId; // id with assetservice, for locating created asset
-
         string name;
 
         private UUID sceneId;
@@ -89,20 +87,6 @@ namespace OgreSceneImporter.UploadSceneDB
         {
             get { return entityId.ToString(); }
             set { entityId = new UUID(value); }
-        }
-
-        //public virtual string stringEntityId
-        //{
-        //    get { return entityId.ToString(); }
-        //    set { entityId = new UUID(value); }
-        //}
-
-        /*
-        public virtual string AssetStorageId 
-        {
-            get { return assetStorageId.ToString(); }
-            set { assetStorageId = new UUID(value); }
-        }
-        //*/        
+        }      
     }
 }

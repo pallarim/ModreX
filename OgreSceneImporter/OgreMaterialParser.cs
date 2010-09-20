@@ -65,7 +65,7 @@ namespace OgreSceneImporter
                         {
                             materialUUIDs.Add(materialName, materialID);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             m_log.ErrorFormat("[OGRESCENE]: duplicate material \"{0}\"", materialName);
                         }
