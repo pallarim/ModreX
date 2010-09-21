@@ -28,7 +28,7 @@ namespace OgreSceneImporter
         private float m_sceneRotation = 0.0f;
         private NHibernateSceneStorage m_SceneStorage;
 
-        private UploadHandler m_uploadHandler = new UploadHandler();
+        private Dictionary<UUID, RegisterCaps> m_scene_caps = new Dictionary<UUID, RegisterCaps>();
 
         #region IRegionModule Members
 
@@ -36,7 +36,6 @@ namespace OgreSceneImporter
         {
             m_scenes.Add(scene);
             scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
-            m_uploadHandler.AddUploadCap(scene, this);
 
             if (SceneStorageEnabled(source))
             {
@@ -46,6 +45,10 @@ namespace OgreSceneImporter
 
         public void PostInitialise()
         {
+            foreach (Scene s in m_scenes)
+            {
+                m_scene_caps[s.RegionInfo.RegionID] = new RegisterCaps(s, this);
+            }
         }
 
         public void Close()

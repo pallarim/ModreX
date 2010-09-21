@@ -41,6 +41,43 @@ namespace OgreSceneImporter
         }
     }
 
+    class RegisterCaps
+    {
+        private Scene m_scene;
+        private OgreSceneImportModule m_osi;
+        protected Dictionary<UUID, UploadHandler> m_capsHandlers = new Dictionary<UUID, UploadHandler>();
+
+        public RegisterCaps(Scene scene, OgreSceneImportModule osi)
+        {
+            m_scene = scene;
+            m_osi = osi;
+            m_scene.EventManager.OnRegisterCaps += OnAgentRegisterCaps;
+        }
+
+        public void OnAgentRegisterCaps(UUID agentID, OpenSim.Framework.Capabilities.Caps caps)
+        {
+            if (CheckRights(agentID))
+            {
+                m_capsHandlers[agentID] = new UploadHandler(caps, m_scene, agentID, m_osi);
+            }
+        }
+
+        private bool CheckRights(UUID agentID)
+        {
+            // currently only owner is able to upload scenes
+            if (agentID == m_scene.RegionInfo.EstateSettings.EstateOwner)
+                return true;
+            UUID[] managers = m_scene.RegionInfo.EstateSettings.EstateManagers;
+            foreach (UUID id in managers)
+            {
+                if (id == agentID)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
     /// <summary>
     /// Handle adding caps handlers for uploading scenes, when user, with rights to upload scene files, logs in,
     /// + handle uploads
@@ -62,53 +99,21 @@ namespace OgreSceneImporter
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
-        private List<Scene> m_scenes = new List<Scene>();
+        private UUID m_agentId = UUID.Zero;
         
         private OgreSceneImportModule m_osi;
 
         private const string EXTRACT_FOLDER_NAME = "SceneUploadZipFiles";
-        private Dictionary<UUID, string> m_users_region = new Dictionary<UUID, string>();
 
-        /// <summary>
-        /// Configure must be called before this is called
-        /// </summary>
-        /// <param name="scene"></param>
-        /// <param name="osi"></param>
-        public void AddUploadCap(Scene scene, OgreSceneImportModule osi)
+        public UploadHandler(OpenSim.Framework.Capabilities.Caps caps, Scene scene, UUID agentId, OgreSceneImportModule osi)
         {
-            try
-            {
-                m_scene = scene;
-                m_scenes.Add(scene);
-                m_osi = osi;
-                scene.EventManager.OnRegisterCaps += this.RegisterCaps;
-            }
-            catch (Exception e)
-            {
-                m_log.ErrorFormat("[OGRESCENE]: Error starting upload handler: {0}, {1}", e.Message, e.StackTrace);
-            }
-        }
+            m_scene = scene;
+            m_agentId = agentId;
+            m_osi = osi;
 
-        public void RegisterCaps(UUID agentID, OpenSim.Framework.Capabilities.Caps caps)
-        {
-            if (CheckRights(agentID))
-            {
-                UUID capID = UUID.Random();
-                m_log.InfoFormat("[OGRESCENE]: Creating capability: /CAPS/{0}", capID);
-                caps.RegisterHandler("UploadScene", new StreamHandler("POST", "/CAPS/" + capID, ProcessUploadSceneMessages));
-
-                ScenePresence avatar;
-                foreach (Scene scene in m_scenes)
-                {
-                    if(scene.TryGetAvatar(agentID, out avatar))
-                    {
-                        if (!avatar.IsChildAgent)
-                        {
-                            m_users_region[agentID] = avatar.Scene.RegionInfo.RegionName;
-                        }
-                    }
-                }
-            }
+            UUID capID = UUID.Random();
+            m_log.InfoFormat("[OGRESCENE]: Creating capability: /CAPS/{0}", capID);
+            caps.RegisterHandler("UploadScene", new StreamHandler("POST", "/CAPS/" + capID, ProcessUploadSceneMessages));
         }
 
         private byte[] ProcessUploadSceneMessages(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
@@ -139,7 +144,7 @@ namespace OgreSceneImporter
         {
             try
             {
-                string regionName = httpRequest.Headers["RegionName"];
+                string regionName = m_scene.RegionInfo.RegionName;
                 string offset = httpRequest.Headers["OffSet"];
                 string url = httpRequest.Headers["SceneUrl"];
 
@@ -198,17 +203,8 @@ namespace OgreSceneImporter
                 DotSceneLoader loader = new DotSceneLoader();
                 SceneManager ogreSceneManager = new SceneManager();
 
-                Scene scene = null;
-                string regionId = String.Empty;
-                foreach (Scene s in m_scenes)
-                {
-                    if (s.RegionInfo.RegionName == regionName)
-                    {
-                        scene = s;
-                        regionId = s.RegionInfo.RegionID.ToString();
-                        break;
-                    }
-                }
+                Scene scene = m_scene;
+                string regionId = m_scene.RegionInfo.RegionID.ToString();
                 if (scene != null)
                 {
                     loader.ImportSceneFromString(us.XmlFile, ogreSceneManager);
@@ -292,7 +288,7 @@ namespace OgreSceneImporter
                 List<SceneAsset> sassets = storage.GetSceneAssets(sceneUuidStr);
                 foreach (SceneAsset asset in sassets)
                 {
-                    m_scenes[0].AssetService.Delete(asset.AssetId);
+                    m_scene.AssetService.Delete(asset.AssetId);
                 }
 
                 bool ret = storage.DeleteScene(sceneUuidStr);
@@ -329,46 +325,44 @@ namespace OgreSceneImporter
                     meshes.Add(sa);
             }
             //get region where uploadscene is located
-            foreach (Scene scene in m_scenes)
+
+            if (m_scene.RegionInfo.RegionName == region)
             {
-                if (scene.RegionInfo.RegionName == region)
+                try
                 {
-                    try
+                    lock (m_scene.Entities)
                     {
-                        lock (scene.Entities)
+                        foreach (SceneAsset mesh_ in meshes)
                         {
-                            foreach (SceneAsset mesh_ in meshes)
+                            EntityBase eb_ = m_scene.Entities[new UUID(mesh_.EntityId)];
+                            if (eb_ == null)
                             {
-                                EntityBase eb_ = scene.Entities[new UUID(mesh_.EntityId)];
-                                if (eb_ == null)
-                                {
-                                    m_log.Debug(mesh_.EntityId.ToString() + " not found");
-                                }
+                                m_log.Debug(mesh_.EntityId.ToString() + " not found");
                             }
-
-                            foreach (SceneAsset mesh in meshes)
-                            {
-                                EntityBase eb = scene.Entities[new UUID(mesh.EntityId)];
-
-                                if (eb != null)
-                                {
-                                    SceneObjectGroup sog = scene.SceneGraph.GetGroupByPrim(eb.LocalId);
-                                    m_log.DebugFormat("[OGRESCENE]: Removing scene object group {0} with mesh {1}", sog.UUID.ToString(), mesh.EntityId);
-
-                                    scene.DeleteSceneObject(sog, false);
-                                }
-                            }
-
-                            string regionid = scene.RegionInfo.RegionID.ToString();
-                            // remove scene from upload scene regionscene db table, leave to other tables since this is just unload
-                            storage.RemoveSceneFromRegion(sceneuuid, regionid);
                         }
+
+                        foreach (SceneAsset mesh in meshes)
+                        {
+                            EntityBase eb = m_scene.Entities[new UUID(mesh.EntityId)];
+
+                            if (eb != null)
+                            {
+                                SceneObjectGroup sog = m_scene.SceneGraph.GetGroupByPrim(eb.LocalId);
+                                m_log.DebugFormat("[OGRESCENE]: Removing scene object group {0} with mesh {1}", sog.UUID.ToString(), mesh.EntityId);
+
+                                m_scene.DeleteSceneObject(sog, false);
+                            }
+                        }
+
+                        string regionid = m_scene.RegionInfo.RegionID.ToString();
+                        // remove scene from upload scene regionscene db table, leave to other tables since this is just unload
+                        storage.RemoveSceneFromRegion(sceneuuid, regionid);
                     }
-                    catch (Exception exp)
-                    {
-                        m_log.ErrorFormat("[OGRESCENE]: Error unloading scene: {0}, {1}", exp.Message, exp.StackTrace);
-                        throw exp;
-                    }
+                }
+                catch (Exception exp)
+                {
+                    m_log.ErrorFormat("[OGRESCENE]: Error unloading scene: {0}, {1}", exp.Message, exp.StackTrace);
+                    throw exp;
                 }
             }
 
@@ -392,15 +386,7 @@ namespace OgreSceneImporter
                 foreach (RegionScene rs in rscenes)
                 {
                     // Get region name 
-                    string regionName = "";
-                    foreach (Scene scene in m_scenes)
-                    {
-                        if (scene.RegionInfo.RegionID.ToString() == rs.RegionId)
-                        {
-                            regionName = scene.RegionInfo.RegionName;
-                            break;
-                        }
-                    }
+                    string regionName = m_scene.RegionInfo.RegionName;
                     // Get scene name
                     string sceneName = "";
                     foreach (UploadScene us in uscenes)
@@ -479,15 +465,8 @@ namespace OgreSceneImporter
 
             if (regionName != null)
             {
-                foreach (Scene sc in m_scenes)
-                {
-                    if (sc.RegionInfo.RegionName == regionName)
-                    {
-                        m_scene = sc;
-                        regionFound = true;
-                        break;
-                    }
-                }
+                if (regionName == m_scene.RegionInfo.RegionName)
+                    regionFound = true;
             }
 
             if (regionFound)
@@ -602,21 +581,6 @@ namespace OgreSceneImporter
 
                 Directory.Delete(folder, false);
             }
-        }
-
-        private bool CheckRights(UUID agentID)
-        {
-            // currently only owner is able to upload scenes
-            if (agentID == m_scene.RegionInfo.EstateSettings.EstateOwner)
-                return true;
-            UUID[] managers = m_scene.RegionInfo.EstateSettings.EstateManagers;
-            foreach (UUID id in managers) 
-            {
-                if (id == agentID)
-                    return true;
-            }
-
-            return false;
         }
 
         private void LoadScene(string extractFolderName, string publishName, out string error)
