@@ -41,42 +41,33 @@ namespace OgreSceneImporter
         }
     }
 
-    [Serializable()]
-    public class SceneRegion
-    {
-        public string SceneName;
-        public string Region;
-        public string SceneUuid;
-    }
-
-
     /// <summary>
     /// Handle adding caps handlers for uploading scenes, when user, with rights to upload scene files, logs in,
     /// + handle uploads
     /// </summary>
     public class UploadHandler
     {
+        /// <summary>
+        /// Serializable class to help returning SceneName, RegionId and SceneUUID as response to GetUploadSceneList request
+        /// </summary>
+        [Serializable()]
+        public class SceneRegion
+        {
+            public string SceneName;
+            public string Region;
+            public string SceneUuid;
+        }
+
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
         private List<Scene> m_scenes = new List<Scene>();
-        private OgreSceneImporter.UploadSceneDB.ISceneStorage m_SceneStorage;
-
         
         private OgreSceneImportModule m_osi;
 
         private const string EXTRACT_FOLDER_NAME = "SceneUploadZipFiles";
-
-        public IAssetDataSaver AssetDataSaver
-        {
-            get { return (IAssetDataSaver)m_SceneStorage; }
-        }
-
-        public void Configure(Nini.Config.IConfigSource source)
-        {
-            m_SceneStorage = new OgreSceneImporter.UploadSceneDB.NHibernateSceneStorage(source);
-        }
+        private Dictionary<UUID, string> m_users_region = new Dictionary<UUID, string>();
 
         /// <summary>
         /// Configure must be called before this is called
@@ -87,7 +78,6 @@ namespace OgreSceneImporter
         {
             try
             {
-                if (m_SceneStorage == null) { throw new Exception("SceneStorage is null"); }
                 m_scene = scene;
                 m_scenes.Add(scene);
                 m_osi = osi;
@@ -106,14 +96,24 @@ namespace OgreSceneImporter
                 UUID capID = UUID.Random();
                 m_log.InfoFormat("[OGRESCENE]: Creating capability: /CAPS/{0}", capID);
                 caps.RegisterHandler("UploadScene", new StreamHandler("POST", "/CAPS/" + capID, ProcessUploadSceneMessages));
+
+                ScenePresence avatar;
+                foreach (Scene scene in m_scenes)
+                {
+                    if(scene.TryGetAvatar(agentID, out avatar))
+                    {
+                        if (!avatar.IsChildAgent)
+                        {
+                            m_users_region[agentID] = avatar.Scene.RegionInfo.RegionName;
+                        }
+                    }
+                }
             }
         }
 
         private byte[] ProcessUploadSceneMessages(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
-            
             string method = httpRequest.Headers["USceneMethod"];
-            
             m_log.InfoFormat("[OGRESCENE]: Processing UploadScene packet with method {0}", method);
 
             // Dispatch
@@ -172,19 +172,20 @@ namespace OgreSceneImporter
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to load scene: {0}\n"
                     + "StackTrace: {1}", e.Message, e.StackTrace);
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", e.Message);
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse(e.Message);
             }
         }
 
         private byte[] ProcessLoadServerScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
+            NHibernateSceneStorage storage;
+            if(!m_osi.TryGetSceneStorage(out storage))
+                return Util.CreateErrorResponse("ServerScene feature disabled. Check server configuration to enable it");
             try
             {
                 SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
                 // actually returns xmldata
-                string loadscenexml = GetDataFromRequestBody(httpRequest);
+                string loadscenexml = Util.GetDataFromRequestBody(httpRequest);
                 XmlDocument xDoc = new XmlDocument();
                 xDoc.LoadXml(loadscenexml);
                 XmlNodeList regionNodeList = xDoc.GetElementsByTagName("region");
@@ -192,7 +193,7 @@ namespace OgreSceneImporter
                 string regionName = regionNodeList[0].InnerText;
                 string sceneUuidStr = sceneuuidNodeList[0].InnerText;
                 // positions and rotations are in xml scene that is in uploadscene table
-                UploadScene us = m_SceneStorage.GetScene(sceneUuidStr);
+                UploadScene us = storage.GetScene(sceneUuidStr);
 
                 DotSceneLoader loader = new DotSceneLoader();
                 SceneManager ogreSceneManager = new SceneManager();
@@ -212,7 +213,7 @@ namespace OgreSceneImporter
                 {
                     loader.ImportSceneFromString(us.XmlFile, ogreSceneManager);
                     List<SceneAsset> meshes = new List<SceneAsset>();
-                    List<SceneAsset> sassets = m_SceneStorage.GetSceneAssets(sceneUuidStr);
+                    List<SceneAsset> sassets = storage.GetSceneAssets(sceneUuidStr);
                     Dictionary<string, UUID> materials = new Dictionary<string, UUID>();
                     foreach (SceneAsset sa in sassets)
                     {
@@ -225,31 +226,32 @@ namespace OgreSceneImporter
                             materials.Add(sa.Name, new UUID(sa.AssetId));
                         }
                     }
-                    UploadSceneLoader usl = new UploadSceneLoader(scene, this.m_osi);
-                    usl.AddObjectsToScene(ogreSceneManager.RootSceneNode, meshes, sceneUuidStr, materials, AssetDataSaver);
+                    
+                    m_osi.AddObjectsToScene(scene, ogreSceneManager.RootSceneNode, meshes, sceneUuidStr, materials);
                 }
                 
                 // push back meshes, that should be stored in asset service (the textures and material files should all be ready in asset service)
-                m_SceneStorage.SetSceneToRegion(sceneUuidStr, regionId);
+                storage.SetSceneToRegion(sceneUuidStr, regionId);
                 responce["error"] = "None";
-                return ConstructResponceBytesFromDictionary(responce);
+                return Util.ConstructResponceBytesFromDictionary(responce);
             }
             catch (Exception exp)
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to load scene: {0}\n"
                     + "StackTrace: {1}", exp.Message, exp.StackTrace);
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", exp.Message);
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse(exp.Message);
             }
         }
 
         private byte[] ProcessUnloadServerScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
+            NHibernateSceneStorage storage;
+            if (!m_osi.TryGetSceneStorage(out storage))
+                return Util.CreateErrorResponse("ServerScene feature disabled. Check server configuration to enable it");
             try
             {
                 SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
-                string sceneUuidAndRegion = GetDataFromRequestBody(httpRequest);
+                string sceneUuidAndRegion = Util.GetDataFromRequestBody(httpRequest);
                 m_log.Debug(sceneUuidAndRegion);
                 int ind = sceneUuidAndRegion.IndexOf(':');
                 string uuid = sceneUuidAndRegion.Substring(0, ind);
@@ -259,40 +261,41 @@ namespace OgreSceneImporter
                 UnloadServerScene(uuid, region);
 
                 responce["error"] = "None";
-                return ConstructResponceBytesFromDictionary(responce);
+                return Util.ConstructResponceBytesFromDictionary(responce);
 
             }
             catch (Exception exp)
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to unload scene: {0}\n"
                     + "StackTrace: {1}", exp.Message, exp.StackTrace);
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", exp.Message);
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse(exp.Message);
             }
         }
 
         private byte[] ProcessDeleteScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
+            NHibernateSceneStorage storage;
+            if (!m_osi.TryGetSceneStorage(out storage))
+                return Util.CreateErrorResponse("ServerScene feature disabled. Check server configuration to enable it");
             try
             {
                 SerializableDictionary<string, string> responce = new SerializableDictionary<string, string>();
-                string sceneUuidStr = GetDataFromRequestBody(httpRequest);
+                string sceneUuidStr = Util.GetDataFromRequestBody(httpRequest);
 
                 // check if its active scene, if so do unload first for each region this scene is in then delete assets
-                List<string> regions = m_SceneStorage.GetScenesRegionIds(sceneUuidStr);
+                List<string> regions = storage.GetScenesRegionIds(sceneUuidStr);
                 foreach (string region in regions)
                 {
                     this.UnloadServerScene(sceneUuidStr, region);
                 }
                 // now del assets and remove asset references and finally scene
-                List<SceneAsset> sassets = m_SceneStorage.GetSceneAssets(sceneUuidStr);
+                List<SceneAsset> sassets = storage.GetSceneAssets(sceneUuidStr);
                 foreach (SceneAsset asset in sassets)
                 {
                     m_scenes[0].AssetService.Delete(asset.AssetId);
                 }
 
-                bool ret = m_SceneStorage.DeleteScene(sceneUuidStr);
+                bool ret = storage.DeleteScene(sceneUuidStr);
                 if (ret == true)
                 {
                     responce["error"] = "None";
@@ -301,23 +304,24 @@ namespace OgreSceneImporter
                 {
                     responce["error"] = "Something went wrong";
                 }
-                return ConstructResponceBytesFromDictionary(responce);
+                return Util.ConstructResponceBytesFromDictionary(responce);
 
             }
             catch (Exception exp)
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to unload scene: {0}\n"
                     + "StackTrace: {1}", exp.Message, exp.StackTrace);
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", exp.Message);
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse(exp.Message);
             }
         }
 
         private bool UnloadServerScene(string sceneuuid, string region)
         {
+            NHibernateSceneStorage storage;
+            if (!m_osi.TryGetSceneStorage(out storage))
+                return false;
             // get scene meshes, remove them from scene
-            List<SceneAsset> assets = this.m_SceneStorage.GetSceneAssets(sceneuuid);
+            List<SceneAsset> assets = storage.GetSceneAssets(sceneuuid);
             List<SceneAsset> meshes = new List<SceneAsset>();
             foreach (SceneAsset sa in assets)
             {
@@ -344,71 +348,44 @@ namespace OgreSceneImporter
 
                             foreach (SceneAsset mesh in meshes)
                             {
-
                                 EntityBase eb = scene.Entities[new UUID(mesh.EntityId)];
 
                                 if (eb != null)
                                 {
                                     SceneObjectGroup sog = scene.SceneGraph.GetGroupByPrim(eb.LocalId);
-                                    m_log.Debug("--------------------------------------------");
-                                    m_log.Debug("Removing " + sog.UUID.ToString());
-                                    m_log.Debug("Removing " + mesh.EntityId);
-                                    m_log.Debug("--------------------------------------------");
+                                    m_log.DebugFormat("[OGRESCENE]: Removing scene object group {0} with mesh {1}", sog.UUID.ToString(), mesh.EntityId);
 
-                                    //SceneObjectGroup sog = (SceneObjectGroup)eb;
-
-
-                                    //scene.RemoveGroupTarget(sog);
                                     scene.DeleteSceneObject(sog, false);
-
                                 }
-
                             }
 
                             string regionid = scene.RegionInfo.RegionID.ToString();
                             // remove scene from upload scene regionscene db table, leave to other tables since this is just unload
-                            this.m_SceneStorage.RemoveSceneFromRegion(sceneuuid, regionid);
-                            
+                            storage.RemoveSceneFromRegion(sceneuuid, regionid);
                         }
                     }
                     catch (Exception exp)
                     {
-                        m_log.Debug("----------------------------------");
                         m_log.ErrorFormat("[OGRESCENE]: Error unloading scene: {0}, {1}", exp.Message, exp.StackTrace);
-                        m_log.Debug("----------------------------------");
-                        //m_log.Debug(exp.StackTrace.ToString());
-                        throw;
+                        throw exp;
                     }
                 }
             }
-            
 
             return false;
         }
 
-        private string GetDataFromRequestBody(OSHttpRequest httpRequest) 
-        {
-            byte[] data = httpRequest.GetBody();
-            byte[] content = ReadContent(data);
-            string retData;
-            System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
-            retData = enc.GetString(content);
-            int end = retData.IndexOf('\r');
-            if (end != -1)
-            {
-                retData = retData.Remove(end);
-            }
-            return retData;
-        }
-
         private byte[] ProcessGetUploadSceneList(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
+            NHibernateSceneStorage storage;
+            if (!m_osi.TryGetSceneStorage(out storage))
+                return Util.CreateErrorResponse("ServerScene feature disabled. Check server configuration to enable it");
             try
             {
                 SerializableDictionary<string, SceneRegion> sceneids = new SerializableDictionary<string, SceneRegion>();
 
-                List<RegionScene> rscenes = m_SceneStorage.GetRegionSceneList();
-                List<UploadScene> uscenes = m_SceneStorage.GetScenes();
+                List<RegionScene> rscenes = storage.GetRegionSceneList();
+                List<UploadScene> uscenes = storage.GetScenes();
 
                 List<string> keys = new List<string>();
                 int i = 0;
@@ -443,7 +420,7 @@ namespace OgreSceneImporter
                     sceneids[i.ToString()] = sr;
                     i++;
                 }
-                List<UploadScene> allScenes = m_SceneStorage.GetScenes();
+                List<UploadScene> allScenes = storage.GetScenes();
                 // add unloaded scenes
                 foreach (UploadScene us in allScenes)
                 {
@@ -458,31 +435,37 @@ namespace OgreSceneImporter
                     }
                 }
 
-                return ConstructResponceBytesFromDictionary(sceneids);
+                return Util.ConstructResponceBytesFromDictionary(sceneids);
 
             }
             catch (Exception exp)
             {
                 m_log.ErrorFormat("[OGRESCENE]: Failed to create list of uploaded scenes: {0}\n"
                     +"StackTrace: {1}", exp.Message, exp.StackTrace);
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", exp.Message);
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse(exp.Message);
             }
         }
 
         private bool HandleUploadSceneWithReferences(string basePath, string sceneFileName, Vector3 offset)
         {
-            Uri sceneFileUri = new Uri(basePath + sceneFileName);
-            WebClient client = new WebClient();
-            byte[] sceneFile = client.DownloadData(sceneFileUri);
-            
-            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-            string scenexml = enc.GetString(sceneFile);
+            try
+            {
+                Uri sceneFileUri = new Uri(basePath + sceneFileName);
+                WebClient client = new WebClient();
+                byte[] sceneFile = client.DownloadData(sceneFileUri);
 
-            m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+                System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+                string scenexml = enc.GetString(sceneFile);
 
-            return true;
+                m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[OGRESCENE]: Failed to upload scene from url. {0}, {1}", e.Message, e.StackTrace);
+                return false;
+            }
         }
 
         private byte[] ProcessUploadScene(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
@@ -524,7 +507,7 @@ namespace OgreSceneImporter
                     // need to parse this out from end
                     //--0446c18b14c143c3bd0e787cb6ea4c09--
 
-                    byte[] content = ReadContent(data);
+                    byte[] content = Util.ReadContent(data);
 
                     BinaryWriter bw = null;
                     try
@@ -569,14 +552,12 @@ namespace OgreSceneImporter
                         //return encoding.GetBytes(respstring);
                         SerializableDictionary<string, string> resp = new SerializableDictionary<string, string>();
                         resp.Add("error", "None");
-                        return ConstructResponceBytesFromDictionary(resp);
+                        return Util.ConstructResponceBytesFromDictionary(resp);
 
 
                     }
                     else {
-                        SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                        errorMessage.Add("error", error);
-                        return ConstructResponceBytesFromDictionary(errorMessage);                        
+                        return Util.CreateErrorResponse(error);                     
                     }
                 }
                 catch (Exception exp)
@@ -585,16 +566,12 @@ namespace OgreSceneImporter
                     
                     m_log.ErrorFormat("[OGRESCENE]: Failing to parse upload scene package: {0}\n"
                         +"StackTrace: {1}", exp.Message, exp.StackTrace);
-                    SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                    errorMessage.Add("error", exp.Message);
-                    return ConstructResponceBytesFromDictionary(errorMessage);
+                    return Util.CreateErrorResponse(exp.Message);
 
                 }
             }
             else {
-                SerializableDictionary<string, string> errorMessage = new SerializableDictionary<string, string>();
-                errorMessage.Add("error", "No such region found");
-                return ConstructResponceBytesFromDictionary(errorMessage);
+                return Util.CreateErrorResponse("No such region found");
             }
         }
 
@@ -642,57 +619,14 @@ namespace OgreSceneImporter
             return false;
         }
 
-        private byte[] ReadContent(byte[] data)
-        {
-            MemoryStream mstream = new MemoryStream(data);
-            System.IO.BinaryReader reader = new BinaryReader(mstream);
-            //reader.BaseStream.Position
-            byte[] startBytes;
-            if (mstream.Length > 500)
-            {
-                startBytes = reader.ReadBytes(500);
-            }
-            else
-            {
-                startBytes = reader.ReadBytes((int)mstream.Length);
-            }
-            string startString = System.Text.Encoding.ASCII.GetString(startBytes).ToString();
-
-            // find 2 linefeeds in a row, marks the end of headers
-            int startIndex = 0;
-            bool crlf = false;
-            int LF_index = startString.IndexOf("\n", 0);
-            int CRLF_index = startString.IndexOf("\r\n", 0);
-            if (CRLF_index != -1)
-            {
-                crlf = true;
-            }
-
-            if (crlf)
-            {
-                startIndex = startString.IndexOf("\r\n\r\n", 38);
-            }
-            else
-            {
-                startIndex = startString.IndexOf("\n\n", 36);
-            }
-            
-            int contentStartIndex;
-            if(crlf)
-                contentStartIndex= startIndex + 4;
-            else
-                contentStartIndex = startIndex + 2;
-            int contentEndIndex = (int)mstream.Length - 38; // 38 = length of "--uuid--"
-            int byteCount = contentEndIndex - contentStartIndex;
-            byte[] fileBuffer = new byte[byteCount];
-
-            Buffer.BlockCopy(data, contentStartIndex, fileBuffer, 0, byteCount);
-
-            return fileBuffer;
-        }
-
         private void LoadScene(string extractFolderName, string publishName, out string error)
         {
+            NHibernateSceneStorage storage;
+            if (!m_osi.TryGetSceneStorage(out storage))
+            {
+                error = "SceneStorage is not in use.";
+                return;
+            }
             error = "";
             m_log.Info("[OGRESCENE]: LoadScene");
             string packagePath = Path.Combine(extractFolderName, "UploadPackage");
@@ -723,8 +657,8 @@ namespace OgreSceneImporter
                 {
                     us = new UploadScene(sceneId, publishName, xml);
                 }
-                this.m_SceneStorage.SaveScene(us);
-                m_SceneStorage.SetSceneToRegion(sceneId.ToString(), m_scene.RegionInfo.RegionID.ToString());
+                storage.SaveScene(us);
+                storage.SetSceneToRegion(sceneId.ToString(), m_scene.RegionInfo.RegionID.ToString());
                 sr.Close();
             }
             catch (Exception exp)
@@ -863,143 +797,5 @@ namespace OgreSceneImporter
             int len = stop - start;
             return content.Substring(start + 1, len - 2);
         }
-
-        
-        private byte[] ConstructJSonResponce(Object obj)
-        {
-            //Newtonsoft.Json.JsonConverter jc = new Newtonsoft.Json.JsonConverter();
-            ////jc.WriteJson(
-            //string ans = JsonConvert.SerializeObject(eList, Formatting.Indented);
-
-            return null;
-        }
-
-        //private byte[] ConstructResponceBytesFromStringDictionary(SerializableDictionary<string, string> dictionary)
-        //{
-        //    //System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(List<UploadScene>));
-        //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SerializableDictionary<string, string>));
-        //    System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        //    StringWriter sw = new StringWriter(sb);
-        //    serializer.Serialize(sw, dictionary);
-
-        //    System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
-        //    return encoding.GetBytes(sb.ToString());
-        //}
-
-        //private byte[] ConstructResponceBytesFromStringSceneRegionDictionary(SerializableDictionary<string, SceneRegion> sceneids)
-        private byte[] ConstructResponceBytesFromDictionary<T, Y>(SerializableDictionary<T, Y> dictionary)
-        {
-            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SerializableDictionary<T, Y>));
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            StringWriter sw = new StringWriter(sb);
-            serializer.Serialize(sw, dictionary);
-            System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
-            return encoding.GetBytes(sb.ToString());
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="assets"></param>
-        /// <param name="sceneDataID"></param>
-        /// <param name="type">1 = mesh, 0 = other</param>
-        public void SaveDataFromAssets(Dictionary<string, UUID> assets, UUID sceneDataID, int type)
-        {
-            foreach (KeyValuePair<string, UUID> kvp in assets)
-            {
-                AssetDataSaver.SaveAssetData(sceneDataID, kvp.Value, kvp.Key, type);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="asset"></param>
-        /// <param name="sceneDataID"></param>
-        /// <param name="type">1 = mesh, 0 = other</param>
-        public void SaveAssetData(AssetBase asset, UUID sceneDataID, int type, SceneObjectGroup sceneObject)
-        {
-            AssetDataSaver.SaveAssetData(sceneDataID, asset.FullID, asset.Name, type, 0, sceneObject.UUID);
-        }
-
-    }
-
-    [XmlRoot("dictionary")]
-    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
-    {
-
-        #region IXmlSerializable Members
-
-        public System.Xml.Schema.XmlSchema GetSchema()
-        {
-            return null;
-        }
-
-
-        public void ReadXml(System.Xml.XmlReader reader)
-        {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-
-
-            bool wasEmpty = reader.IsEmptyElement;
-            reader.Read();
-
-
-            if (wasEmpty)
-                return;
-
-
-            while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
-            {
-                reader.ReadStartElement("item");
-
-
-                reader.ReadStartElement("key");
-                TKey key = (TKey)keySerializer.Deserialize(reader);
-                reader.ReadEndElement();
-
-
-                reader.ReadStartElement("value");
-                TValue value = (TValue)valueSerializer.Deserialize(reader);
-
-                reader.ReadEndElement();
-
-                this.Add(key, value);
-
-
-                reader.ReadEndElement();
-                reader.MoveToContent();
-
-            }
-            reader.ReadEndElement();
-        }
-
-
-        public void WriteXml(System.Xml.XmlWriter writer)
-        {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-            foreach (TKey key in this.Keys)
-            {
-                writer.WriteStartElement("item");
-
-
-                writer.WriteStartElement("key");
-                keySerializer.Serialize(writer, key);
-                writer.WriteEndElement();
-
-                writer.WriteStartElement("value");
-                TValue value = this[key];
-                valueSerializer.Serialize(writer, value);
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();
-
-            }
-
-        }
-
-        #endregion
     }
 }

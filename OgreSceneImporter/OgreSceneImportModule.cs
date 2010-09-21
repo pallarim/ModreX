@@ -10,6 +10,7 @@ using OpenMetaverse;
 using OpenSim.Framework;
 using System.Drawing;
 using ModularRex.RexFramework;
+using OgreSceneImporter.UploadSceneDB;
 
 namespace OgreSceneImporter
 {
@@ -25,6 +26,7 @@ namespace OgreSceneImporter
         private bool m_swapAxes = false;
         private bool m_useCollisionMesh = true;
         private float m_sceneRotation = 0.0f;
+        private NHibernateSceneStorage m_SceneStorage;
 
         private UploadHandler m_uploadHandler = new UploadHandler();
 
@@ -34,8 +36,12 @@ namespace OgreSceneImporter
         {
             m_scenes.Add(scene);
             scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
-            m_uploadHandler.Configure(source);
             m_uploadHandler.AddUploadCap(scene, this);
+
+            if (SceneStorageEnabled(source))
+            {
+                m_SceneStorage = new NHibernateSceneStorage(source);
+            }
         }
 
         public void PostInitialise()
@@ -57,6 +63,23 @@ namespace OgreSceneImporter
         }
 
         #endregion
+
+        private bool SceneStorageEnabled(Nini.Config.IConfigSource config)
+        {
+            bool enabled = true;
+            Nini.Config.IConfig serverConfig = config.Configs["UploadSceneConfig"];
+            if (serverConfig == null)
+            {
+                m_log.Info("[OGRESCENEUPLOADSTORE]: No configuration found, module is disabled");
+                enabled = false;
+            }
+            else if (!serverConfig.Contains("ConnectionString"))
+            {
+                m_log.Info("[OGRESCENEUPLOADSTORE]: No configuration found, module is disabled");
+                enabled = false;
+            }
+            return enabled;
+        }
 
         private void OgreSceneCommand(string module, string[] cmdparams)
         {
@@ -128,10 +151,31 @@ namespace OgreSceneImporter
                                         Convert.ToSingle(vectParts[2]));
                                     m_offset = newOffset;
                                 }
-                                catch (Exception e)
+                                catch (Exception)
                                 {
                                     m_log.ErrorFormat("[OGRESCENE]: Could not parse new offset vector {0}", cmdparams[2]);
                                 }
+                            }
+                            break;
+                        case "load":
+                            if (cmdparams.Length == 2)
+                            {
+                                m_log.Info("[OGRESCENE]: Missing argument. Use command with url location to scene file");
+                            }
+                            else if (cmdparams.Length == 3)
+                            {
+                                string url = cmdparams[2];
+                                string[] uriParts = url.Split('/');
+                                string fileName = uriParts[uriParts.Length - 1];
+                                string urlBase = url.Remove(url.LastIndexOf(fileName));
+                                Uri sceneFileUri = new Uri(cmdparams[2]);
+                                System.Net.WebClient client = new System.Net.WebClient();
+                                byte[] sceneFile = client.DownloadData(sceneFileUri);
+
+                                System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+                                string scenexml = enc.GetString(sceneFile);
+
+                                ImportUploadedOgreScene(urlBase, scenexml, m_scene, m_offset);
                             }
                             break;
                         default:
@@ -247,11 +291,11 @@ namespace OgreSceneImporter
                 m_log.ErrorFormat("[OGRESCENE]: Aborting ogre scene importing, because there were some errors in loading textures");
                 return;
             }
-            
+
             if (saveSceneDataID != UUID.Zero) // if true save data for later unloading, loading, removing of loaded scene assets
             {
-                m_uploadHandler.SaveDataFromAssets(materials, saveSceneDataID, 2);
-                m_uploadHandler.SaveDataFromAssets(textures, saveSceneDataID, 3);
+                SaveDataFromAssets(materials, saveSceneDataID, 2);
+                SaveDataFromAssets(textures, saveSceneDataID, 3);
             }
 
             m_log.InfoFormat("[OGRESCENE]: Found and loaded {0} materials and {1} textures", materials.Count, textures.Count);
@@ -260,6 +304,24 @@ namespace OgreSceneImporter
             m_log.Info("[OGRESCENE]: Loading OGRE stuff to scene");
 
             AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, filepath, saveSceneDataID);
+        }
+
+        /// <summary>
+        /// Saves assets name/UUID dictionary to db.
+        /// </summary>
+        /// <param name="assets">The assets name/UUID dictionary.</param>
+        /// <param name="sceneDataID">The scene data ID.</param>
+        /// <param name="type">Asset type: 1 = mesh, 0 = other</param>
+        private void SaveDataFromAssets(Dictionary<string, UUID> assets, UUID sceneDataID, int type)
+        {
+            NHibernateSceneStorage storage;
+            if (TryGetSceneStorage(out storage))
+            {
+                foreach (KeyValuePair<string, UUID> kvp in assets)
+                {
+                    storage.SaveAssetData(sceneDataID, kvp.Value, kvp.Key, type);
+                }
+            }
         }
 
         private bool LoadAndSaveTextures(Dictionary<string, UUID> textures, string additionalPath)
@@ -391,7 +453,11 @@ namespace OgreSceneImporter
                     {
                         if (sceneDataID != UUID.Zero)
                         {
-                            m_uploadHandler.SaveAssetData(asset, sceneDataID, 1, sceneObject); // Store mesh data from uploaded scene
+                            NHibernateSceneStorage storage;
+                            if (TryGetSceneStorage(out storage))
+                            {
+                                storage.SaveAssetData(sceneDataID, asset.FullID, asset.Name, 1, 0, sceneObject.UUID); // Store mesh data from uploaded scene
+                            }
                         }
                         bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
                         //Add refs to materials, mesh etc.
@@ -407,6 +473,61 @@ namespace OgreSceneImporter
                     AddObjectsToScene(child, materials, additionalSearchPath, sceneDataID);
                 }
             }
+        }
+
+        public void AddObjectsToScene(Scene scene, SceneNode node, List<SceneAsset> meshes, string uploadsceneid, Dictionary<string, UUID> materials)
+        {
+            Scene oldScene = m_scene;
+            m_scene = scene;
+
+            if (node.Entities.Count >= 0)
+            {
+                foreach (Entity ent in node.Entities)
+                {
+                    // here we should read mesh assetservice, first we need to get saved identifier from db, identified by upload scene and name
+                    string meshName = ent.MeshName;
+
+                    SceneAsset sa = Util.GetWithNameFromList(ent.MeshName, meshes);
+                    if (sa != null)
+                    {
+                        byte[] data = m_scene.AssetService.GetData(sa.AssetId.ToString()); // mesh data
+
+                        List<string> materialNames;
+                        string meshLoaderError;
+                        RexDotMeshLoader.DotMeshLoader.ReadDotMeshMaterialNames(data, out materialNames, out meshLoaderError);
+                        if (meshLoaderError != "")
+                        {
+                            //probably error in the mesh. this can't be fixed.
+                            //setting this to physics engine could have devastating effect.
+                            //must skip this object
+                            m_log.ErrorFormat("[OGRESCENE]: Error occurred while parsing material names from mesh {0}. Error message {1}", ent.MeshName, meshLoaderError);
+                        }
+
+                        SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
+                        if (sceneObject != null)
+                        {
+                            NHibernateSceneStorage storage;
+                            if (TryGetSceneStorage(out storage))
+                            {
+                                storage.UpdateAssetEntityId(new UUID(sa.SceneId), new UUID(sa.AssetId), sceneObject.UUID);
+                            }
+
+                            bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
+                            //Add refs to materials, mesh etc.
+                            AddRexObjectProperties(sceneObject.RootPart.UUID, new UUID(sa.AssetId), ent, materials, materialNames, useCollision);
+                        }
+                    }
+                }
+            }
+            if (node.Children.Count >= 0)
+            {
+                foreach (SceneNode child in node.Children)
+                {
+                    AddObjectsToScene(scene, child, meshes, uploadsceneid, materials);
+                }
+            }
+
+            m_scene = oldScene;
         }
 
         private Vector3 GetObjectScale(Vector3 vector3)
@@ -480,6 +601,7 @@ namespace OgreSceneImporter
                     m_scene.RegionInfo.MasterAvatarAssignedUUID, objPos, rot, PrimitiveBaseShape.CreateBox());
 
                 sceneObject.RootPart.Scale = GetObjectScale(node.DerivedScale);
+                sceneObject.Name = ent.Name;
                 return sceneObject;
             }
             else
@@ -587,7 +709,7 @@ namespace OgreSceneImporter
 
             for (int i = 0; i < materialNames.Count; i++)
             {
-                robject.RexMaterials.AddMaterial((uint)i, UUID.Zero, baseUrl + materialNames[i]);
+                robject.RexMaterials.AddMaterial((uint)i, UUID.Zero, baseUrl + materialNames[i]+".material");
             }
 
             if (collisionId != UUID.Zero)
@@ -648,6 +770,15 @@ namespace OgreSceneImporter
 
             m_offset = tempOffset;
             m_scene = temp;
+        }
+
+        public bool TryGetSceneStorage(out NHibernateSceneStorage storage)
+        {
+            storage = m_SceneStorage;
+            if (storage != null)
+                return true;
+            else
+                return false;
         }
 
         private string PathFromFileName(string fileName)

@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace OgreSceneImporter.UploadSceneDB
 {
-    class NHibernateSceneStorage : ISceneStorage, IAssetDataSaver
+    public class NHibernateSceneStorage : ISceneStorage, IAssetDataSaver
     {
         NHibernateManager storageModule;
         private string connectionString;
@@ -17,16 +17,9 @@ namespace OgreSceneImporter.UploadSceneDB
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         public NHibernateSceneStorage(IConfigSource config)
         {
             IConfig serverConfig = config.Configs["UploadSceneConfig"];
-            if (serverConfig == null)
-                throw new Exception("No UploadSceneConfig section in config file");
-
-            if (!serverConfig.Contains("ConnectionString"))
-                throw new Exception("No ConnectionString specified in WebDAV section in config file");
-
             connectionString = serverConfig.GetString("ConnectionString");
 
             storageModule = new NHibernateManager(connectionString, "");
@@ -36,7 +29,7 @@ namespace OgreSceneImporter.UploadSceneDB
             {
                 GetScenes();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // try creating tables
                 storageModule.CreateDBTables();
@@ -54,6 +47,7 @@ namespace OgreSceneImporter.UploadSceneDB
         public List<UploadScene> GetRegionsScenes(OpenMetaverse.UUID regionid)
         {
             List<UploadScene> retVals = new List<UploadScene>();
+
             ICriteria criteria = storageModule.GetSession().CreateCriteria(typeof(RegionScene));
             criteria.Add(Expression.Eq("RegionId", regionid.ToString()));
             System.Collections.IList list = criteria.List();
@@ -134,8 +128,8 @@ namespace OgreSceneImporter.UploadSceneDB
         }
         public List<string> GetScenesRegionIds(string scene_id)
         {
-            ICriteria criteria = storageModule.GetSession().CreateCriteria(typeof(RegionScene));
             List<string> ids = new List<string>();
+            ICriteria criteria = storageModule.GetSession().CreateCriteria(typeof(RegionScene));
             criteria.Add(Expression.Eq("SceneId", scene_id));
             System.Collections.IList list = criteria.List();
             if (list.Count > 0)

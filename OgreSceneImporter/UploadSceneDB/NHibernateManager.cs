@@ -22,10 +22,6 @@ using Environment = NHibernate.Cfg.Environment;
 
 namespace OgreSceneImporter.UploadSceneDB
 {
-
-    
-
-
     class NHibernateManager
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -33,10 +29,8 @@ namespace OgreSceneImporter.UploadSceneDB
         private string dialect;
         private Configuration configuration;
         private ISessionFactory sessionFactory;
-        
 
         #region Initialization
-
 
         static List<string> GetAllClass(string nameSpace, string classname)
         {
@@ -53,8 +47,6 @@ namespace OgreSceneImporter.UploadSceneDB
             //http://msdn2.microsoft.com/en-us/library/system.reflection.assembly.gettypes.aspx
             foreach (Type type in asm.GetTypes())
             {
-                
-
                 if (type.Namespace == nameSpace)
                     namespaceList.Add(type.Name);
             }
