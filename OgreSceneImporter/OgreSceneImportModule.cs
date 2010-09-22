@@ -35,7 +35,7 @@ namespace OgreSceneImporter
         public void Initialise(Scene scene, Nini.Config.IConfigSource source)
         {
             m_scenes.Add(scene);
-            scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Only command supported currently is import", OgreSceneCommand);
+            scene.AddCommand(this, "ogrescene", "ogrescene <action> <filename>", "Type \"ogrescene help\" to view longer help", OgreSceneCommand);
 
             if (SceneStorageEnabled(source))
             {
@@ -189,7 +189,7 @@ namespace OgreSceneImporter
                 else showHelp = true;
                 
                 if (showHelp)
-                    m_log.Info("[OGRESCENE]: Available commands: import offset rotation scale swapaxes collisionmesh");
+                    m_log.Info("[OGRESCENE]: Available commands: import offset rotation scale swapaxes collisionmesh load");
             }
             catch (Exception e)
             {
