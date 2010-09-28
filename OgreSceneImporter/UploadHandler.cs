@@ -386,7 +386,7 @@ namespace OgreSceneImporter
                 foreach (RegionScene rs in rscenes)
                 {
                     // Get region name 
-                    string regionName = m_scene.RegionInfo.RegionName;
+                    string regionName = m_scene.GridService.GetRegionByUUID(UUID.Zero, new UUID(rs.RegionId)).RegionName;
                     // Get scene name
                     string sceneName = "";
                     foreach (UploadScene us in uscenes)
