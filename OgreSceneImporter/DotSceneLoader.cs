@@ -107,6 +107,7 @@ namespace OgreSceneImporter
                 return;
             }
             //SceneNode rootSceneNode = new SceneNode();
+            mSceneMgr = ogreSceneManager;
             mAttachNode = mSceneMgr.RootSceneNode;
 
             this.StaticObjects = new List<string>();
