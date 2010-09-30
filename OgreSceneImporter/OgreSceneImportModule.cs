@@ -801,5 +801,10 @@ namespace OgreSceneImporter
             return String.Join(System.IO.Path.DirectorySeparatorChar.ToString(), split);
         }
 
+        public List<Scene> GetScenes()
+        {
+            return this.m_scenes;
+        }
+
     }
 }
