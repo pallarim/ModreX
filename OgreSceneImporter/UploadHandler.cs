@@ -64,14 +64,19 @@ namespace OgreSceneImporter
 
         private bool CheckRights(UUID agentID)
         {
-            // currently only owner is able to upload scenes
-            if (agentID == m_scene.RegionInfo.EstateSettings.EstateOwner)
-                return true;
-            UUID[] managers = m_scene.RegionInfo.EstateSettings.EstateManagers;
-            foreach (UUID id in managers)
+            if (!m_scene.Permissions.BypassPermissions())
             {
-                if (id == agentID)
+                if (agentID == m_scene.RegionInfo.EstateSettings.EstateOwner)
                     return true;
+                UUID[] managers = m_scene.RegionInfo.EstateSettings.EstateManagers;
+                foreach (UUID id in managers)
+                {
+                    if (id == agentID)
+                        return true;
+                }
+            }
+            else {
+                return true;
             }
 
             return false;
