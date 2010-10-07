@@ -135,12 +135,9 @@ namespace ModularRex.RexParts
             switch (method.ToLower())
             {
                 case "ecsync":
-                    if (args.Length >= 4)
+                    if (args.Length >= 2)
                     {
                         entityId = new UUID(Util.FieldToString(args[0]));
-                        componentType = Util.FieldToString(args[1]);
-                        componentName = Util.FieldToString(args[2]);
-
                         int rpdLen = 0;
                         int idx = 0;
 
@@ -152,13 +149,37 @@ namespace ModularRex.RexParts
                         data = new byte[rpdLen];
 
                         //copy rest of the arrays to one arrays
-                        for (int i = 3; i < args.Length; i++)
+                        for (int i = 1; i < args.Length; i++)
                         {
                             args[i].CopyTo(data, idx);
                             idx += args[i].Length;
                         }
+                        idx = 0;
 
-                        SaveECData(sender, new ECData(entityId, componentType, componentName, data, false));
+                        //parse componentType from array
+                        StringBuilder buffer = new StringBuilder();
+                        while ((idx < data.Length) && (data[idx] != 0))
+                        {
+                            char c = (char)bytes[idx++];
+                            buffer.Append(c);
+                        }
+                        componentType = buffer.ToString();
+                        idx++;
+
+                        //parse componentName from array
+                        buffer = new StringBuilder();
+                        while ((idx < data.Length) && (data[idx] != 0))
+                        {
+                            char c = (char)bytes[idx++];
+                            buffer.Append(c);
+                        }
+                        componentName = buffer.ToString();
+                        idx++;
+
+                        byte[] ecdata = new byte[data.Length - idx];
+                        Buffer.BlockCopy(data, idx, ecdata, data.Length - idx);
+
+                        SaveECData(sender, new ECData(entityId, componentType, componentName, ecdata, false));
                     }
                     break;
                 default:
@@ -221,7 +242,7 @@ namespace ModularRex.RexParts
                         {
                             ((NaaliClientView)client).SendECData(component);
                         }
-                    }
+                    }, true
                 );
             }
         }
@@ -240,9 +261,9 @@ namespace ModularRex.RexParts
                     {
                         if (client is NaaliClientView)
                         {
-                            ((NaaliClientView)client).SendGenericMessage("ecremoved", msgArgs);
+                            ((NaaliClientView)client).SendGenericMessage("ecremove", msgArgs);
                         }
-                    }
+                    }, true
                 );
             }
         }
@@ -260,6 +281,9 @@ namespace ModularRex.RexParts
                 if (save)
                 {
                     SaveLocal(component);
+
+                    SendECDataToAll(component);
+
                     if (m_db_initialized)
                         return m_db.StoreComponent(component);
                 }
@@ -291,6 +315,8 @@ namespace ModularRex.RexParts
                     }
 
                     m_entity_components[component.EntityID].Components.Remove(new KeyValuePair<string, string>(component.ComponentType, component.ComponentName));
+
+                    SendECRemovedToAll(component.EntityID, component.ComponentType, component.ComponentName);
 
                     if (m_db_initialized)
                         return m_db.RemoveComponent(component);
