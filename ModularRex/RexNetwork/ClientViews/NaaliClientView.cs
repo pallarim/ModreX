@@ -119,5 +119,67 @@ namespace ModularRex.RexNetwork
 
             OutPacket(gmp, ThrottleOutPacketType.Task);
         }
+
+        public void SendECData(ECData data)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+            gmp.MethodData.Method = Utils.StringToBytes("ecsync");
+
+            byte[] ecbytedata = GetECBytes(data);
+            int numlines = 0;
+            int i = 0;
+
+            if (ecbytedata != null)
+            {
+                while (i <= ecbytedata.Length)
+                {
+                    numlines++;
+                    i += 200;
+                }
+            }
+
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[1 + numlines];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(data.EntityID.ToString());
+
+            for (i = 0; i < numlines; i++)
+            {
+                gmp.ParamList[i + 1] = new GenericMessagePacket.ParamListBlock();
+
+                if ((ecbytedata.Length - i * 200) < 200)
+                {
+                    gmp.ParamList[i + 1].Parameter = new byte[ecbytedata.Length - i * 200];
+                    Buffer.BlockCopy(ecbytedata, i * 200, gmp.ParamList[i + 1].Parameter, 0, ecbytedata.Length - i * 200);
+                }
+                else
+                {
+                    gmp.ParamList[i + 1].Parameter = new byte[200];
+                    Buffer.BlockCopy(ecbytedata, i * 200, gmp.ParamList[i + 1].Parameter, 0, 200);
+                }
+            }
+
+            OutPacket(gmp, ThrottleOutPacketType.Task);
+        }
+
+        private byte[] GetECBytes(ECData data)
+        {
+            int size =
+                data.ComponentType.Length + 1 +
+                data.ComponentName.Length + 1 +
+                data.Data.Length +1;
+
+            byte[] buffer = new byte[size];
+            int idx = 0;
+
+            Encoding.ASCII.GetBytes(data.ComponentType).CopyTo(buffer, idx);
+            idx += data.ComponentType.Length;
+
+            Encoding.ASCII.GetBytes(data.ComponentName).CopyTo(buffer, idx);
+            idx += data.ComponentName.Length;
+
+            data.Data.CopyTo(buffer, idx);
+
+            return buffer;
+        }
     }
 }

@@ -102,6 +102,7 @@ namespace ModularRex.RexParts
         public void RemoveRegion(Scene scene)
         {
             m_scenes.Remove(scene);
+            scene.EventManager.OnClientConnect -= new EventManager.OnClientConnectCoreDelegate(RegisterGMHandler);
         }
 
         public void RegionLoaded(Scene scene)
@@ -118,13 +119,13 @@ namespace ModularRex.RexParts
             NaaliClientView naali;
             if (client.TryGet<NaaliClientView>(out naali))
             {
-                naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericMessage);
+                naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
                 naali.AddGenericPacketHandler("ecstring", HandleEcStringGenericMessage);
                 naali.AddGenericPacketHandler("ecremove", HandleEcRemoveGenericMessage);
             }
         }
 
-        private void HandleGenericMessage(object sender, string method, byte[][] args)
+        private void HandleGenericBinaryMessage(object sender, string method, byte[][] args)
         {
             UUID entityId;
             string componentName;
@@ -207,6 +208,43 @@ namespace ModularRex.RexParts
                 m_entity_components[component.EntityID] = new Entity(component.EntityID);
             }
             m_entity_components[component.EntityID].Components[new KeyValuePair<string, string>(component.ComponentType, component.ComponentName)] = component;
+        }
+
+        public void SendECDataToAll(ECData component)
+        {
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachClient(
+                    delegate(IClientAPI client)
+                    {
+                        if (client is NaaliClientView)
+                        {
+                            ((NaaliClientView)client).SendECData(component);
+                        }
+                    }
+                );
+            }
+        }
+
+        public void SendECRemovedToAll(UUID entityId, string componentType, string componentName)
+        {
+            List<string> msgArgs = new List<string>();
+            msgArgs.Add(entityId.ToString());
+            msgArgs.Add(componentType);
+            msgArgs.Add(componentName);
+
+            foreach (Scene scene in m_scenes)
+            {
+                scene.ForEachClient(
+                    delegate(IClientAPI client)
+                    {
+                        if (client is NaaliClientView)
+                        {
+                            ((NaaliClientView)client).SendGenericMessage("ecremoved", msgArgs);
+                        }
+                    }
+                );
+            }
         }
 
         public bool SaveECData(object sender, ECData component)
