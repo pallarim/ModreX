@@ -1,8 +1,4 @@
-<<<<<<< HEAD:ModularRex/RexNetwork/Resources/RexNetwork.addin.xml
-﻿<Addin id="ModularRex.RexNetwork" version="0.1">
-=======
-﻿<Addin id="ModularRex" version="0.1">
->>>>>>> aa22ce2a1690705b9269761156306936019a5de2:ModularRex/Resources/ModularRex.addin.xml
+<Addin id="ModularRex" version="0.1">
   <Runtime>
     <Import assembly="ModularRex.dll"/>
   </Runtime>
@@ -15,9 +11,6 @@
     <RegionModule id="RexAvatarUrlReciver" type="ModularRex.RexNetwork.AvatarUrlReciver" />
     <RegionModule id="RexLoginModule" type="ModularRex.RexNetwork.RexLogin.RexLoginModule" />
     <RegionModule id="RexLoginConfigurationManager" type="ModularRex.RexNetwork.RexLogin.LoginConfigurationManager" />
-<<<<<<< HEAD:ModularRex/RexNetwork/Resources/RexNetwork.addin.xml
-=======
     <RegionModule id="EntityComponentModule" type="ModularRex.RexParts.EntityComponentModule" />
->>>>>>> aa22ce2a1690705b9269761156306936019a5de2:ModularRex/Resources/ModularRex.addin.xml
   </Extension>
 </Addin>
