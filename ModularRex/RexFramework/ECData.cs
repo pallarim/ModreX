@@ -25,6 +25,7 @@ namespace ModularRex.RexFramework
         public ECData(UUID entityId, string componentType, string componentName, byte[] data, bool dataIsString)
         {
             m_entity_id = entityId;
+            m_component_type = componentType; 
             m_component_name = componentName;
             m_data = data;
             m_data_is_string = dataIsString;
@@ -39,6 +40,7 @@ namespace ModularRex.RexFramework
         public ECData(UUID entityId, string componentType, string componentName, string data)
         {
             m_entity_id = entityId;
+            m_component_type = componentType;
             m_component_name = componentName;
             m_data = Convert.FromBase64String(data);
             m_data_is_string = true;

@@ -25,6 +25,8 @@ namespace ModularRex.RexNetwork
         {
             OnBinaryGenericMessage -= base.RexClientView_BinaryGenericMessage;
             OnBinaryGenericMessage += ng_BinaryGenericMessage;
+
+            RegisterInterface<NaaliClientView>(this);
         }
 
         protected void ng_BinaryGenericMessage(Object sender, string method, byte[][] args)

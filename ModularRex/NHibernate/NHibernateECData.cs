@@ -40,7 +40,7 @@ namespace ModularRex.NHibernate
 
             ICriteria criteria = manager.GetSession().CreateCriteria(typeof(ECData));
             criteria.Add(Expression.Eq("EntityID", component.EntityID));
-            criteria.Add(Expression.Eq("ComponentType", component.ComponentName));
+            criteria.Add(Expression.Eq("ComponentType", component.ComponentType));
             criteria.Add(Expression.Eq("ComponentName", component.ComponentName));
 
             IList<ECData> result = criteria.List<ECData>();
@@ -53,11 +53,11 @@ namespace ModularRex.NHibernate
                 ECData data = result[0];
                 data.Data = component.Data;
                 data.DataIsString = component.DataIsString;
-                manager.Update(data);
+                return manager.Update(data);
             }
             else
             {
-                throw new Exception("Could not store component, because component with same EntityID, ComponentType and ComponentName already exists in database");
+                throw new Exception("Could not store component, because multiple components with same EntityID, ComponentType and ComponentName already exists in database");
             }
 
             return true;
@@ -72,6 +72,39 @@ namespace ModularRex.NHibernate
             criteria.Add(Expression.Eq("EntityID", entityId));
 
             return criteria.List<ECData>();
+        }
+
+        public ECData GetComponent(UUID entityId, string componentType, string componentName)
+        {
+            if (m_nullStorage)
+                return null;
+
+            ICriteria criteria = manager.GetSession().CreateCriteria(typeof(ECData));
+            criteria.Add(Expression.Eq("EntityID", entityId));
+            criteria.Add(Expression.Eq("ComponentType", componentType));
+            criteria.Add(Expression.Eq("ComponentName", componentName));
+
+            IList<ECData> result = criteria.List<ECData>();
+            if (result.Count == 0)
+            {
+                return null;
+            }
+            else if (result.Count == 1)
+            {
+                return result[0];
+            }
+            else
+            {
+                throw new Exception("Too many ECData values in db with same entityId, componentType and componentName");
+            }
+        }
+
+        public bool RemoveComponent(ECData component)
+        {
+            if (m_nullStorage)
+                return false;
+
+            return manager.Delete(component);
         }
     }
 }
