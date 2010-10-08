@@ -102,19 +102,19 @@ namespace ModularRex.RexParts
         public void RemoveRegion(Scene scene)
         {
             m_scenes.Remove(scene);
-            scene.EventManager.OnClientConnect -= new EventManager.OnClientConnectCoreDelegate(RegisterGMHandler);
+            scene.EventManager.OnClientConnect -= new EventManager.OnClientConnectCoreDelegate(HandleNewClient);
         }
 
         public void RegionLoaded(Scene scene)
         {
-            scene.EventManager.OnClientConnect += new EventManager.OnClientConnectCoreDelegate(RegisterGMHandler);
+            scene.EventManager.OnClientConnect += new EventManager.OnClientConnectCoreDelegate(HandleNewClient);
         }
 
         #endregion
 
         #region Event handlers
 
-        private void RegisterGMHandler(OpenSim.Framework.Client.IClientCore client)
+        private void HandleNewClient(OpenSim.Framework.Client.IClientCore client)
         {
             NaaliClientView naali;
             if (client.TryGet<NaaliClientView>(out naali))
@@ -122,6 +122,8 @@ namespace ModularRex.RexParts
                 naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
                 naali.AddGenericPacketHandler("ecstring", HandleEcStringGenericMessage);
                 naali.AddGenericPacketHandler("ecremove", HandleEcRemoveGenericMessage);
+
+                SendAllData(naali);
             }
         }
 
@@ -160,7 +162,7 @@ namespace ModularRex.RexParts
                         StringBuilder buffer = new StringBuilder();
                         while ((idx < data.Length) && (data[idx] != 0))
                         {
-                            char c = (char)bytes[idx++];
+                            char c = (char)data[idx++];
                             buffer.Append(c);
                         }
                         componentType = buffer.ToString();
@@ -170,14 +172,14 @@ namespace ModularRex.RexParts
                         buffer = new StringBuilder();
                         while ((idx < data.Length) && (data[idx] != 0))
                         {
-                            char c = (char)bytes[idx++];
+                            char c = (char)data[idx++];
                             buffer.Append(c);
                         }
                         componentName = buffer.ToString();
                         idx++;
 
                         byte[] ecdata = new byte[data.Length - idx];
-                        Buffer.BlockCopy(data, idx, ecdata, data.Length - idx);
+                        Buffer.BlockCopy(data, idx, ecdata, 0, data.Length - idx);
 
                         SaveECData(sender, new ECData(entityId, componentType, componentName, ecdata, false));
                     }
@@ -229,6 +231,20 @@ namespace ModularRex.RexParts
                 m_entity_components[component.EntityID] = new Entity(component.EntityID);
             }
             m_entity_components[component.EntityID].Components[new KeyValuePair<string, string>(component.ComponentType, component.ComponentName)] = component;
+        }
+
+        public void SendAllData(NaaliClientView client)
+        {
+            foreach (KeyValuePair<UUID, Entity> entity in m_entity_components)
+            {
+                if (entity.Value != null)
+                {
+                    foreach (KeyValuePair<KeyValuePair<string, string>, ECData> data in entity.Value.Components)
+                    {
+                        client.SendECData(data.Value);
+                    }
+                }
+            }
         }
 
         public void SendECDataToAll(ECData component)
