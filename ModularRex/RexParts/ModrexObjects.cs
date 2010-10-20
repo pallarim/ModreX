@@ -261,99 +261,6 @@ namespace ModularRex.RexParts
             get { return true; }
         }
 
-
-
-        #region Trigger/handle rexobjectproperties events     
-        public void TriggerOnChangePythonClass(UUID id)
-        {
-            if (OnPythonClassChange != null)
-                OnPythonClassChange(id);
-        }
-
-        public void TriggerOnChangeCollisionMesh(UUID id)
-        {
-            // tucofixme, add
-            //if (!GlobalSettings.Instance.m_3d_collision_models)
-            //    return;
-
-            RexObjectProperties p = GetObject(id);
-            SceneObjectPart sop = null;// = m_scenes[0].GetSceneObjectPart(id);
-            foreach (Scene scene in m_scenes)
-            {
-                SceneObjectPart part = scene.GetSceneObjectPart(id);
-                if (part != null)
-                {
-                    sop = part;
-                    break;
-                }
-            }
-
-            if (sop == null)
-            {
-                m_log.Error("[REXOBJS] TriggerOnChangeCollisionMesh, no SceneObjectPart for id:" + id.ToString());
-                return;
-            }
-
-            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
-            {
-                if (p.RexCollisionMeshUUID != UUID.Zero)
-                    RexUpdateCollisionMesh(id);
-                else
-                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(null, "", false);
-            }       
-        }
-
-        public void TriggerOnChangeScaleToPrim(UUID id)
-        {
-            // tucofixme, add
-            //if (!GlobalSettings.Instance.m_3d_collision_models)
-            //    return;        
-
-            RexObjectProperties p = GetObject(id);
-            SceneObjectPart sop = null;
-            foreach (Scene s in m_scenes)
-            {
-                SceneObjectPart part = s.GetSceneObjectPart(id);
-                if (part != null)
-                {
-                    sop = part;
-                    break;
-                }
-            }
-
-            if (sop == null)
-            {
-                m_log.Error("[REXOBJS] TriggerOnChangeScaleToPrim, no SceneObjectPart for id:" + id.ToString());
-                return;
-            }
-
-            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
-            {
-                ((IRexPhysicsActor)sop.PhysActor).SetBoundsScaling(p.RexScaleToPrim);
-                sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
-            }
-        }
-
-        public void TriggerOnChangeRexObjectProperties(UUID id)
-        {
-            RexObjectProperties props = GetObject(id);
-
-            //instead of saving right away, set timer to save after a sec.
-            //m_db.StoreObject(props);
-            SendPropertiesToAllUsers(id,props);
-            props.ScheduleSave();
-        }
-        
-        public void TriggerOnChangeRexObjectMetaData(UUID id)
-        {
-            RexObjectProperties props = GetObject(id);        
-        
-            m_db.StoreObject(props);
-            // tucofixme, send metadata to all users
-        }
-
-
-
         public void RexUpdateCollisionMesh(UUID id)
         {
             // tucofixme, add
@@ -385,26 +292,6 @@ namespace ModularRex.RexParts
                     ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
             }
         }
-        
-        public sbyte GetAssetType(UUID assetid)
-        {
-            AssetBase tempmodel = m_scenes[0].AssetService.Get(assetid.ToString());
-            if (tempmodel == null)
-                m_scenes[0].AssetService.Get(assetid.ToString());
-
-            if (tempmodel != null)
-                return tempmodel.Type;
-            else
-                return 0;
-        }
-
-
-        public void TriggerOnSaveObject(UUID id)
-        {
-            RexObjectProperties props = GetObject(id);
-            m_db.StoreObject(props);
-        }
-        #endregion
 
 
         #region RexObjectProperties Cache
@@ -527,5 +414,160 @@ namespace ModularRex.RexParts
             }
         }
 
+
+        #region IRexObjectPropertiesEventManager Members
+
+        public void TriggerOnChangePythonClass(UUID id)
+        {
+            if (OnPythonClassChange != null)
+                OnPythonClassChange(id);
+        }
+
+        public void TriggerOnChangeCollisionMesh(UUID id)
+        {
+            // tucofixme, add
+            //if (!GlobalSettings.Instance.m_3d_collision_models)
+            //    return;
+
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = null;// = m_scenes[0].GetSceneObjectPart(id);
+            foreach (Scene scene in m_scenes)
+            {
+                SceneObjectPart part = scene.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] TriggerOnChangeCollisionMesh, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+
+            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
+            {
+                if (p.RexCollisionMeshUUID != UUID.Zero)
+                    RexUpdateCollisionMesh(id);
+                else
+                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(null, "", false);
+            }
+        }
+
+        public void TriggerOnChangeScaleToPrim(UUID id)
+        {
+            // tucofixme, add
+            //if (!GlobalSettings.Instance.m_3d_collision_models)
+            //    return;        
+
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = null;
+            foreach (Scene s in m_scenes)
+            {
+                SceneObjectPart part = s.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] TriggerOnChangeScaleToPrim, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+
+            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
+            {
+                ((IRexPhysicsActor)sop.PhysActor).SetBoundsScaling(p.RexScaleToPrim);
+                sop.ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(sop.PhysActor);
+            }
+        }
+
+        public void TriggerOnChangeRexObjectProperties(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);
+
+            //instead of saving right away, set timer to save after a sec.
+            //m_db.StoreObject(props);
+            SendPropertiesToAllUsers(id, props);
+            props.ScheduleSave();
+        }
+
+        public void TriggerOnChangeRexObjectMetaData(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);
+
+            m_db.StoreObject(props);
+            // tucofixme, send metadata to all users
+        }
+
+        public sbyte GetAssetType(UUID assetid)
+        {
+            AssetBase tempmodel = m_scenes[0].AssetService.Get(assetid.ToString());
+            if (tempmodel == null)
+                m_scenes[0].AssetService.Get(assetid.ToString());
+
+            if (tempmodel != null)
+                return tempmodel.Type;
+            else
+                return 0;
+        }
+
+        public void TriggerOnSaveObject(UUID id)
+        {
+            RexObjectProperties props = GetObject(id);
+            m_db.StoreObject(props);
+        }
+
+        public void TriggerOnChangeCollisionUri(UUID id)
+        {
+            try
+            {
+                RexObjectProperties p = GetObject(id);
+                Uri collisionUrl;
+                if (Uri.TryCreate(p.RexCollisionMeshURI, UriKind.Absolute, out collisionUrl))
+                {
+                    System.Net.WebClient client = new System.Net.WebClient();
+                    byte[] collisionMesh = client.DownloadData(collisionUrl);
+                    StoreCollisionMeshData(collisionMesh, id);
+                }
+                else
+                {
+                    m_log.WarnFormat("[REXOBJS]: Failed to parse collision mesh uri {0} for object {1}", p.RexCollisionMeshURI, p.ParentObjectID);
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[REXOBJS]: failed to launch async download of collision mesh. Exception {0} occurred: {1}", e.Message, e.StackTrace);
+            }
+        }
+
+        private void StoreCollisionMeshData(byte[] data, UUID primId)
+        {
+            RexObjectProperties p = GetObject(primId);
+            string[] urlParts = p.RexCollisionMeshURI.Split('/');
+            string assetName = urlParts[urlParts.Length - 1];
+
+            AssetBase collisionMesh = new AssetBase(UUID.Random(), assetName, 43);
+            collisionMesh.Data = data;
+            collisionMesh.Description = p.RexCollisionMeshURI;
+
+            string collisionMeshId = m_scenes[0].AssetService.Store(collisionMesh);
+            UUID collisionMeshUuid;
+            if (UUID.TryParse(collisionMeshId, out collisionMeshUuid))
+            {
+                m_log.DebugFormat("[REXOBJS]: Setting downloaded collision mesh {0} to object {1}", p.RexCollisionMeshURI, primId);
+                p.RexCollisionMeshUUID = collisionMeshUuid;
+                //TriggerOnChangeCollisionMesh(primId);
+            }
+            else
+                m_log.ErrorFormat("[REXOBJS]: failed to store downloaded collision mesh {0} to db.", p.RexCollisionMeshURI);
+        }
+
+        #endregion
     }
 }

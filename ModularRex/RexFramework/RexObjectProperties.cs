@@ -337,11 +337,19 @@ namespace ModularRex.RexFramework
             get { return m_rexCollisionMeshURL; }
             set
             {
+                string oldValue = m_rexCollisionMeshURL;
                 if (value != null)
                     m_rexCollisionMeshURL = value;
                 else
                     m_rexCollisionMeshURL = String.Empty;
-                TriggerChangedRexObjectProperties();
+
+                if (m_rexCollisionMeshURL != String.Empty && RexEventManager != null && oldValue != value)
+                    RexEventManager.TriggerOnChangeCollisionUri(parentObjectID);
+
+                if (m_rexCollisionMeshURL == String.Empty)
+                    RexCollisionMeshUUID = UUID.Zero;
+                else
+                    TriggerChangedRexObjectProperties();
             }
         }
 
@@ -464,13 +472,14 @@ namespace ModularRex.RexFramework
                 RexSoundVolume = source.RexSoundVolume;
                 RexSoundRadius = source.RexSoundRadius;
                 RexSelectPriority = source.RexSelectPriority;
-                mProcessingPacketData = false;
-                m_rexAnimationPackageURL = source.RexAnimationPackageURI;
-                m_rexCollisionMeshURL = source.RexCollisionMeshURI;
-                m_rexMeshURL = source.RexMeshURI;
-                m_rexParticleScriptURL = source.RexParticleScriptURI;
-                m_rexSoundURL = source.RexSoundURI;
                 
+                RexAnimationPackageURI = source.RexAnimationPackageURI;
+                RexCollisionMeshURI = source.RexCollisionMeshURI;
+                RexMeshURI = source.RexMeshURI;
+                RexParticleScriptURI = source.RexParticleScriptURI;
+                RexSoundURI = source.RexSoundURI;
+
+                mProcessingPacketData = false;
                 TriggerChangedRexObjectProperties();
             }
             catch (Exception e)

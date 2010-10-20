@@ -16,5 +16,7 @@ namespace ModularRex.RexFramework
         sbyte GetAssetType(UUID assetid);
 
         void TriggerOnSaveObject(UUID id);
+
+        void TriggerOnChangeCollisionUri(UUID id);
     }
 }
