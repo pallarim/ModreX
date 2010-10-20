@@ -52,6 +52,7 @@ namespace OgreSceneImporter
         {
             System.IO.StreamReader sreader = System.IO.File.OpenText(SceneName);
             string data = sreader.ReadToEnd();
+			sreader.Close();
 
             XmlDocument XMLDoc = null;
 
