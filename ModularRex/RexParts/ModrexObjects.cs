@@ -503,6 +503,7 @@ namespace ModularRex.RexParts
 
             m_db.StoreObject(props);
             // tucofixme, send metadata to all users
+            SendPrimFreeDataToAllUsers(id, props.RexData); // Pforce fixemup?!
         }
 
         public sbyte GetAssetType(UUID assetid)

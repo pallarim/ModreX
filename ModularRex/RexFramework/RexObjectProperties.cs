@@ -15,6 +15,7 @@ namespace ModularRex.RexFramework
     {
         private IRexObjectPropertiesEventManager RexEventManager = null;
         private bool mProcessingPacketData = false;
+        public bool SuppressDataSending = false;
     
         private static readonly ILog m_log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -857,6 +858,9 @@ namespace ModularRex.RexFramework
         {
             if (mProcessingPacketData)
                 return;
+            if (SuppressDataSending)
+                return;
+
             if (RexEventManager != null)
                 RexEventManager.TriggerOnChangeRexObjectProperties(parentObjectID);       
         }
