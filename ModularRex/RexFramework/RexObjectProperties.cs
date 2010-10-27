@@ -347,7 +347,7 @@ namespace ModularRex.RexFramework
                 if (m_rexCollisionMeshURL != String.Empty && RexEventManager != null && oldValue != value)
                     RexEventManager.TriggerOnChangeCollisionUri(parentObjectID);
 
-                if (m_rexCollisionMeshURL == String.Empty)
+                if (m_rexCollisionMeshURL == UUID.Zero.ToString())
                     RexCollisionMeshUUID = UUID.Zero;
                 else
                     TriggerChangedRexObjectProperties();
@@ -475,7 +475,8 @@ namespace ModularRex.RexFramework
                 RexSelectPriority = source.RexSelectPriority;
                 
                 RexAnimationPackageURI = source.RexAnimationPackageURI;
-                RexCollisionMeshURI = source.RexCollisionMeshURI;
+                if(source.RexCollisionMeshUUID == UUID.Zero)
+                    RexCollisionMeshURI = source.RexCollisionMeshURI;
                 RexMeshURI = source.RexMeshURI;
                 RexParticleScriptURI = source.RexParticleScriptURI;
                 RexSoundURI = source.RexSoundURI;
