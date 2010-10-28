@@ -181,7 +181,7 @@ namespace NaaliSceneImporter
             }
             catch (XmlException e)
             {
-                m_log.ErrorFormat("[NAALISCENE]: Could not open file. {0}", e);
+                m_log.ErrorFormat("[NAALISCENE]: Could not open XML file: {0}", e);
             }
             return ParseXmlDocument(document);
         }
@@ -196,7 +196,7 @@ namespace NaaliSceneImporter
             }
             catch (XmlException e)
             {
-                m_log.ErrorFormat("[NAALISCENE]: Could not load data. {0}", e);
+                m_log.ErrorFormat("[NAALISCENE]: Could not load XML data: {0}", e);
             }
             return ParseXmlDocument(document);
         }
@@ -223,6 +223,7 @@ namespace NaaliSceneImporter
 
                 // Iterate entity components
                 int componentCount = 0;
+                bool export_component_found = false;
                 foreach (XmlNode component in parseEntity.ChildNodes)
                 {
                     // Get component type and possible name
@@ -231,9 +232,10 @@ namespace NaaliSceneImporter
                     if (component.Attributes["name"] != null)
                         component_name = component.Attributes["name"].Value;
 
-                    // Parse NaaliSceneExportData component 
+                    // Parse NaaliSceneExportData component
                     if (component_type == searchComponentType && component_name == searchComponentName && component.HasChildNodes)
                     {
+                        export_component_found = true;
                         foreach (XmlNode attribute in component.ChildNodes)
                         {
                             string name = attribute.Attributes["name"].Value;
@@ -319,29 +321,46 @@ namespace NaaliSceneImporter
                     }
                 }
 
-                // Finalize ec data
-                if (componentCount > 0)
-                    entity.ComponentData += "</entity>";
-                else
-                    entity.ComponentData = string.Empty;
-
-                // Try to find parent entity
-                bool parentFound = false;
-                foreach (NaaliEntity iterEntity in entities)
+                if (export_component_found)
                 {
-                    if (iterEntity.ImportId == entity.ParentId)
-                    {
-                        iterEntity.AddChild(entity);
-                        parentFound = true;
-                        break;
-                    }
-                }
+                    // Debug prints
+                    m_log.Debug("[NAALISCENE]: Found object with import data");
+                    m_log.DebugFormat("[NAALISCENE]: >> Import id: {0}", entity.ImportId.ToString());
+                    m_log.DebugFormat("[NAALISCENE]: >> Entity component count: {0}", componentCount.ToString());
 
-                // Add entity to return list if parent was not found
-                if (!parentFound)
-                    entities.Add(entity);
+                    // Finalize ec data
+                    if (componentCount > 0)
+                        entity.ComponentData += "</entity>";
+                    else
+                        entity.ComponentData = string.Empty;
+
+                    // Try to find parent entity
+                    bool parentFound = false;
+                    foreach (NaaliEntity iterEntity in entities)
+                    {
+                        if (iterEntity.ImportId == entity.ParentId)
+                        {
+                            iterEntity.AddChild(entity);
+                            parentFound = true;
+                            m_log.Debug("[NAALISCENE]: >> Entity is a child, parent found");
+                            break;
+                        }
+                    }
+
+                    // Add entity to return list if parent was not found
+                    if (!parentFound)
+                        entities.Add(entity);                    
+                }
+                else
+                {
+                    // Inform when skipping objects, something wrong with the xml for this entity
+                    m_log.Info("[NAALISCENE]: Skipping object, import data missing");
+                    m_log.InfoFormat("[NAALISCENE]: >> Import id: {0}", entity.ImportId.ToString());
+                    m_log.InfoFormat("[NAALISCENE]: >> Reason: could not find {0} component", searchComponentName.ToString());
+                }
             }
 
+            m_log.InfoFormat("[NAALISCENE]: XML parsing results: {0} entities found.", entities.Count.ToString());
             return entities;
         }
     }

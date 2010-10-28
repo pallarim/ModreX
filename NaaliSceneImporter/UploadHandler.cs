@@ -120,7 +120,6 @@ namespace NaaliSceneImporter
         private byte[] ProcessUploadSceneMessages(string path, Stream request, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
             string method = httpRequest.Headers["ImportMethod"];
-            m_log.InfoFormat("[NAALISCENE]: Processing UploadScene packet with method {0}", method);
 
             // Dispatch
             switch (method)
@@ -147,7 +146,7 @@ namespace NaaliSceneImporter
                 scene = GetScene(region_x, region_y);
                 if (scene == null)
                 {
-                    m_log.ErrorFormat("[NAALISCENE]: Could not process upload request, '{0}' region not found.");
+                    m_log.ErrorFormat("[NAALISCENE]: Could not process upload request, region in location ({0},{1}) not found.", region_x.ToString(), region_y.ToString());
                     httpResponse.StatusCode = (int)HttpStatusCode.NotAcceptable;
                     httpResponse.StatusDescription = "Region with input parameters was not found";
                 }
@@ -155,10 +154,12 @@ namespace NaaliSceneImporter
                 {
                     try
                     {
+                        m_log.Info("[NAALISCENE]: Processing HTTP POST XML import");
+                        m_log.InfoFormat("[NAALISCENE]: >> Import region: {0} located at ({1},{2})", scene.RegionInfo.RegionName, region_x.ToString(), region_y.ToString());
                         m_nsi.ImportNaaliScene(data, scene);
                         httpResponse.StatusCode = (int)HttpStatusCode.OK;
                         httpResponse.StatusDescription = "Scene uploaded and instantiated succesfully";
-                        m_log.Info("[NAALISCENE]: Scene uploaded and instantiated succesfully.");
+                        m_log.Info("[NAALISCENE]: Scene imported and instantiated succesfully");
                     }
                     catch (Exception e)
                     {

@@ -116,6 +116,7 @@ namespace NaaliSceneImporter
         private void ImportNaaliScene(string filename)
         {
             List<NaaliEntity> entities = parser.ParseXml(filename);
+            m_log.InfoFormat("[NAALISCENE]: Adding {0} objects with RexObjectProperties to scene", entities.Count.ToString());
             foreach (NaaliEntity entity in entities)
             {
                 AddEntityToScene(entity);
@@ -127,6 +128,7 @@ namespace NaaliSceneImporter
             m_scene = scene;
 
             List<NaaliEntity> entities = parser.ParseXml(data);
+            m_log.InfoFormat("[NAALISCENE]: Adding {0} objects with RexObjectProperties to scene", entities.Count.ToString());
             foreach (NaaliEntity entity in entities)
             {
                 AddEntityToScene(entity);
@@ -152,6 +154,7 @@ namespace NaaliSceneImporter
                 // Create and link children
                 if (entity.Children.Count > 0)
                 {
+                    m_log.DebugFormat("[NAALISCENE]: >> Object {0} has {1} children, generating a linked SceneObjectGroup", entity.ImportId.ToString(), entity.Children.Count.ToString());
                     foreach (NaaliEntity childEntity in entity.Children)
                     {
                         SceneObjectGroup childObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID, m_scene.RegionInfo.MasterAvatarAssignedUUID,
@@ -170,7 +173,7 @@ namespace NaaliSceneImporter
             }
             else
             {
-                m_log.ErrorFormat("[NAALISCENE]: Node postion was not inside the scene. Skipping object (import id = {0}) with position {1}", entity.ImportId.ToString(), pos.ToString());
+                m_log.InfoFormat("[NAALISCENE]: >> Object {0} position was outside of the scene, skipping creation", entity.ImportId.ToString());
             }
         }
 
@@ -184,13 +187,27 @@ namespace NaaliSceneImporter
             NaaliObjectData data = entity.ObjectData;
             
             // Visuals
-            robject.RexMeshURI = data.MeshRef;
-            robject.RexAnimationPackageURI = data.SkeletonRef;
-            robject.RexParticleScriptURI = data.ParticleRef;
+            UUID RefUUID;
+            if (UUID.TryParse(data.MeshRef, out RefUUID))
+                robject.RexMeshUUID = RefUUID;
+            else
+                robject.RexMeshURI = data.MeshRef;
+            if (UUID.TryParse(data.SkeletonRef, out RefUUID))
+                robject.RexAnimationPackageUUID = RefUUID;
+            else
+                robject.RexAnimationPackageURI = data.SkeletonRef;
+            if (UUID.TryParse(data.ParticleRef, out RefUUID))
+                robject.RexParticleScriptUUID = RefUUID;
+            else
+                robject.RexParticleScriptURI = data.ParticleRef;
             for (int index = 0; index < data.Materials.Count; index++)
             {
                 RexMaterialsDictionaryItem item = new RexMaterialsDictionaryItem();
-                item.AssetURI = data.Materials[index];
+                string materialRef = data.Materials[index];
+                if (UUID.TryParse(materialRef, out RefUUID))
+                    item.AssetID = RefUUID;
+                else
+                    item.AssetURI = materialRef;
                 if (data.MaterialTypes.Count > index)
                     item.Num = data.MaterialTypes[index];
                 else
@@ -199,7 +216,10 @@ namespace NaaliSceneImporter
             }
 
             // Sound
-            robject.RexSoundURI = data.SoundID;
+            if (UUID.TryParse(data.SoundID, out RefUUID))
+                robject.RexSoundUUID = RefUUID;
+            else
+                robject.RexSoundURI = data.SoundID;
             robject.RexSoundVolume = data.SoundVolume;
             robject.RexSoundRadius = data.SoundRadius;
 
