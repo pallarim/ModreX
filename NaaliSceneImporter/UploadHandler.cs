@@ -137,43 +137,30 @@ namespace NaaliSceneImporter
         {
             byte[] data = httpRequest.GetBody();
 
-            string region_x = httpRequest.Headers["RegionX"];
-            string region_y = httpRequest.Headers["RegionY"];
-
-            Scene scene = null;
-            if (region_x != null && region_y != null)
+            Scene scene = m_scene;
+            if (scene == null)
             {
-                scene = GetScene(region_x, region_y);
-                if (scene == null)
-                {
-                    m_log.ErrorFormat("[NAALISCENE]: Could not process upload request, region in location ({0},{1}) not found.", region_x.ToString(), region_y.ToString());
-                    httpResponse.StatusCode = (int)HttpStatusCode.NotAcceptable;
-                    httpResponse.StatusDescription = "Region with input parameters was not found";
-                }
-                else
-                {
-                    try
-                    {
-                        m_log.Info("[NAALISCENE]: Processing HTTP POST XML import");
-                        m_log.InfoFormat("[NAALISCENE]: >> Import region: {0} located at ({1},{2})", scene.RegionInfo.RegionName, region_x.ToString(), region_y.ToString());
-                        m_nsi.ImportNaaliScene(data, scene);
-                        httpResponse.StatusCode = (int)HttpStatusCode.OK;
-                        httpResponse.StatusDescription = "Scene uploaded and instantiated succesfully";
-                        m_log.Info("[NAALISCENE]: Scene imported and instantiated succesfully");
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.ErrorFormat("[NAALISCENE]: Exception occurred while processing uploaded data. {0}", e);
-                        httpResponse.StatusCode = (int)HttpStatusCode.InternalServerError;
-                        httpResponse.StatusDescription = "Exception occurred while processing uploaded data";
-                    }
-                }
+                m_log.ErrorFormat("[NAALISCENE]: Could not process upload request, scene is null");
+                httpResponse.StatusCode = (int)HttpStatusCode.NotAcceptable;
+                httpResponse.StatusDescription = "Could not process upload request, scene is null";
             }
             else
             {
-                m_log.Error("[NAALISCENE]: Could not process upload request, 'RegionX' and 'RegionY' headers not spesified.");
-                httpResponse.StatusCode = (int)HttpStatusCode.NotAcceptable;
-                httpResponse.StatusDescription = "RegionX and RegionY headers not spesified";
+                try
+                {
+                    m_log.Info("[NAALISCENE]: Processing HTTP POST XML import");
+                    m_log.InfoFormat("[NAALISCENE]: >> Import region: {0}", scene.RegionInfo.RegionName);
+                    m_nsi.ImportNaaliScene(data, scene);
+                    httpResponse.StatusCode = (int)HttpStatusCode.OK;
+                    httpResponse.StatusDescription = "Scene uploaded and instantiated succesfully";
+                    m_log.Info("[NAALISCENE]: Scene imported and instantiated succesfully");
+                }
+                catch (Exception e)
+                {
+                    m_log.ErrorFormat("[NAALISCENE]: Exception occurred while processing uploaded data. {0}", e);
+                    httpResponse.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    httpResponse.StatusDescription = "Exception occurred while processing uploaded data";
+                }
             }
             return Utils.EmptyBytes;
         }
@@ -183,7 +170,7 @@ namespace NaaliSceneImporter
             uint x = System.Convert.ToUInt32(region_x);
             uint y = System.Convert.ToUInt32(region_y);
 
-            //OpenSim.Services.Interfaces.GridRegion gridRegion = m_scene.GridService.GetRegionByName(UUID.Zero, region);
+            // OpenSim.Services.Interfaces.GridRegion gridRegion = m_scene.GridService.GetRegionByName(UUID.Zero, region);
             // dont know how to get scene handle so asking scenes OgreSceneImportModule, if there's some smarter way of doing these feel free to fix this
             foreach (Scene s in m_nsi.GetScenes())
             {
