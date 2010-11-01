@@ -306,7 +306,7 @@ namespace OgreSceneImporter
             //Load&parse meshes and add them to scene
             m_log.Info("[OGRESCENE]: Loading OGRE stuff to scene");
 
-            List<String> overlappingAssets = new List<string>();
+            Dictionary<string, string> overlappingAssets = new Dictionary<string, string>();
             AddObjectsToScene(ogreSceneManager.RootSceneNode, materials, filepath, saveSceneDataID, overlappingAssets);
         }
 
@@ -407,8 +407,10 @@ namespace OgreSceneImporter
             return b;
         }
 
-        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath, UUID sceneDataID, List<String> overlappingAssets)
+        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath, UUID sceneDataID, Dictionary<string, string> overlappingAssets)
         {
+            bool overlapping = false;
+
             // Make sure node global transform is refreshed
             node.RefreshDerivedTransform();
 
@@ -431,27 +433,41 @@ namespace OgreSceneImporter
                     //Load mesh object
                     byte[] data;
                     if (!usePath)
-                        if (!overlappingAssets.Contains(ent.MeshName))
+                    {
+                        if (!overlappingAssets.Keys.Contains(ent.MeshName))
                         {
-                            data = System.IO.File.ReadAllBytes(ent.MeshName);
-                            overlappingAssets.Add(ent.MeshName);
+                            overlappingAssets[ent.MeshName]="";
                         }
                         else
-                            continue;
+                            overlapping = true;
+                        data = System.IO.File.ReadAllBytes(ent.MeshName);
+                    }
                     else
-                        if (!overlappingAssets.Contains(p))
+                    {
+                        if (!overlappingAssets.Keys.Contains(p))
                         {
-                            data = System.IO.File.ReadAllBytes(p);
-                            overlappingAssets.Add(p);
+                            overlappingAssets[p]="";
                         }
                         else
-                            continue;
+                            overlapping = true;
+                        data = System.IO.File.ReadAllBytes(p);
+                    }
 
+                    AssetBase asset;
+                    string key = usePath ? p : ent.MeshName;
                     //Add mesh to asset db
-                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
-                    asset.Description = ent.Name;
-                    asset.Data = data;
-                    m_scene.AssetService.Store(asset);
+                    if (overlapping == false)
+                    {
+                        asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                        asset.Description = ent.Name;
+                        asset.Data = data;
+                        m_scene.AssetService.Store(asset);
+                        overlappingAssets[key] = asset.FullID.ToString();
+                    }
+                    else
+                    {
+                        asset = m_scene.AssetService.Get(overlappingAssets[key]);
+                    }
 
                     //Read material names
                     List<string> materialNames;
@@ -628,8 +644,10 @@ namespace OgreSceneImporter
             }
         }
 
-        private void AddObjectsToScene(SceneNode node, string baseUrl, List<string> overlappingMeshes)
+        private void AddObjectsToScene(SceneNode node, string baseUrl, Dictionary<string, string> overlappingMeshes)
         {
+            bool overlapping = false;
+
             // Quaternion for whole scene rotation
             Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0,0,1), ToRadians(m_sceneRotation));
 
@@ -643,13 +661,16 @@ namespace OgreSceneImporter
                 {
                     System.Net.WebClient client = new System.Net.WebClient();
                     byte[] data = null;
-                    if (!overlappingMeshes.Contains(baseUrl + ent.MeshName))
+                    if (!overlappingMeshes.Keys.Contains(baseUrl + ent.MeshName))
                     {
-                        data = client.DownloadData(baseUrl + ent.MeshName);
-                        overlappingMeshes.Add(baseUrl + ent.MeshName);
+                        overlappingMeshes[baseUrl + ent.MeshName] = "";
                     }
                     else
-                        continue;
+                    {
+                        overlapping = true;
+                    }
+                    data = client.DownloadData(baseUrl + ent.MeshName);
+
                     List<string> materialNames;
                     string meshLoaderError;
                     UUID collisionId = UUID.Zero;
@@ -661,11 +682,20 @@ namespace OgreSceneImporter
                     else
                     {
                         //Add mesh to asset db
-                        AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
-                        asset.Description = ent.Name;
-                        asset.Data = data;
-                        m_scene.AssetService.Store(asset);
-                        collisionId = asset.FullID;
+                        if (overlapping == false)
+                        {
+                            AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                            asset.Description = ent.Name;
+                            asset.Data = data;
+                            m_scene.AssetService.Store(asset);
+                            collisionId = asset.FullID;
+                            overlappingMeshes[baseUrl + ent.MeshName]=asset.FullID.ToString();
+                        }
+                        else {
+                            string id = overlappingMeshes[baseUrl + ent.MeshName];
+                            AssetBase asset = m_scene.AssetService.Get(id);
+                            collisionId = asset.FullID;
+                        }
                     }
 
                     SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
@@ -786,7 +816,7 @@ namespace OgreSceneImporter
 
                 loader.ParseDotScene(XMLDoc, "General", ogreSceneManager, null, "");
 
-                List<string> overlappingMeshes = new List<string>();
+                Dictionary<string, string> overlappingMeshes = new Dictionary<string, string>();
                 AddObjectsToScene(ogreSceneManager.RootSceneNode, baseUrl, overlappingMeshes);
             }
             catch (Exception e)
