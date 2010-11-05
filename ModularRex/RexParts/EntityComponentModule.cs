@@ -122,9 +122,15 @@ namespace ModularRex.RexParts
                 naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
                 naali.AddGenericPacketHandler("ecstring", HandleEcStringGenericMessage);
                 naali.AddGenericPacketHandler("ecremove", HandleEcRemoveGenericMessage);
+                naali.AddGenericPacketHandler("ecsync", HandleEcSyncGenericMessage);
 
                 SendAllData(naali);
             }
+        }
+
+        private void HandleEcSyncGenericMessage(object sender, string method, List<string> args)
+        {
+            return; //Handle this really in BinaryGenericMessageHandler
         }
 
         private void HandleGenericBinaryMessage(object sender, string method, byte[][] args)
@@ -198,7 +204,11 @@ namespace ModularRex.RexParts
                     UUID entityId = new UUID(args[0]);
                     string componentType = args[1];
                     string componentName = args[2];
-                    string data = args[3];
+                    string data = String.Empty;
+                    for (int i = 3; i < args.Count; i++)
+                    {
+                        data += args[i];
+                    }
 
                     ECData component = new ECData(entityId, componentType, componentName, data);
                     SaveECData(sender, component);
