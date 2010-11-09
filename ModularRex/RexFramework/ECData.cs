@@ -36,13 +36,14 @@ namespace ModularRex.RexFramework
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <param name="componentName">Name of the component.</param>
-        /// <param name="data">The data as base64 string.</param>
+        /// <param name="data">The data as UTF8 string.</param>
         public ECData(UUID entityId, string componentType, string componentName, string data)
         {
             m_entity_id = entityId;
             m_component_type = componentType;
             m_component_name = componentName;
-            m_data = Convert.FromBase64String(data);
+            System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+            m_data = encoding.GetBytes(data);
             m_data_is_string = true;
         }
 
@@ -88,8 +89,8 @@ namespace ModularRex.RexFramework
 
         /// <summary>
         /// Gets or sets a value indicating whether <c>Data</c> is string. If <c>Data</c> is string,
-        /// it should be convertable from byte array back to string with method <c>ToBase64String</c>
-        /// in <c>Convert</c> class.
+        /// it should be convertable from byte array back to string with method <c>GetBytes</c>
+        /// in <c>UTF8Encoding</c> class.
         /// </summary>
         /// <value><c>true</c> if <c>Data</c> is string otherwise, <c>false</c>.</value>
         public virtual bool DataIsString
