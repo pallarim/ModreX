@@ -29,6 +29,8 @@ namespace ModularRex.RexParts
         public delegate void OnChangePythonClassDelegate(UUID id);
         public event OnChangePythonClassDelegate OnPythonClassChange;
 
+        private Dictionary<string, UUID> m_collision_uri_ids = new Dictionary<string, UUID>();
+
         public void Initialise(Scene scene, IConfigSource source)
         {
             m_scenes.Add(scene);
@@ -532,9 +534,16 @@ namespace ModularRex.RexParts
                 Uri collisionUrl;
                 if (Uri.TryCreate(p.RexCollisionMeshURI, UriKind.Absolute, out collisionUrl))
                 {
-                    System.Net.WebClient client = new System.Net.WebClient();
-                    byte[] collisionMesh = client.DownloadData(collisionUrl);
-                    StoreCollisionMeshData(collisionMesh, id);
+                    if (m_collision_uri_ids.ContainsKey(collisionUrl.ToString()))
+                    {
+                        p.RexCollisionMeshUUID = m_collision_uri_ids[collisionUrl.ToString()];
+                    }
+                    else
+                    {
+                        System.Net.WebClient client = new System.Net.WebClient();
+                        byte[] collisionMesh = client.DownloadData(collisionUrl);
+                        StoreCollisionMeshData(collisionMesh, id);
+                    }
                 }
                 else
                 {
@@ -563,6 +572,7 @@ namespace ModularRex.RexParts
             {
                 m_log.DebugFormat("[REXOBJS]: Setting downloaded collision mesh {0} to object {1}", p.RexCollisionMeshURI, primId);
                 p.RexCollisionMeshUUID = collisionMeshUuid;
+                m_collision_uri_ids.Add(p.RexCollisionMeshURI, collisionMeshUuid);
                 //TriggerOnChangeCollisionMesh(primId);
             }
             else
