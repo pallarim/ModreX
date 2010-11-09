@@ -60,11 +60,15 @@ namespace NaaliSceneImporter
     {
         // Visuals
         public string MeshRef;
+        public string CollisionMeshRef;
         public string SkeletonRef;
         public string ParticleRef;
         public List<string> Materials;
         public List<uint> MaterialTypes;
         
+        // Script
+        public string ServerScriptClass;
+
         // Sound
         public string SoundID;
         public float SoundVolume;
@@ -86,10 +90,13 @@ namespace NaaliSceneImporter
         public NaaliObjectData()
         {
             MeshRef = string.Empty;
+            CollisionMeshRef = string.Empty;
             SkeletonRef = string.Empty;
             ParticleRef = string.Empty;
             Materials = new List<string>();
             MaterialTypes = new List<uint>();
+            
+            ServerScriptClass = string.Empty;
 
             SoundID = string.Empty;
             SoundVolume = 0;
@@ -109,12 +116,16 @@ namespace NaaliSceneImporter
 
         public void SetMaterials(string data)
         {
+            if (data == string.Empty)
+                return;
             foreach (string material in data.Split(';'))
                 Materials.Add(material);
         }
 
         public void SetMaterialTypes(string data)
         {
+            if (data == string.Empty)
+                return;
             foreach (string materialType in data.Split(';'))
                 MaterialTypes.Add(System.Convert.ToUInt32(materialType));
         }
@@ -217,6 +228,9 @@ namespace NaaliSceneImporter
                 if (parseEntity.HasChildNodes == false)
                     continue;
 
+                string iid = parseEntity.Attributes["id"].Value;
+                uint iiiddd = System.Convert.ToUInt32(parseEntity.Attributes["id"].Value);
+
                 NaaliEntity entity = new NaaliEntity();
                 entity.SetImportId(parseEntity.Attributes["id"].Value);
                 entity.ComponentData += "<entity id=\"REPLACE_ENTITY_LOCAL_ID\">";
@@ -259,6 +273,9 @@ namespace NaaliSceneImporter
                                     break;
                                 case "MeshRef":
                                     entity.ObjectData.MeshRef = value;
+                                    break;
+                                case "CollisionMeshRef":
+                                    entity.ObjectData.CollisionMeshRef = value;
                                     break;
                                 case "SkeletonRef":
                                     entity.ObjectData.SkeletonRef = value;
@@ -307,6 +324,9 @@ namespace NaaliSceneImporter
                                     break;
                                 case "AnimationRate":
                                     entity.ObjectData.AnimationRate = (float)System.Convert.ToDouble(value);
+                                    break;
+                                case "ServerScriptClass":
+                                    entity.ObjectData.ServerScriptClass = value;
                                     break;
                                 default:
                                     break;

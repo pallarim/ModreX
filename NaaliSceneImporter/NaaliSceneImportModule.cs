@@ -192,6 +192,10 @@ namespace NaaliSceneImporter
                 robject.RexMeshUUID = RefUUID;
             else
                 robject.RexMeshURI = data.MeshRef;
+            if (UUID.TryParse(data.CollisionMeshRef, out RefUUID))
+                robject.RexCollisionMeshUUID = RefUUID;
+            else
+                robject.RexCollisionMeshURI = data.CollisionMeshRef;
             if (UUID.TryParse(data.SkeletonRef, out RefUUID))
                 robject.RexAnimationPackageUUID = RefUUID;
             else
@@ -214,6 +218,9 @@ namespace NaaliSceneImporter
                     item.Num = 45; // Just guessing at this point, default to material script?
                 robject.RexMaterials.Add((uint)index, item);
             }
+
+            // Script
+            robject.RexClassName = data.ServerScriptClass;
 
             // Sound
             if (UUID.TryParse(data.SoundID, out RefUUID))
