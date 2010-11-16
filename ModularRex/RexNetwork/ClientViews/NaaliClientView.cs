@@ -123,7 +123,7 @@ namespace ModularRex.RexNetwork
         public void SendECData(ECData data)
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
-            gmp.MethodData.Method = Utils.StringToBytes("ecsync");
+            gmp.MethodData.Method = Utils.StringToBytes("ECSync");
 
             byte[] ecbytedata = GetECBytes(data);
             int numlines = 0;
