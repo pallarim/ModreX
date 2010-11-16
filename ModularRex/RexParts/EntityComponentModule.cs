@@ -150,7 +150,7 @@ namespace ModularRex.RexParts
                         int idx = 0;
 
                         //calculate array length
-                        for (int i = 3; i < args.Length; i++)
+                        for (int i = 1; i < args.Length; i++)
                         {
                             rpdLen += args[i].Length;
                         }
