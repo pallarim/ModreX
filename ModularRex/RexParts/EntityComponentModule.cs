@@ -120,11 +120,17 @@ namespace ModularRex.RexParts
             if (client.TryGet<NaaliClientView>(out naali))
             {
                 naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
-                naali.AddGenericPacketHandler("ecstring", HandleEcStringGenericMessage);
-                naali.AddGenericPacketHandler("ecremove", HandleEcRemoveGenericMessage);
+                naali.AddGenericPacketHandler("ECString", HandleEcStringGenericMessage);
+                naali.AddGenericPacketHandler("ECRemove", HandleEcRemoveGenericMessage);
+                naali.AddGenericPacketHandler("ECSync", HandleEcSyncGenericMessage);
 
                 SendAllData(naali);
             }
+        }
+
+        private void HandleEcSyncGenericMessage(object sender, string method, List<string> args)
+        {
+            return; //Handle this really in BinaryGenericMessageHandler
         }
 
         private void HandleGenericBinaryMessage(object sender, string method, byte[][] args)
@@ -144,7 +150,7 @@ namespace ModularRex.RexParts
                         int idx = 0;
 
                         //calculate array length
-                        for (int i = 3; i < args.Length; i++)
+                        for (int i = 1; i < args.Length; i++)
                         {
                             rpdLen += args[i].Length;
                         }
@@ -198,7 +204,11 @@ namespace ModularRex.RexParts
                     UUID entityId = new UUID(args[0]);
                     string componentType = args[1];
                     string componentName = args[2];
-                    string data = args[3];
+                    string data = String.Empty;
+                    for (int i = 3; i < args.Count; i++)
+                    {
+                        data += args[i];
+                    }
 
                     ECData component = new ECData(entityId, componentType, componentName, data);
                     SaveECData(sender, component);
@@ -226,7 +236,7 @@ namespace ModularRex.RexParts
 
         private void SaveLocal(ECData component)
         {
-            if (m_entity_components[component.EntityID] == null)
+            if (!m_entity_components.ContainsKey(component.EntityID))
             {
                 m_entity_components[component.EntityID] = new Entity(component.EntityID);
             }
@@ -289,7 +299,7 @@ namespace ModularRex.RexParts
             try
             {
                 bool save = true;
-                if (m_ec_update_callbacks[component.ComponentType] != null)
+                if (m_ec_update_callbacks.ContainsKey(component.ComponentType) && m_ec_update_callbacks[component.ComponentType] != null)
                 {
                     save = m_ec_update_callbacks[component.ComponentType](sender, ref component);
                 }
@@ -318,7 +328,7 @@ namespace ModularRex.RexParts
             try
             {
                 bool remove = true;
-                if (m_ec_remove_callbacks[component.ComponentType] != null)
+                if (m_ec_update_callbacks.ContainsKey(component.ComponentType) && m_ec_remove_callbacks[component.ComponentType] != null)
                 {
                     remove = m_ec_remove_callbacks[component.ComponentType](sender, component.EntityID, component.ComponentType, component.ComponentName);
                 }

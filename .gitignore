@@ -1,0 +1,27 @@
+# Visuals studio build folders and files
+# seems ugly but there seems to be no better 'regexp' 
+# than to just say how deep you want to go with multiple lines
+
+*/obj/
+*/*/obj/
+*/*/*/obj/
+*/*/*/*/obj/
+*/*/*/*/*/obj/
+
+*/*.csproj
+*/*/*.csproj
+*/*/*/*.csproj
+*/*/*/*/*.csproj
+*/*/*/*/*/*.csproj
+
+*/*.csproj.user
+*/*/*.csproj.user
+*/*/*/*.csproj.user
+*/*/*/*/*.csproj.user
+*/*/*/*/*/*.csproj.user
+
+*/*.build
+*/*/*.build
+*/*/*/*.build
+*/*/*/*/*.build
+*/*/*/*/*/*.build
