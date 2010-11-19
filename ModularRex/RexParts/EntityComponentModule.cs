@@ -120,15 +120,15 @@ namespace ModularRex.RexParts
             if (client.TryGet<NaaliClientView>(out naali))
             {
                 naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
-                naali.AddGenericPacketHandler("ECString", HandleEcStringGenericMessage);
+                naali.AddGenericPacketHandler("ECString", DummyGenericMessageHandler);
                 naali.AddGenericPacketHandler("ECRemove", HandleEcRemoveGenericMessage);
-                naali.AddGenericPacketHandler("ECSync", HandleEcSyncGenericMessage);
+                naali.AddGenericPacketHandler("ECSync", DummyGenericMessageHandler);
 
                 SendAllData(naali);
             }
         }
 
-        private void HandleEcSyncGenericMessage(object sender, string method, List<string> args)
+        private void DummyGenericMessageHandler(object sender, string method, List<string> args)
         {
             return; //Handle this really in BinaryGenericMessageHandler
         }
@@ -190,6 +190,16 @@ namespace ModularRex.RexParts
                         SaveECData(sender, new ECData(entityId, componentType, componentName, ecdata, false));
                     }
                     break;
+                case "ecstring":
+
+                    List<string> sargs = new List<string>();
+                    foreach (byte[] arg in args)
+                    {
+                        string s = FieldToUTF8String(arg);
+                        sargs.Add(s);
+                    }
+                    HandleEcStringGenericMessage(sender, method, sargs);
+                    break;
                 default:
                     return;
             }
@@ -233,6 +243,14 @@ namespace ModularRex.RexParts
         }
 
         #endregion
+
+        protected static string FieldToUTF8String(byte[] bytes)
+        {
+            if (bytes.Length > 0 && bytes[bytes.Length - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes);
+        }
 
         private void SaveLocal(ECData component)
         {
