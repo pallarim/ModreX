@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /*
 Modified .mesh loader based on the Axiom Graphics Engine Library
 which is based on the open source Object Oriented Graphics Engine OGRE. 
@@ -170,7 +171,10 @@ namespace RexDotMeshLoader
             }
             else
             {
-                subMesh.indices_s = new short[subMesh.indexData.indexCount];
+				//$ BEGIN_MOD $
+                subMesh.indices_s = new ushort[subMesh.indexData.indexCount];
+				//$ END_MOD $
+				//$ MOD_DESCRIPTION From short to ushort $
                 ReadShorts(reader, subMesh.indexData.indexCount, subMesh.indices_s);
             }
            
@@ -372,7 +376,10 @@ namespace RexDotMeshLoader
                 }
                 else
                 {
-                    short[] barray = new short[tempindexcount];
+					//$ BEGIN_MOD $
+                    ushort[] barray = new ushort[tempindexcount];
+					//$ END_MOD $
+					//$ MOD_DESCRIPTION From short to ushort $
                     ReadShorts(reader, tempindexcount, barray);
                 }
             } 
