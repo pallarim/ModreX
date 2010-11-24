@@ -407,9 +407,11 @@ namespace OgreSceneImporter
             return b;
         }
 
-        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath, UUID sceneDataID, Dictionary<string, string> overlappingAssets)
+        private void AddObjectsToScene(SceneNode node, Dictionary<string, UUID> materials, string additionalSearchPath, UUID sceneDataID, 
+            Dictionary<string, string> overlappingAssets)
         {
             bool overlapping = false;
+            bool overlappingCollisionMesh = false;
 
             // Make sure node global transform is refreshed
             node.RefreshDerivedTransform();
@@ -469,6 +471,10 @@ namespace OgreSceneImporter
                         asset = m_scene.AssetService.Get(overlappingAssets[key]);
                     }
 
+                    //Handle collisions !!
+                    UUID collisionId = UUID.Zero;
+                    HandleCollisionMesh(ent, ref overlappingAssets, ref overlappingCollisionMesh, ref collisionId, p, false, usePath);
+
                     //Read material names
                     List<string> materialNames;
                     string meshLoaderError;
@@ -494,7 +500,7 @@ namespace OgreSceneImporter
                         }
                         bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
                         //Add refs to materials, mesh etc.
-                        AddRexObjectProperties(sceneObject.RootPart.UUID, asset.FullID, ent, materials, materialNames, useCollision);
+                        AddRexObjectProperties(sceneObject.RootPart.UUID, asset.FullID, ent, materials, materialNames, useCollision, collisionId);
                     }
                 }
             }
@@ -515,6 +521,15 @@ namespace OgreSceneImporter
 
             if (node.Entities.Count >= 0)
             {
+                NHibernateSceneStorage storage;
+                if (!TryGetSceneStorage(out storage))
+                {
+                    m_log.ErrorFormat("[OGRESCENE]: Cant get scene storage, returning!");
+                    return;
+                }
+
+                List<SceneAsset> assets = storage.GetSceneAssets(uploadsceneid); // getting collision meshes
+
                 foreach (Entity ent in node.Entities)
                 {
                     // here we should read mesh assetservice, first we need to get saved identifier from db, identified by upload scene and name
@@ -539,15 +554,29 @@ namespace OgreSceneImporter
                         SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
                         if (sceneObject != null)
                         {
-                            NHibernateSceneStorage storage;
-                            if (TryGetSceneStorage(out storage))
-                            {
-                                storage.UpdateAssetEntityId(new UUID(sa.SceneId), new UUID(sa.AssetId), sceneObject.UUID);
-                            }
-
+                            //NHibernateSceneStorage storage;
+                            //if (TryGetSceneStorage(out storage))
+                            //{
+                            //    storage.UpdateAssetEntityId(new UUID(sa.SceneId), new UUID(sa.AssetId), sceneObject.UUID);
+                            //}
+                            storage.UpdateAssetEntityId(new UUID(sa.SceneId), new UUID(sa.AssetId), sceneObject.UUID);
                             bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
                             //Add refs to materials, mesh etc.
-                            AddRexObjectProperties(sceneObject.RootPart.UUID, new UUID(sa.AssetId), ent, materials, materialNames, useCollision);
+
+                            UUID collisionId = UUID.Zero;
+                            
+                            if (ent.CollisionMeshName != "") { 
+                                // need to know collision UUID's, if collision mesh names are unique -> collision mesh is only 1 time in db, 
+                                // but different scenes may have different meshes with same name -> but collision mesh in one scene
+                                // should be unique, and we can look it up from db when we know our upload scene id -> we get asset id and can look it up
+                                foreach (SceneAsset asset in assets)
+                                {
+                                    if (asset.Name == ent.CollisionMeshName)
+                                        collisionId = new UUID(asset.AssetId);
+                                }
+                            }
+
+                            AddRexObjectProperties(sceneObject.RootPart.UUID, new UUID(sa.AssetId), ent, materials, materialNames, useCollision, collisionId);
                         }
                     }
                 }
@@ -647,6 +676,7 @@ namespace OgreSceneImporter
         private void AddObjectsToScene(SceneNode node, string baseUrl, Dictionary<string, string> overlappingMeshes)
         {
             bool overlapping = false;
+            bool overlappingCollisionMesh = false;
 
             // Quaternion for whole scene rotation
             Quaternion sceneRotQuat = Quaternion.CreateFromAxisAngle(new Vector3(0,0,1), ToRadians(m_sceneRotation));
@@ -696,6 +726,9 @@ namespace OgreSceneImporter
                             AssetBase asset = m_scene.AssetService.Get(id);
                             collisionId = asset.FullID;
                         }
+
+                        //Handle collisions
+                        HandleCollisionMesh(ent, ref overlappingMeshes, ref overlappingCollisionMesh, ref collisionId, baseUrl, true, false);
                     }
 
                     SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
@@ -716,6 +749,70 @@ namespace OgreSceneImporter
             }
         }
 
+        private void HandleCollisionMesh(Entity ent, ref Dictionary<string, string> overlappingMeshes, ref bool overlappingCollisionMesh, ref UUID collisionId, 
+            string baseUrl, 
+            bool useBaseUrl,
+            bool usePath)
+        {
+            if (ent.CollisionMeshName != "")
+            {
+                bool exists = false;
+                byte[] data = null;
+
+                if (!overlappingMeshes.Keys.Contains(baseUrl + ent.CollisionMeshName))
+                {
+                    overlappingCollisionMesh = false;
+                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                    asset.Description = ent.CollisionMeshName;
+                    // read coll mesh data
+                    if (useBaseUrl)
+                    {
+                        System.Net.WebClient client = new System.Net.WebClient();
+                        data = client.DownloadData(baseUrl + ent.MeshName);
+                        exists = true;
+                    }
+                    else // baseUrl is just additional search path
+                    {
+                        if (!usePath)
+                        {
+                            exists = System.IO.File.Exists(ent.CollisionMeshName);
+                            if (exists)
+                                data = System.IO.File.ReadAllBytes(ent.CollisionMeshName);
+                        }
+                        else
+                        {
+
+                            //baseUrl.LastIndexOf(System.IO.Path.PathSeparator);
+                            string collisionDirPath = baseUrl.Substring(0, baseUrl.Length - System.IO.Path.GetFileName(baseUrl).Length);
+                            string p = System.IO.Path.Combine(collisionDirPath, ent.CollisionMeshName);
+
+                            exists = System.IO.File.Exists(p);
+                            if(exists)
+                                data = System.IO.File.ReadAllBytes(p);
+                        }
+                    }
+                    if (exists)
+                    {
+                        asset.Data = data;
+                        collisionId = asset.FullID;
+                        m_scene.AssetService.Store(asset);
+                        overlappingMeshes[baseUrl + ent.CollisionMeshName] = asset.FullID.ToString();
+                    }
+                    else
+                    {
+                        collisionId = UUID.Zero;
+                    }
+                }
+                else
+                {
+                    overlappingCollisionMesh = true;
+                    string id = overlappingMeshes[baseUrl + ent.CollisionMeshName];
+                    AssetBase asset = m_scene.AssetService.Get(id);
+                    collisionId = asset.FullID;
+                }
+            }
+        }
+
         private RexObjectProperties CreateRexObjectProperties(UUID objectId, Entity ent)
         {
             IModrexObjectsProvider rexObjects = m_scene.RequestModuleInterface<IModrexObjectsProvider>();
@@ -726,7 +823,7 @@ namespace OgreSceneImporter
             return robject;
         }
 
-        private void AddRexObjectProperties(UUID objectId, UUID meshId, Entity ent, Dictionary<string, UUID> materials, List<string> materialNames, bool useCollision)
+        private void AddRexObjectProperties(UUID objectId, UUID meshId, Entity ent, Dictionary<string, UUID> materials, List<string> materialNames, bool useCollision, UUID collisionID)
         {
             RexObjectProperties robject = CreateRexObjectProperties(objectId, ent);
             robject.RexMeshUUID = meshId;
@@ -735,7 +832,8 @@ namespace OgreSceneImporter
             {
                 try
                 {
-                    robject.RexCollisionMeshUUID = meshId;
+                    if (collisionID != UUID.Zero) { robject.RexCollisionMeshUUID = collisionID; }
+                    else { robject.RexCollisionMeshUUID = meshId; }
                 }
                 catch (Exception)
                 {
@@ -857,6 +955,12 @@ namespace OgreSceneImporter
         public List<Scene> GetScenes()
         {
             return this.m_scenes;
+        }
+
+        public Vector3 Offset
+        {
+            get { return this.m_offset; }
+            set { this.m_offset = value; }
         }
 
     }

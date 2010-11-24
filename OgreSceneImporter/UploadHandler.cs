@@ -449,7 +449,11 @@ namespace OgreSceneImporter
                 System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
                 string scenexml = enc.GetString(sceneFile);
 
+                // Not adding the 2 offsets:
+                Vector3 tempOffset = m_osi.Offset;
+                m_osi.Offset = Vector3.Zero;
                 m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+                m_osi.Offset = tempOffset;
 
                 return true;
             }

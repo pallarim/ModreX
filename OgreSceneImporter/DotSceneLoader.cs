@@ -264,6 +264,8 @@ namespace OgreSceneImporter
             // Process attributes
             String name = getAttrib(XMLNode, "name");
             String meshFile = getAttrib(XMLNode, "meshFile");
+            String collisionFile = getAttrib(XMLNode, "collisionFile");
+            String collisionPrim = getAttrib(XMLNode, "collisionPrim");
 
             bool bstatic = getAttribBool(XMLNode, "static", false);
             if (bstatic)
@@ -285,6 +287,8 @@ namespace OgreSceneImporter
                 //mesh.BuildTangentVectors(Mogre.VertexElementSemantic.VES_TANGENT, src, dest);
 
                 pEntity = mSceneMgr.CreateEntity(name, meshFile);
+                pEntity.CollisionMeshName = collisionFile;
+                pEntity.CollisionPrim = collisionPrim;
                 pEntity.Visible = bvisible;
                 pEntity.CastShadows = bcastshadows;
                 pEntity.RenderingDistance = brenderingDistance;
