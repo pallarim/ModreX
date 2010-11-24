@@ -172,10 +172,10 @@ namespace ModularRex.RexNetwork
             int idx = 0;
 
             Encoding.ASCII.GetBytes(data.ComponentType).CopyTo(buffer, idx);
-            idx += data.ComponentType.Length;
+            idx += data.ComponentType.Length +1;
 
             Encoding.ASCII.GetBytes(data.ComponentName).CopyTo(buffer, idx);
-            idx += data.ComponentName.Length;
+            idx += data.ComponentName.Length +1;
 
             data.Data.CopyTo(buffer, idx);
 
