@@ -9,6 +9,7 @@ namespace ModularRex.RexFramework
     {
         void TriggerOnChangePythonClass(UUID id);
         void TriggerOnChangeCollisionMesh(UUID id);
+        void TriggerOnChangeCollisionPrim(UUID id);
         void TriggerOnChangeScaleToPrim(UUID id);
         void TriggerOnChangeRexObjectProperties(UUID id);
         void TriggerOnChangeRexObjectMetaData(UUID id);

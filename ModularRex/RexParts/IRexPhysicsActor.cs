@@ -8,6 +8,7 @@ namespace ModularRex.RexParts
     public interface IRexPhysicsActor
     {
         void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh);
+        void SetCollisionPrim(string collisionprimname);
         void SetBoundsScaling(bool vbScaleMesh);
     }
 }

@@ -471,9 +471,10 @@ namespace OgreSceneImporter
                         asset = m_scene.AssetService.Get(overlappingAssets[key]);
                     }
 
-                    //Handle collisions !!
+                    // Handle collisions
                     UUID collisionId = UUID.Zero;
-                    HandleCollisionMesh(ent, ref overlappingAssets, ref overlappingCollisionMesh, ref collisionId, p, false, usePath);
+                    string collisionPrim = String.Empty;
+                    HandleCollisionMesh(ent, ref overlappingAssets, ref overlappingCollisionMesh, ref collisionId, ref collisionPrim, p, false, usePath);
 
                     //Read material names
                     List<string> materialNames;
@@ -500,7 +501,7 @@ namespace OgreSceneImporter
                         }
                         bool useCollision = (meshLoaderError == "") && (m_useCollisionMesh == true);
                         //Add refs to materials, mesh etc.
-                        AddRexObjectProperties(sceneObject.RootPart.UUID, asset.FullID, ent, materials, materialNames, useCollision, collisionId);
+                        AddRexObjectProperties(sceneObject.RootPart.UUID, asset.FullID, ent, materials, materialNames, useCollision, collisionId, collisionPrim);
                     }
                 }
             }
@@ -569,6 +570,9 @@ namespace OgreSceneImporter
                                 // need to know collision UUID's, if collision mesh names are unique -> collision mesh is only 1 time in db, 
                                 // but different scenes may have different meshes with same name -> but collision mesh in one scene
                                 // should be unique, and we can look it up from db when we know our upload scene id -> we get asset id and can look it up
+                                
+                                // For using collision prim names meaning cube, capsule, etc, needs to figure out something else
+
                                 foreach (SceneAsset asset in assets)
                                 {
                                     if (asset.Name == ent.CollisionMeshName)
@@ -576,7 +580,7 @@ namespace OgreSceneImporter
                                 }
                             }
 
-                            AddRexObjectProperties(sceneObject.RootPart.UUID, new UUID(sa.AssetId), ent, materials, materialNames, useCollision, collisionId);
+                            AddRexObjectProperties(sceneObject.RootPart.UUID, new UUID(sa.AssetId), ent, materials, materialNames, useCollision, collisionId, String.Empty);
                         }
                     }
                 }
@@ -728,7 +732,8 @@ namespace OgreSceneImporter
                         }
 
                         //Handle collisions
-                        HandleCollisionMesh(ent, ref overlappingMeshes, ref overlappingCollisionMesh, ref collisionId, baseUrl, true, false);
+                        string collisionPrim = String.Empty;
+                        HandleCollisionMesh(ent, ref overlappingMeshes, ref overlappingCollisionMesh, ref collisionId, ref collisionPrim, baseUrl, true, false);
                     }
 
                     SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
@@ -749,11 +754,21 @@ namespace OgreSceneImporter
             }
         }
 
-        private void HandleCollisionMesh(Entity ent, ref Dictionary<string, string> overlappingMeshes, ref bool overlappingCollisionMesh, ref UUID collisionId, 
+        private void HandleCollisionMesh(Entity ent, ref Dictionary<string, string> overlappingMeshes, ref bool overlappingCollisionMesh, 
+            ref UUID collisionId, 
+            ref string collisionPrimName, 
             string baseUrl, 
             bool useBaseUrl,
             bool usePath)
         {
+            if (ent.CollisionPrim != String.Empty)
+            {
+                collisionPrimName = ent.CollisionPrim;
+                collisionId = UUID.Zero;
+                // dont need to set anything else
+                return;
+            }
+
             if (ent.CollisionMeshName != "")
             {
                 bool exists = false;
@@ -823,17 +838,26 @@ namespace OgreSceneImporter
             return robject;
         }
 
-        private void AddRexObjectProperties(UUID objectId, UUID meshId, Entity ent, Dictionary<string, UUID> materials, List<string> materialNames, bool useCollision, UUID collisionID)
+        private void AddRexObjectProperties(UUID objectId, UUID meshId, Entity ent, Dictionary<string, UUID> materials, List<string> materialNames, 
+            bool useCollision, UUID collisionID, string collisionPrim)
         {
             RexObjectProperties robject = CreateRexObjectProperties(objectId, ent);
             robject.RexMeshUUID = meshId;
-
+            
             if (useCollision)
             {
                 try
                 {
-                    if (collisionID != UUID.Zero) { robject.RexCollisionMeshUUID = collisionID; }
-                    else { robject.RexCollisionMeshUUID = meshId; }
+                    if (collisionPrim != String.Empty)
+                    {
+                        robject.RexCollisionPrim = collisionPrim;
+                        //robject.RexCollisionMeshUUID = meshId;
+                    }
+                    else
+                    {
+                        if (collisionID != UUID.Zero) { robject.RexCollisionMeshUUID = collisionID; }
+                        else { robject.RexCollisionMeshUUID = meshId; }
+                    }
                 }
                 catch (Exception)
                 {

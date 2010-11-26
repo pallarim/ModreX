@@ -20,6 +20,10 @@
 	    <property name="RexLOD" type="Single" />
 	    <property name="RexMeshUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
 	    <property name="RexCollisionMeshUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+      
+      <!-- Store collision prim types: cube, sphere, capsule, cylinder-->
+      <property name="RexCollisionPrim" type="String" length="20" />
+      
 	    <property name="RexParticleScriptUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
 	    <property name="RexAnimationPackageUUID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
       <property name="RexAnimationName" type="String" length="64" />

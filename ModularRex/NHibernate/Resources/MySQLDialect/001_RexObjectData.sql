@@ -17,6 +17,7 @@ CREATE TABLE RexObjectProperties (
     RexLOD FLOAT DEFAULT NULL,
     RexMeshUUID VARCHAR(50) DEFAULT NULL,
     RexCollisionMeshUUID VARCHAR(50) DEFAULT NULL,
+    RexCollisionPrim VARCHAR(20) DEFAULT NULL,    
     RexParticleScriptUUID VARCHAR(50) DEFAULT NULL,
     RexAnimationPackageUUID VARCHAR(50) DEFAULT NULL,
     RexAnimationName VARCHAR(64) DEFAULT NULL,

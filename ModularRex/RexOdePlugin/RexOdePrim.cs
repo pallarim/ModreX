@@ -46,8 +46,10 @@ namespace ModularRex.RexOdePlugin
     public class OdePrim : PhysicsActor, IRexPhysicsActor
     {
         private Mesh m_OriginalMesh = null; // rex
+        private string m_CollisionPrim = String.Empty; // rex, name for collision type
 
         private bool m_DotMeshCollision = false; // rex
+        private bool m_DPrimCollision = false; // rex
         private bool m_PrimVolume = false; // rex
         private bool m_ReCreateCollision = false; // rex
 
@@ -861,6 +863,8 @@ namespace ModularRex.RexOdePlugin
                 }
                 if (m_ReCreateCollision) // rex start
                 {
+                    //if (m_DPrimCollision)
+                    //    changeToPredifinedPrim(timestep);
                     if (m_DotMeshCollision)
                         changesizeogremesh(timestep);
                     else
@@ -2791,6 +2795,18 @@ namespace ModularRex.RexOdePlugin
             _parent_scene.AddPhysicsActorTaint(this);
         }
 
+        public void SetCollisionPrim(string collisionprimname)
+        {
+            lock (_parent_scene.OdeLock)
+            {
+                m_CollisionPrim = collisionprimname;
+                m_DPrimCollision = true;
+                m_DotMeshCollision = true;
+                m_ReCreateCollision = true;
+                _parent_scene.AddPhysicsActorTaint(this);
+            }
+        }
+
         public void SetBoundsScaling(bool vbScaleMesh)
         {
             if (m_DotMeshCollision)
@@ -2957,12 +2973,19 @@ namespace ModularRex.RexOdePlugin
             prim_geom = IntPtr.Zero;
             // we don't need to do space calculation because the client sends a position update also.
 
-            // Construction of new prim        
-            Mesh mesh = CreateMeshFromOriginal();
+            if (m_DPrimCollision)
+            {
+                changeToPredifinedPrim(timestamp);
+                m_DPrimCollision = false;
+            }
+            else
+            {
+                // Construction of new prim        
+                Mesh mesh = CreateMeshFromOriginal();
 
-            CreateGeom(m_targetSpace, mesh);
-            d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
-
+                CreateGeom(m_targetSpace, mesh);
+                d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
+            }
             d.Quaternion myrot = new d.Quaternion();
             Quaternion meshRotA = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.5705f);
             Quaternion meshRotB = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), 3.1415f);
@@ -3015,6 +3038,188 @@ namespace ModularRex.RexOdePlugin
             //this is what this should do, like in ODEPrim in OpenSim ODE module
             //m_vehicle.ProcessVehicleFlags(param, remove);
             //TODO: implement vechiles
+        }
+
+        public void changeToPredifinedPrim(float timestamp)
+        {
+
+            #region prim setting inits
+            //string oldname = _parent_scene.geom_name_map[prim_geom];
+            //if (_size.X <= 0) _size.X = 0.01f;
+            //if (_size.Y <= 0) _size.Y = 0.01f;
+            //if (_size.Z <= 0) _size.Z = 0.01f;
+            //if (IsPhysical && Body != IntPtr.Zero)
+            //{
+            //    if (childPrim)
+            //    {
+            //        if (_parent != null)
+            //        {
+            //            OdePrim parent = (OdePrim)_parent;
+            //            parent.ChildDelink(this);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        disableBody();
+            //    }
+            //}
+            //if (d.SpaceQuery(m_targetSpace, prim_geom))
+            //{
+            //    _parent_scene.waitForSpaceUnlock(m_targetSpace);
+            //    d.SpaceRemove(m_targetSpace, prim_geom);
+            //}
+            //d.GeomDestroy(prim_geom);
+            //prim_geom = IntPtr.Zero;
+            #endregion
+
+
+            //d.GeomGetClass(
+            //SetGeom(d.CreateCapsule(m_targetSpace, radius, length));
+            float radius = 0;
+            float length = 0;
+
+            switch (m_CollisionPrim)
+            {
+                case "cube":
+                    SetGeom(d.CreateBox(m_targetSpace, _size.X, _size.Y, _size.Z));
+                    break;
+                case "sphere":
+                    SetGeom(d.CreateSphere(m_targetSpace, _size.X / 2));
+                    break;
+                case "capsule":
+                    // what way is the length of the capsule
+                    DecideCapsuleDimendions(ref radius, ref length);
+                    SetGeom(d.CreateCapsule(m_targetSpace, radius, length));
+                    break;
+                case "cylinder":
+                    // what way is the length of the cylinder
+                    DecideCylinderDimendions(ref radius, ref length);
+                    SetGeom(d.CreateCylinder(m_targetSpace, radius, length));
+                    break;
+                default:
+                    //fail
+                    break;
+            }
+
+            SetGeom(d.CreateCapsule(m_targetSpace, _size.X, _size.Y));
+
+            d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
+
+            #region rotations
+            //d.Quaternion myrot = new d.Quaternion();
+            //Quaternion meshRotA = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.5705f);
+            //Quaternion meshRotB = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), 3.1415f);
+            //Quaternion mytemprot = _orientation * meshRotA * meshRotB;
+
+            //myrot.W = mytemprot.W;
+            //myrot.X = mytemprot.X;
+            //myrot.Y = mytemprot.Y;
+            //myrot.Z = mytemprot.Z;
+            //d.GeomSetQuaternion(prim_geom, ref myrot);
+            #endregion
+
+            #region end
+
+            //if (IsPhysical && Body == IntPtr.Zero && !childPrim)
+            //{
+            //    enableBody();
+            //    d.BodyEnable(Body);
+            //}
+            //_parent_scene.geom_name_map[prim_geom] = oldname;
+            //_parent_scene.actor_name_map[prim_geom] = (PhysicsActor)this;
+
+            //changeSelectedStatus(timestamp);
+            //if (childPrim)
+            //{
+            //    if (_parent is OdePrim)
+            //    {
+            //        OdePrim parent = (OdePrim)_parent;
+            //        parent.ChildSetGeom(this);
+            //    }
+            //}
+            //resetCollisionAccounting();
+            //m_taintsize = _size;
+
+            //m_DPrimCollision = false;
+            //m_ReCreateCollision = false;
+
+            #endregion
+        }
+
+        // return axis for capsule alingment
+        private void DecideCapsuleDimendions(ref float radius, ref float length)
+        {
+            // assume longest dimension is lenght
+            if (_size.X > _size.Y)
+            {
+                if (_size.X > _size.Z)
+                {
+                    length = _size.X; // x>y>z or x>z>y
+                    radius = _size.Y / 2;
+                }
+                else{
+                    length = _size.Z;// z>x>y
+                    radius = _size.Y / 2;
+                }
+            }
+            else if (_size.Y > _size.Z)
+            {
+                length = _size.Y; // y>z>x or y>x>z
+                radius = _size.X / 2;
+            }
+            else
+            {
+                length = _size.Z; // z>y>x
+                radius = _size.X / 2;
+            }
+        }
+
+        // return axis for cylinder alingment
+        private void DecideCylinderDimendions(ref float radius, ref float length) 
+        {
+            if (_size.X == _size.Y)
+            {
+                length = _size.Z;
+                radius = _size.Y / 2;
+            }
+            if (_size.X == _size.Z)
+            {
+                length = _size.Y;
+                radius = _size.X / 2;
+            }
+            if (_size.Y == _size.Z)
+            {
+                length = _size.X;
+                radius = _size.Y / 2;
+            }
+
+            // else find minimum difference and decide from there
+            float diffXY = Math.Abs(_size.X - _size.Y);
+            float diffXZ = Math.Abs(_size.X - _size.Z);
+            float diffYZ = Math.Abs(_size.Y - _size.Z);
+            if (diffXY < diffXZ)
+            {
+                if (diffXY < diffYZ)
+                {
+                    length = _size.Z;
+                    radius = _size.Y / 2;
+                }
+                else
+                {
+                    length = _size.X;
+                    radius = _size.Y / 2;
+                }
+            }
+            else if (diffXZ < diffYZ)
+            {
+                length = _size.Y;
+                radius = _size.X / 2;
+            }
+            else
+            {
+                length = _size.X;
+                radius = _size.Y / 2;
+            }
         }
     }
 }
