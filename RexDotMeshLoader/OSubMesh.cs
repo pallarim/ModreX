@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /*
 Modified .mesh loader based on the Axiom Graphics Engine Library
 which is based on the open source Object Oriented Graphics Engine OGRE. 
@@ -30,10 +29,7 @@ namespace RexDotMeshLoader
 {
     public class SubMesh
     {
-		//$ BEGIN_MOD $
-        public ushort[] indices_s = null;
-		//$ END_MOD $
-		//$ MOD_DESCRIPTION From short to ushort $
+        public short[] indices_s = null;
         public int[] indices_i = null;
         public OMesh Parent;
         public string MaterialName;

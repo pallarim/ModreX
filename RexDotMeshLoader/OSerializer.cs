@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /*
 Modified .mesh loader based on the Axiom Graphics Engine Library
 which is based on the open source Object Oriented Graphics Engine OGRE. 
@@ -117,17 +116,12 @@ namespace RexDotMeshLoader
                 dest[i] = vReader.ReadInt32();
             }
         }
-		//$ BEGIN_MOD $
-        protected void ReadShorts( BinaryReader vReader, int count, ushort[] dest )
-		//$ END_MOD $
-		//$ MOD_DESCRIPTION From short to ushort $
+
+        protected void ReadShorts( BinaryReader vReader, int count, short[] dest )
         {
             for (int i = 0; i < count; i++)
             {
-				//$ BEGIN_MOD $
-                dest[i] = vReader.ReadUInt16();
-				//$ END_MOD $
-				//$ MOD_DESCRIPTION From ReadInt16 to ReadUInt16 $
+                dest[i] = vReader.ReadInt16();
             }
         }
 

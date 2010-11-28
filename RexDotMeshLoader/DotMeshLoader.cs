@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /*
 Modified .mesh loader based on the Axiom Graphics Engine Library
 which is based on the open source Object Oriented Graphics Engine OGRE. 
@@ -58,41 +57,20 @@ namespace RexDotMeshLoader
 
                 Vector3 vert = new Vector3();
 
-				//$ END_MOD $
-                int totalVertexCount = 0;
-                int totalIndexCount = 0;
-
-                for (int i = 0; i < mesh.subMeshList.Count; i++)
+                // Only first submesh used in collision at the moment!
+                // for(int i=0;i< mesh.subMeshList.Count;i++)
+                if (mesh.subMeshList.Count > 0)
                 {
-                    SubMesh sm = mesh.subMeshList[i];
-                    totalVertexCount += sm.vertexData.vertexCount * 3;
-                    totalIndexCount += sm.indexData.indexCount;
-                }
-
-                vertexList = new float[totalVertexCount];
-                indexList = new int[totalIndexCount];
-                int globalVCount = 0;
-                int globalICount = 0;
-
-                for(int i=0;i< mesh.subMeshList.Count;i++)
-                {
+                    int i = 0;
                     SubMesh sm = mesh.subMeshList[i];
                     int numFaces = sm.indexData.indexCount / 3;
+                    int vCount = 0;
                     int posInc = sm.vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
                     int index = 0;
                     VertexElement elemPos = sm.vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
 
-                    for (int k = 0; k < sm.indexData.indexCount; k++)
-                    {
-                        if (sm.indices_i != null)
-                        {
-                            indexList[globalICount++] = sm.indices_i[k] + globalVCount/3;
-                        }
-                        else
-                        {
-                            indexList[globalICount++] = sm.indices_s[k] + globalVCount/3;
-                        }
-                    }
+                    vertexList = new float[sm.vertexData.vertexCount * 3];
+                    indexList = new int[sm.indexData.indexCount];
 
                     for (int k = 0; k < sm.vertexData.vertexCount; k++)
                     {
@@ -100,13 +78,22 @@ namespace RexDotMeshLoader
                         vert.X = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index));
                         vert.Y = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 4));
                         vert.Z = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 8));
-                        vertexList[globalVCount++] = vert.X;
-                        vertexList[globalVCount++] = vert.Y;
-                        vertexList[globalVCount++] = vert.Z;
+                        vertexList[vCount++] = vert.X;
+                        vertexList[vCount++] = vert.Y;
+                        vertexList[vCount++] = vert.Z;
                     }
 
-				//$ END_MOD $
-				//$ MOD_DESCRIPTION The older version only generated the collision mesh for the first submesh. Now generate a collision mesh for all submeshes. $
+                    for (int k = 0; k < sm.indexData.indexCount; k++)
+                    {
+                        if (sm.indices_i != null)
+                        {
+                            indexList[k] = sm.indices_i[k];
+                        }
+                        else
+                        {
+                            indexList[k] = sm.indices_s[k];
+                        }
+                    }
                 }
             }
             catch (Exception e)
