@@ -3181,16 +3181,19 @@ namespace ModularRex.RexOdePlugin
             {
                 length = _size.Z;
                 radius = _size.Y / 2;
+                return;
             }
             if (_size.X == _size.Z)
             {
                 length = _size.Y;
                 radius = _size.X / 2;
+                return;
             }
             if (_size.Y == _size.Z)
             {
                 length = _size.X;
                 radius = _size.Y / 2;
+                return;
             }
 
             // else find minimum difference and decide from there
@@ -3203,23 +3206,29 @@ namespace ModularRex.RexOdePlugin
                 {
                     length = _size.Z;
                     radius = _size.Y / 2;
+                    return;
                 }
                 else
                 {
                     length = _size.X;
                     radius = _size.Y / 2;
+                    return;
                 }
             }
             else if (diffXZ < diffYZ)
             {
                 length = _size.Y;
                 radius = _size.X / 2;
+                return;
             }
             else
             {
                 length = _size.X;
                 radius = _size.Y / 2;
+                return;
             }
+            length = _size.Z;
+            radius = _size.Y / 2;
         }
     }
 }
