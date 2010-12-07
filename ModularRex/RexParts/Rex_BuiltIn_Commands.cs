@@ -1312,7 +1312,7 @@ namespace ModularRex.RexParts
                 else
                 {
                     uint avatarLocalId = Convert.ToUInt32(avatarId);
-                    List<EntityBase> entities = m_ScriptEngine.World.GetEntities();
+                    EntityBase[] entities = m_ScriptEngine.World.GetEntities();
                     foreach (EntityBase ent in entities)
                     {
                         if (ent is ScenePresence)

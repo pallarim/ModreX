@@ -46,6 +46,18 @@ namespace ModularRex.RexNetwork.RexLogin
                     clientVersion = (string)requestData["version"];
                 }
 
+                string channel = "Unknown";
+                if (requestData.Contains("channel") && requestData["channel"] != null)
+                    channel = requestData["channel"].ToString();
+
+                string mac = "Unknown";
+                if (requestData.Contains("mac") && requestData["mac"] != null)
+                    mac = requestData["mac"].ToString();
+
+                string id0 = "Unknown";
+                if (requestData.Contains("id0") && requestData["id0"] != null)
+                    id0 = requestData["id0"].ToString();
+
                 if (!IsRexLogin)
                 {
                     if (requestData.ContainsKey("first") && requestData["first"] != null &&
@@ -62,7 +74,8 @@ namespace ModularRex.RexNetwork.RexLogin
                         m_log.InfoFormat("[LOGIN]: XMLRPC Login Requested for {0} {1}, starting in {2}, using {3}", first, last, startLocation, clientVersion);
 
                         LoginResponse reply = null;
-                        reply = m_LocalService.Login(first, last, passwd, startLocation, UUID.Zero, clientVersion, remoteClient);
+
+                        reply = m_LocalService.Login(first, last, passwd, startLocation, UUID.Zero, clientVersion, channel, mac, id0, remoteClient);
 
                         XmlRpcResponse response = new XmlRpcResponse();
                         response.Value = reply.ToHashtable();
@@ -85,7 +98,7 @@ namespace ModularRex.RexNetwork.RexLogin
                     m_log.InfoFormat("[REX LOGIN BEGIN]: XMLRPC Received login request message from user '{0}' '{1}'", account, sessionHash);
 
                     LoginResponse reply = null;
-                    reply = m_RexService.Login(account, sessionHash, startLocation, scopeID, clientVersion, remoteClient);
+                    reply = m_RexService.Login(account, sessionHash, startLocation, scopeID, clientVersion, remoteClient, channel, mac, id0);
                     XmlRpcResponse response = new XmlRpcResponse();
                     response.Value = reply.ToHashtable();
                     return response;

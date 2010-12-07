@@ -19,7 +19,7 @@ namespace ModularRex.RexNetwork.RexLogin
 {
     public interface IRexLoginService : ILoginService
     {
-        LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP);
+        LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP, string channel, string mac, string id0);
     }
 
     public class RexLoginService : LLLoginService, IRexLoginService
@@ -45,7 +45,7 @@ namespace ModularRex.RexNetwork.RexLogin
         {
         }
 
-        public LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP)
+        public LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP, string channel, string mac, string id0)
         {
             bool success = false;
             UUID session = UUID.Random();
@@ -194,7 +194,9 @@ namespace ModularRex.RexNetwork.RexLogin
                 //
                 string reason = string.Empty;
                 GridRegion dest;
-                AgentCircuitData aCircuit = LaunchAgentAtGrid(gatekeeper, destination, useraccount, avatar, session, secureSession, position, where, clientVersion, clientIP, out where, out reason, out dest);
+                AgentCircuitData aCircuit = LaunchAgentAtGrid(gatekeeper, destination, useraccount, avatar.ToAvatarAppearance(useraccount.PrincipalID),
+                    session, secureSession, position, where, clientVersion, channel, mac, id0,
+                    clientIP, out where, out reason, out dest);
                 destination = dest;
                 if (aCircuit == null)
                 {

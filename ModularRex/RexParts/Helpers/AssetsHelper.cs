@@ -22,7 +22,7 @@ namespace ModularRex.RexParts.Helpers
         {
             Dictionary<UUID, AssetType> assetUuids = new Dictionary<UUID, AssetType>();
 
-            List<EntityBase> entities = scene.GetEntities();
+            EntityBase[] entities = scene.GetEntities();
             List<SceneObjectGroup> sceneObjects = new List<SceneObjectGroup>();
 
             Dictionary<UUID, AssetBase> foundObjects = new Dictionary<UUID, AssetBase>();

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2">
+  <class name="ModularRex.RexFramework.ECData, ModularRex.RexFramework" table="ECData" lazy="false">
+    <composite-id>
+      <key-property name="EntityID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate">
+        <column name="EntityID" sql-type="varchar" length="37" not-null="true"/>
+      </key-property>
+      <key-property name="ComponentType">
+        <column name="ComponentType" sql-type="varchar" length="64" not-null="true"/>
+      </key-property>
+      <key-property name="ComponentName">
+        <column name="ComponentName" sql-type="varchar" length="64" not-null="true"/>
+      </key-property>
+    </composite-id>
+    
+    <!--<property name="EntityID" type="ModularRex.NHibernate.UUIDUserType, ModularRex.NHibernate" />
+    <property name="ComponentName" type="String" length="64" />-->
+    <property name="Data" type="BinaryBlob" />
+    <property name="DataIsString" type="boolean" />
+  </class>
+</hibernate-mapping>

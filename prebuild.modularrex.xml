@@ -51,7 +51,7 @@
         <Match pattern="*.cs" recurse="false"/>
         <Match path="Properties" pattern="*.cs" recurse="false"/>
         <Match path="RexNetwork" pattern="*.cs" recurse="true"/>
-        <Match path="RexNetwork/Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
+        <Match path="Resources" pattern="*.xml" buildAction="EmbeddedResource"/>
         <Match path="RexParts" pattern="*.cs" recurse="true"/>
         <Match path="RexDBObjects" pattern="*.cs" recurse="true"/>
         <Match path="addon-modules/ModreX/config" pattern="modrex.ini" copyToOutput="PreserveNewest" buildAction="None" preservePath="true"/>

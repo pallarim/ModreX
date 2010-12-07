@@ -47,6 +47,7 @@ See: http://opensimulator.org/wiki/Dependencies#Linux and http://opensimulator.o
 ===Getting the source and compiling===
 
  1. To start the build process, first get the latest OpenSim source codes. More information how to get OpenSim source code, see: http://opensimulator.org/wiki/Download
+ 1. To start the build process, first get the Taiga source codes. More information how to get OpenSim source code, see: http://wiki.realxtend.org/index.php/Getting_Started_with_Taiga#Building_from_source
 
  2. After getting the OpenSim source, get the ModreX sources. To do this, follow these instructions:
   * Navigate to addon-modules directory under OpenSim trunk
@@ -54,7 +55,7 @@ See: http://opensimulator.org/wiki/Dependencies#Linux and http://opensimulator.o
   * Note: it is very important that you check out the source to precisely the "addon-modules/ModreX" directory (not to be confused with "bin/addon-modules/ModreX")! If this is not done properly next steps will not work.
   * Note: you can also use the above repository as git submodule. For more information how to use git submodules, see: http://www.kernel.org/pub/software/scm/git/docs/git-submodule.html
 
- 3. Now before building, you must run the prebuilding script that will create the project files from the prebuild.xml. Go to OpenSim trunk root directory and run the runprebuild.bat or ./runprebuild.sh depending from the operating system you are using.
+ 3. Now before building, you must run the prebuilding script that will create the project files from the prebuild.xml. Go to Taiga source root directory and run the runprebuild.bat or ./runprebuild.sh depending from the operating system you are using.
 
  4. Now the project files should be successfully built and the project is ready for building.
   * With Visual C#, open OpenSim.sln and build it. ModreX projects should be inside the OpenSim solution.

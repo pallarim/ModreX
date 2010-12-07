@@ -46,14 +46,14 @@ namespace ModularRex.RexParts
 
         private void HandleAddUrls(string module, string[] cmd)
         {
-            foreach (EntityBase ent in m_scene.Entities)
+            foreach (EntityBase ent in m_scene.GetEntities())
             {
                 if (ent is SceneObjectGroup)
                 {
-                    foreach (SceneObjectPart part in ((SceneObjectGroup)ent).GetParts())
+                    ((SceneObjectGroup)ent).ForEachPart(delegate(SceneObjectPart part)
                     {
                         AddUrlsToRexObject(part.UUID);
-                    }
+                    });
                 }
             }
         }

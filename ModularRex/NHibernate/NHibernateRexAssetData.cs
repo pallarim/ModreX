@@ -16,12 +16,20 @@ namespace ModularRex.NHibernate
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         public bool Inizialized = false;
+        private bool m_nullStorage = false;
 
         public NHibernateManager manager;
 
         public void Initialise(string connect)
         {
             m_log.InfoFormat("[NHIBERNATE] Initializing NHibernateRexObjectData");
+            if (connect.ToLower() == "null")
+            {
+                m_nullStorage = true;
+                Inizialized = true;
+                return;
+            }
+            
             Assembly assembly = GetType().Assembly;
             manager = new NHibernateManager(connect, "RexAssetData", assembly);
             Inizialized = true;
@@ -35,6 +43,8 @@ namespace ModularRex.NHibernate
         /// <param name="obj">Object to save or update</param>
         public void StoreObject(RexAssetData obj)
         {
+            if (m_nullStorage)
+                return;
             try
             {
                 RexAssetData old = (RexAssetData)manager.Get(typeof(RexAssetData), obj.AssetID);
@@ -62,6 +72,8 @@ namespace ModularRex.NHibernate
         /// <returns>Returns RexAssetData if the object is found with ID, returns null if not found.</returns>
         public RexAssetData LoadObject(UUID uuid)
         {
+            if (m_nullStorage)
+                return null;
             try
             {
                 RexAssetData obj = new RexAssetData();
@@ -92,6 +104,8 @@ namespace ModularRex.NHibernate
         /// <returns>All objects as a list, if none found or error while processing returns null</returns>
         public List<RexAssetData> LoadAllObjects()
         {
+            if (m_nullStorage)
+                return new List<RexAssetData>();
             try
             {
                 RexAssetData obj = new RexAssetData();
@@ -113,6 +127,8 @@ namespace ModularRex.NHibernate
         /// <param name="obj">UUID of the object to remove</param>
         public void RemoveObject(UUID obj)
         {
+            if (m_nullStorage)
+                return;
             RexAssetData g = LoadObject(obj);
             manager.Delete(g);
 

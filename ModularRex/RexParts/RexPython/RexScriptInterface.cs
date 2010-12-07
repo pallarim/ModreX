@@ -268,7 +268,7 @@ namespace ModularRex.RexParts.RexPython
             
             if (tempobj != null)
             {
-                List<EntityBase> EntitiesList = myScriptEngine.World.GetEntities();
+                EntityBase[] EntitiesList = myScriptEngine.World.GetEntities();
                 foreach (EntityBase ent in EntitiesList) 
                 {
                     if (ent is SceneObjectGroup || ent is ScenePresence)
@@ -300,7 +300,7 @@ namespace ModularRex.RexParts.RexPython
             
             if (tempobj != null)
             {
-                List<EntityBase> EntitiesList = myScriptEngine.World.GetEntities();
+                EntityBase[] EntitiesList = myScriptEngine.World.GetEntities();
                 foreach (EntityBase ent in EntitiesList) 
                 {
                     if (ent is ScenePresence)

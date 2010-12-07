@@ -1,4 +1,4 @@
-﻿<Addin id="ModularRex.RexNetwork" version="0.1">
+﻿<Addin id="ModularRex" version="0.1">
   <Runtime>
     <Import assembly="ModularRex.dll"/>
   </Runtime>
@@ -11,5 +11,6 @@
     <RegionModule id="RexAvatarUrlReciver" type="ModularRex.RexNetwork.AvatarUrlReciver" />
     <RegionModule id="RexLoginServiceInConnectorModule" type="ModularRex.RexNetwork.RexLogin.RexLoginServiceInConnectorModule" />
     <RegionModule id="RexLoginConfigurationManager" type="ModularRex.RexNetwork.RexLogin.LoginConfigurationManager" />
+    <RegionModule id="EntityComponentModule" type="ModularRex.RexParts.EntityComponentModule" />
   </Extension>
 </Addin>
