@@ -328,7 +328,12 @@ namespace ModularRex.RexParts
                     SendECDataToAll(component);
 
                     if (m_db_initialized)
-                        return m_db.StoreComponent(component);
+                    {
+                        lock (m_db)
+                        {
+                            return m_db.StoreComponent(component);
+                        }
+                    }
                 }
 
                 return true;
