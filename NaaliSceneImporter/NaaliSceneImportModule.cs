@@ -13,6 +13,7 @@ using OpenMetaverse;
 using log4net;
 
 using ModularRex.RexFramework;
+using System.Xml;
 
 namespace NaaliSceneImporter
 {
@@ -250,7 +251,46 @@ namespace NaaliSceneImporter
             // Insert freedata, insert correct local id to the xml
             // Note: this will trigger sending the whole data to all clients after my fix to the setter
             if (entity.ComponentData != string.Empty)
-                robject.RexData = entity.ComponentData.Replace("REPLACE_ENTITY_LOCAL_ID", sceneObject.LocalId.ToString());
+            {
+                string text = entity.ComponentData;
+
+                if (m_scene.Modules.ContainsKey("EntityComponentModule"))
+                {
+                    IEntityComponentModule ec_module = m_scene.RequestModuleInterface<IEntityComponentModule>();
+                    if (ec_module != null)
+                    {
+                        XmlDocument document = new XmlDocument();
+                        try
+                        {
+                            document.LoadXml(text);
+
+                            XmlNodeList entityNodes = document.GetElementsByTagName("entity");
+                            foreach (XmlNode parseEntity in entityNodes)
+                            {
+                                foreach (XmlNode component in parseEntity.ChildNodes)
+                                {
+                                    string component_type = component.Attributes["type"].Value;
+                                    string component_name = string.Empty;
+                                    if (component.Attributes["name"] != null)
+                                        component_name = component.Attributes["name"].Value;
+                                    string component_string = "<entity>" + component.OuterXml + "</entity>";
+                                    ec_module.SaveECData(this, new ECData(sceneObject.UUID, component_type, component_name, component_string));
+                                }
+                            }
+
+                        }
+                        catch (XmlException e)
+                        {
+                            m_log.ErrorFormat("[NAALISCENE]: Could not load XML data: {0}", e);
+                        }
+                        return;
+                    }
+                }
+
+                if (text.Length > 1000)
+                    m_log.Warn("[NAALISCENE]: Data to store is over 1000 char limit.");
+                robject.RexData = text;
+            }
         }
     }
 }
