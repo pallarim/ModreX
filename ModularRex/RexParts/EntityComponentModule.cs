@@ -13,10 +13,8 @@ using System.Reflection;
 
 namespace ModularRex.RexParts
 {
-    public delegate bool UpdateECData(object sender, ref ECData data);
-    public delegate bool RemoveECData(object sender, UUID entityId, string componentType, string componentName);
 
-    public class EntityComponentModule : ISharedRegionModule
+    public class EntityComponentModule : ISharedRegionModule, IEntityComponentModule
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -383,6 +381,50 @@ namespace ModularRex.RexParts
         public void RegisterECRemoveCallback(string componentType, RemoveECData callback)
         {
             m_ec_remove_callbacks[componentType] = callback;
+        }
+
+        public List<ECData> GetData(UUID id)
+        {
+            List<ECData> data = new List<ECData>();
+            try
+            {
+                if (m_entity_components.ContainsKey(id))
+                {
+                    foreach (ECData item in m_entity_components[id].Components.Values)
+                    {
+                        data.Add(item);
+                    }
+                }
+
+                return data;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[ECDATA]: Failed to fetch EC Data for object {0}. Exception {1} occurred. {2}", id, e.Message, e.StackTrace);
+                return null;
+            }
+        }
+
+        public ECData GetData(UUID id, string typeName, string name)
+        {
+            try
+            {
+                if (!m_entity_components.ContainsKey(id))
+                {
+                    Entity ent = m_entity_components[id];
+                    KeyValuePair<string, string> tn = new KeyValuePair<string, string>(typeName, name);
+                    if (ent.Components.ContainsKey(tn))
+                    {
+                        return ent.Components[tn];
+                    }
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[ECDATA]: Failed to fetch EC Data for object {0} {3} {4}. Exception {1} occurred. {2}", id, e.Message, e.StackTrace, typeName, name);
+                return null;
+            }
         }
     }
 }
