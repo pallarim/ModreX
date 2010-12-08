@@ -1359,10 +1359,9 @@ namespace ModularRex.RexParts
             if (target != null)
             {
                 //First try to fetch from new EC Component Module
-                IRegionModule regionModule = World.Modules["EntityComponentModule"];
-                if (regionModule != null && regionModule is IEntityComponentModule)
+                IEntityComponentModule ec_module = World.RequestModuleInterface<IEntityComponentModule>();
+                if (ec_module != null)
                 {
-                    IEntityComponentModule ec_module = (IEntityComponentModule)regionModule;
                     ECData ec_data = ec_module.GetData(target.UUID, typeName, name);
                     if (ec_data != null)
                     {
@@ -1453,10 +1452,9 @@ namespace ModularRex.RexParts
             if (target != null)
             {
                 //First try to fetch from new EC Component Module
-                IRegionModule regionModule = World.Modules["EntityComponentModule"];
-                if (regionModule != null && regionModule is IEntityComponentModule)
+                IEntityComponentModule ec_module = World.RequestModuleInterface<IEntityComponentModule>();
+                if (ec_module != null)
                 {
-                    IEntityComponentModule ec_module = (IEntityComponentModule)regionModule;
                     string text = BuildXmlStringFrom("", attributes, typeName, name);
                     ECData data = ec_module.GetData(target.UUID, typeName, name);
                     if (data == null)

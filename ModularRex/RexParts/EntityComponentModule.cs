@@ -84,6 +84,7 @@ namespace ModularRex.RexParts
         public void AddRegion(Scene scene)
         {
             m_scenes.Add(scene);
+            scene.RegisterModuleInterface<IEntityComponentModule>(this);
 
             if (m_db_initialized)
             {
