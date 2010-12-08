@@ -1355,51 +1355,44 @@ namespace ModularRex.RexParts
         public Dictionary<string, string> rexGetECAttributes(string vPrimLocalId, string typeName, string name)
         {
             Dictionary<string, string> dest = new Dictionary<string, string>();
-            
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
+                //First try to fetch from new EC Component Module
+                IRegionModule regionModule = World.Modules["EntityComponentModule"];
+                if (regionModule != null && regionModule is IEntityComponentModule)
+                {
+                    IEntityComponentModule ec_module = (IEntityComponentModule)regionModule;
+                    ECData ec_data = ec_module.GetData(target.UUID, typeName, name);
+                    if (ec_data != null)
+                    {
+                        string data = null;
+                        System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+                        if (ec_data.DataIsString)
+                        {
+                            data = encoding.GetString(ec_data.Data);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                data = encoding.GetString(ec_data.Data);
+                            }
+                            catch (Exception e)
+                            {
+                                m_log.ErrorFormat("[ECDATA]: Failed to convert EC to string. {0}, {1}, {2}. Exception {3} occurred", target.UUID, typeName, name, e.Message);
+                            }
+                        }
+
+                        dest = ParseEcXmlDict(data, typeName, name);
+                    }
+                }
+
+                //Then if not found, try to get from prim free data
                 RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 if (rop != null)
                 {
-                    // Try to parse the freedata as xml
-                    XmlDocument xml = new XmlDocument();
-                    try
-                    {
-                        xml.LoadXml(rop.RexData);
-                        XmlNodeList components = xml.GetElementsByTagName("component");
-                        // Search for the component
-                        foreach (XmlNode node in components)
-                        {
-                            // Check for component typename match
-                            XmlAttribute typeAttr = node.Attributes["type"];
-                            if ((typeAttr != null) && (typeAttr.Value == typeName))
-                            {
-                                String compName = "";
-                                if (node.Attributes["name"] != null)
-                                    compName = node.Attributes["name"].Value;
-                                
-                                // Check for component name match, or empty search name
-                                if ((name.Length == 0) || (name == compName))
-                                {
-                                    XmlNodeList attributes = node.ChildNodes;
-                                    // Fill the dictionary
-                                    foreach (XmlNode attrNode in attributes)
-                                    {
-                                        XmlAttribute nameAttr = attrNode.Attributes["name"];
-                                        XmlAttribute valueAttr = attrNode.Attributes["value"];
-                                        if ((nameAttr != null) && (valueAttr != null))
-                                        dest[nameAttr.Value] = valueAttr.Value;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Warn("[REXSCRIPT]: rexGetECAttributes exception: " + e.Message);
-                    }
+                    dest = ParseEcXmlDict(rop.RexData, typeName, name);
                 }
             }
             else
@@ -1410,87 +1403,83 @@ namespace ModularRex.RexParts
             return dest;
         }
 
+        private Dictionary<string, string> ParseEcXmlDict(string data, string typeName, string name)
+        {
+            Dictionary<string, string> dest = new Dictionary<string, string>();
+            // Try to parse the freedata as xml
+            XmlDocument xml = new XmlDocument();
+            try
+            {
+                xml.LoadXml(data);
+                XmlNodeList components = xml.GetElementsByTagName("component");
+                // Search for the component
+                foreach (XmlNode node in components)
+                {
+                    // Check for component typename match
+                    XmlAttribute typeAttr = node.Attributes["type"];
+                    if ((typeAttr != null) && (typeAttr.Value == typeName))
+                    {
+                        String compName = "";
+                        if (node.Attributes["name"] != null)
+                            compName = node.Attributes["name"].Value;
+
+                        // Check for component name match, or empty search name
+                        if ((name.Length == 0) || (name == compName))
+                        {
+                            XmlNodeList attributes = node.ChildNodes;
+                            // Fill the dictionary
+                            foreach (XmlNode attrNode in attributes)
+                            {
+                                XmlAttribute nameAttr = attrNode.Attributes["name"];
+                                XmlAttribute valueAttr = attrNode.Attributes["value"];
+                                if ((nameAttr != null) && (valueAttr != null))
+                                    dest[nameAttr.Value] = valueAttr.Value;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.Warn("[REXSCRIPT]: ParseEcXmlDict exception: " + e.Message);
+            }
+            return dest;
+        }
+
         public void rexSetECAttributes(string vPrimLocalId, Dictionary<string, string> attributes, string typeName, string name)
         {
             SceneObjectPart target = World.GetSceneObjectPart(System.Convert.ToUInt32(vPrimLocalId, 10));
             if (target != null)
             {
+                //First try to fetch from new EC Component Module
+                IRegionModule regionModule = World.Modules["EntityComponentModule"];
+                if (regionModule != null && regionModule is IEntityComponentModule)
+                {
+                    IEntityComponentModule ec_module = (IEntityComponentModule)regionModule;
+                    string text = BuildXmlStringFrom("", attributes, typeName, name);
+                    ECData data = ec_module.GetData(target.UUID, typeName, name);
+                    if (data == null)
+                    {
+                        data = new ECData(target.UUID, typeName, name, text);
+                    }
+                    else
+                    {
+                        System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+                        data.Data = encoding.GetBytes(text);
+                        data.DataIsString = true;
+                    }
+                    ec_module.SaveECData(this, data);
+                    return;
+                }
+
+                //If module is not set, then try with traditional way
                 RexObjectProperties rop = m_rexObjects.GetObject(target.UUID);
                 if (rop != null)
                 {
                     try
                     {
-                        // Parse the old xmldata for modifications
-                        XmlDocument xml = new XmlDocument();
-                        XmlElement compElem = null;
-                        XmlElement entityElem = null;
-                        try
-                        {
-                            xml.LoadXml(rop.RexData);
-                            entityElem = (XmlElement)xml.GetElementsByTagName("entity")[0];
-                        }
-                        catch (Exception)
-                        {
-                            // If parsing fails, we'll just create a new empty entity element (no previous xml data or it was malformed)
-                            xml.RemoveAll();
-                        }
-                        
-                        // Search for the component
-                        if (entityElem == null)
-                        {
-                            entityElem = xml.CreateElement("entity");
-                            xml.AppendChild(entityElem);
-                        }
-                        XmlNodeList components = entityElem.GetElementsByTagName("component");
-                        foreach (XmlNode node in components)
-                        {
-                            // Check for component typename match
-                            XmlAttribute typeAttr = node.Attributes["type"];
-                            if ((typeAttr != null) && (typeAttr.Value == typeName))
-                            {
-                                String compName = "";
-                                if (node.Attributes["name"] != null)
-                                    compName = node.Attributes["name"].Value;
-                                
-                                // Check for component name match, or empty search name
-                                if ((name.Length == 0) || (name == compName))
-                                {
-                                    compElem = (XmlElement)node;
-                                    break;
-                                }
-                            }
-                        }
-                        // If component not found, prepare new
-                        if (compElem == null)
-                        {
-                            compElem = xml.CreateElement("component");
-                            compElem.SetAttribute("type", typeName);
-                            if (name.Length > 0)
-                                compElem.SetAttribute("name", name);
-                            entityElem.AppendChild(compElem);
-                        }
-                        // Remove any existing attributes
-                        while (compElem.FirstChild != null)
-                        {
-                            compElem.RemoveChild(compElem.FirstChild);
-                        }
-                        // Fill the attributes from the dictionary
-                        foreach (KeyValuePair<String, String> kvp in attributes)
-                        {
-                            XmlElement attributeElem = xml.CreateElement("attribute");
-                            attributeElem.SetAttribute("name", kvp.Key);
-                            attributeElem.SetAttribute("value", kvp.Value);
-                            compElem.AppendChild(attributeElem);
-                        }
-                        // Convert xml to string
-                        StringBuilder xmlText = new StringBuilder();
-                        XmlWriter writer = XmlWriter.Create(xmlText);
-                        xml.Save(writer);
-                        String text = xmlText.ToString();
-                        // Remove the encoding tag, for some reason Naali doesn't like it
-                        int idx = text.IndexOf("?>");
-                        if ((idx >= 0) && (idx < text.Length))
-                            text = text.Substring(idx + 2);
+                        string text = BuildXmlStringFrom(rop.RexData, attributes, typeName, name);
                         // Check for reasonable data size before setting rexfreedata
                         if (text.Length <= 1000)
                         {
@@ -1511,6 +1500,82 @@ namespace ModularRex.RexParts
             {
                 m_log.Warn("[REXSCRIPT]: rexSetECAttributes, target prim not found:" + vPrimLocalId);
             }
+        }
+
+        private string BuildXmlStringFrom(string data, Dictionary<string, string> attributes, string typeName, string name)
+        {
+            // Parse the old xmldata for modifications
+            XmlDocument xml = new XmlDocument();
+            XmlElement compElem = null;
+            XmlElement entityElem = null;
+            try
+            {
+                xml.LoadXml(data);
+                entityElem = (XmlElement)xml.GetElementsByTagName("entity")[0];
+            }
+            catch (Exception)
+            {
+                // If parsing fails, we'll just create a new empty entity element (no previous xml data or it was malformed)
+                xml.RemoveAll();
+            }
+
+            // Search for the component
+            if (entityElem == null)
+            {
+                entityElem = xml.CreateElement("entity");
+                xml.AppendChild(entityElem);
+            }
+            XmlNodeList components = entityElem.GetElementsByTagName("component");
+            foreach (XmlNode node in components)
+            {
+                // Check for component typename match
+                XmlAttribute typeAttr = node.Attributes["type"];
+                if ((typeAttr != null) && (typeAttr.Value == typeName))
+                {
+                    String compName = "";
+                    if (node.Attributes["name"] != null)
+                        compName = node.Attributes["name"].Value;
+
+                    // Check for component name match, or empty search name
+                    if ((name.Length == 0) || (name == compName))
+                    {
+                        compElem = (XmlElement)node;
+                        break;
+                    }
+                }
+            }
+            // If component not found, prepare new
+            if (compElem == null)
+            {
+                compElem = xml.CreateElement("component");
+                compElem.SetAttribute("type", typeName);
+                if (name.Length > 0)
+                    compElem.SetAttribute("name", name);
+                entityElem.AppendChild(compElem);
+            }
+            // Remove any existing attributes
+            while (compElem.FirstChild != null)
+            {
+                compElem.RemoveChild(compElem.FirstChild);
+            }
+            // Fill the attributes from the dictionary
+            foreach (KeyValuePair<String, String> kvp in attributes)
+            {
+                XmlElement attributeElem = xml.CreateElement("attribute");
+                attributeElem.SetAttribute("name", kvp.Key);
+                attributeElem.SetAttribute("value", kvp.Value);
+                compElem.AppendChild(attributeElem);
+            }
+            // Convert xml to string
+            StringBuilder xmlText = new StringBuilder();
+            XmlWriter writer = XmlWriter.Create(xmlText);
+            xml.Save(writer);
+            String text = xmlText.ToString();
+            // Remove the encoding tag, for some reason Naali doesn't like it
+            int idx = text.IndexOf("?>");
+            if ((idx >= 0) && (idx < text.Length))
+                text = text.Substring(idx + 2);
+            return text;
         }
         
         #endregion
