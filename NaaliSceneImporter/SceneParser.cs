@@ -202,7 +202,8 @@ namespace NaaliSceneImporter
             XmlDocument document = new XmlDocument();
             try
             {
-                string s_data = System.Text.Encoding.ASCII.GetString(data).ToString();
+                System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+                string s_data = encoding.GetString(data);
                 document.LoadXml(s_data);
             }
             catch (XmlException e)
@@ -233,7 +234,8 @@ namespace NaaliSceneImporter
 
                 NaaliEntity entity = new NaaliEntity();
                 entity.SetImportId(parseEntity.Attributes["id"].Value);
-                entity.ComponentData += "<entity id=\"REPLACE_ENTITY_LOCAL_ID\">";
+                //entity.ComponentData += "<entity id=\"REPLACE_ENTITY_LOCAL_ID\">";
+                entity.ComponentData += "<entity>";
 
                 // Iterate entity components
                 int componentCount = 0;
