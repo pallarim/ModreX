@@ -1247,12 +1247,6 @@ namespace OpenSim.Region.Examples.RexBot
         {
         }
 
-        event GenericCall1 IClientAPI.OnRequestWearables
-        {
-            add { ; }
-            remove { ; }
-        }
-
         #endregion
     }
 }

@@ -1312,8 +1312,7 @@ namespace ModularRex.RexParts
                 else
                 {
                     uint avatarLocalId = Convert.ToUInt32(avatarId);
-                    EntityBase[] entities = m_ScriptEngine.World.GetEntities();
-                    foreach (EntityBase ent in entities)
+                    foreach (EntityBase ent in m_ScriptEngine.World.GetEntities())
                     {
                         if (ent is ScenePresence)
                         {
@@ -1344,7 +1343,8 @@ namespace ModularRex.RexParts
                 IAttachmentsModule attachmentsModule = m_ScriptEngine.World.AttachmentsModule;
                 if (attachmentsModule != null)
                 {
-                    attachmentsModule.AttachObject(agent, primLocalId, (uint)attachmentPoint, silent);
+                    attachmentsModule.AttachObject(agent, primLocalId, (uint)attachmentPoint, 
+                        new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s), position, silent);
                     m_ScriptEngine.World.EventManager.TriggerOnAttach(primLocalId, part.ParentGroup.GetFromItemID(), agent.AgentId);
                 }
             }

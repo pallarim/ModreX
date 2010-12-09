@@ -194,10 +194,10 @@ namespace ModularRex.RexNetwork.RexLogin
                 //
                 string reason = string.Empty;
                 GridRegion dest;
-                AgentCircuitData aCircuit = LaunchAgentAtGrid(gatekeeper, destination, useraccount, avatar.ToAvatarAppearance(useraccount.PrincipalID),
-                    session, secureSession, position, where, clientVersion, channel, mac, id0,
-                    clientIP, out where, out reason, out dest);
-                destination = dest;
+                AgentCircuitData aCircuit = LaunchAgentAtGrid(gatekeeper, destination, useraccount, avatar,
+                    session, secureSession, position, where, clientVersion,
+                    clientIP, out where, out reason);
+                //destination = dest;
                 if (aCircuit == null)
                 {
                     m_PresenceService.LogoutAgent(session);

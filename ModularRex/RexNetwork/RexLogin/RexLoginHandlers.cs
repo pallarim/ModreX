@@ -75,7 +75,7 @@ namespace ModularRex.RexNetwork.RexLogin
 
                         LoginResponse reply = null;
 
-                        reply = m_LocalService.Login(first, last, passwd, startLocation, UUID.Zero, clientVersion, channel, mac, id0, remoteClient);
+                        reply = m_LocalService.Login(first, last, passwd, startLocation, UUID.Zero, clientVersion, remoteClient);
 
                         XmlRpcResponse response = new XmlRpcResponse();
                         response.Value = reply.ToHashtable();
