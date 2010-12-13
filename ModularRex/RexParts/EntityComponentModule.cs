@@ -54,7 +54,7 @@ namespace ModularRex.RexParts
 
         public Type ReplaceableInterface
         {
-            get { return null; }
+            get { return typeof(IEntityComponentModule); }
         }
 
         public void Initialise(Nini.Config.IConfigSource source)
