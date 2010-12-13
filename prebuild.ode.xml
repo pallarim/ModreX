@@ -1,4 +1,4 @@
-    <Project name="ModularRex.RexOdePlugin" path="./addon-modules/ModreX/ModularRex/RexOdePlugin" type="Library">
+    <Project name="ModularRex.OdePlugin" path="./addon-modules/ModreX/ModularRex/OdePlugin" type="Library">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../../bin/Physics/</OutputPath>
@@ -14,6 +14,7 @@
       <ReferencePath>../../../../bin/</ReferencePath>
       <ReferencePath>../../../../bin/Physics</ReferencePath>
       <Reference name="System" localCopy="false"/>
+      <Reference name="System.Core" localCopy="false"/>
       <Reference name="OpenMetaverseTypes.dll" localCopy="false"/>
       <Reference name="Nini.dll" />
       <Reference name="OpenSim.Framework"/>

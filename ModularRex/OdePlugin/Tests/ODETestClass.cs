@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
+ *     * Neither the name of the OpenSimulator Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -31,13 +31,17 @@ using NUnit.Framework;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Physics.Manager;
+using log4net;
+using System.Reflection;
 
-namespace ModularRex.RexOdePlugin
+namespace ModularRex.OdePlugin
 {
     [TestFixture]
     public class ODETestClass
     {
-        private RexOdePlugin cbt;
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private OdePlugin cbt;
         private PhysicsScene ps;
         private IMeshingPlugin imp;
 
@@ -45,15 +49,15 @@ namespace ModularRex.RexOdePlugin
         public void Initialize()
         {
             // Loading ODEPlugin
-            cbt = new RexOdePlugin();
+            cbt = new OdePlugin();
             // Loading Zero Mesher
             imp = new ZeroMesherPlugin();
             // Getting Physics Scene
             ps = cbt.GetScene("test");
             // Initializing Physics Scene.
             ps.Initialise(imp.GetMesher(),null);
-            float[] _heightmap = new float[256 * 256];
-            for (int i = 0; i<(256*256);i++)
+            float[] _heightmap = new float[(int)Constants.RegionSize * (int)Constants.RegionSize];
+            for (int i = 0; i < ((int)Constants.RegionSize * (int)Constants.RegionSize); i++)
             {
                 _heightmap[i] = 21f;
             }
@@ -72,7 +76,7 @@ namespace ModularRex.RexOdePlugin
         public void CreateAndDropPhysicalCube()
         {
             PrimitiveBaseShape newcube = PrimitiveBaseShape.CreateBox();
-            Vector3 position = new Vector3(128, 128, 128);
+            Vector3 position = new Vector3(((float)Constants.RegionSize * 0.5f), ((float)Constants.RegionSize * 0.5f), 128f);
             Vector3 size = new Vector3(0.5f, 0.5f, 0.5f);
             Quaternion rot = Quaternion.Identity;
             PhysicsActor prim = ps.AddPrimShape("CoolShape", newcube, position, size, rot, true);
@@ -92,18 +96,18 @@ namespace ModularRex.RexOdePlugin
                 Assert.That(oprim.m_targetSpace != (IntPtr)0);
 
                 //Assert.That(oprim.m_targetSpace == pscene.space);
-                Console.WriteLine("TargetSpace: " + oprim.m_targetSpace + " - SceneMainSpace: " + pscene.space);
+                m_log.Info("TargetSpace: " + oprim.m_targetSpace + " - SceneMainSpace: " + pscene.space);
 
                 Assert.That(!oprim.m_taintadd);
-                Console.WriteLine("Prim Position (" + oprim.m_localID +  "): " + prim.Position.ToString());
+                m_log.Info("Prim Position (" + oprim.m_localID + "): " + prim.Position.ToString());
 
                 // Make sure we're above the ground
                 //Assert.That(prim.Position.Z > 20f);
-                //Console.WriteLine("PrimCollisionScore (" + oprim.m_localID + "): " + oprim.m_collisionscore);
+                //m_log.Info("PrimCollisionScore (" + oprim.m_localID + "): " + oprim.m_collisionscore);
 
                 // Make sure we've got a Body
                 Assert.That(oprim.Body != (IntPtr)0);
-                //Console.WriteLine(
+                //m_log.Info(
             }
 
             // Make sure we're not somewhere above the ground
