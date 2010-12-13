@@ -19,20 +19,20 @@ using log4net;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
-    public class RexLoginHandlers
+    public class RexLoginHandlers : OpenSim.Server.Handlers.Login.LLLoginHandlers
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private ILoginService m_LocalService;
         private IRexLoginService m_RexService;
 
-        public RexLoginHandlers(ILoginService service, IRexLoginService rexService)
+        public RexLoginHandlers(ILoginService service, IRexLoginService rexService) : base(service)
         {
             m_LocalService = service;
             m_RexService = rexService;
         }
 
-        public XmlRpcResponse HandleXMLRPCLogin(XmlRpcRequest request, IPEndPoint remoteClient)
+        public new XmlRpcResponse HandleXMLRPCLogin(XmlRpcRequest request, IPEndPoint remoteClient)
         {
             Hashtable requestData = (Hashtable)request.Params[0];
             if (requestData != null)

@@ -64,6 +64,8 @@ namespace ModularRex.RexNetwork.RexLogin
         {
             RexLoginHandlers loginHandlers = new RexLoginHandlers(m_LLLoginService, m_RexLoginService);
             server.AddXmlRPCHandler("login_to_simulator", loginHandlers.HandleXMLRPCLogin, false);
+            server.AddXmlRPCHandler("set_login_level", loginHandlers.HandleXMLRPCSetLoginLevel, false);
+            server.SetDefaultLLSDHandler(loginHandlers.HandleLLSDLogin);
         }
     }
 }

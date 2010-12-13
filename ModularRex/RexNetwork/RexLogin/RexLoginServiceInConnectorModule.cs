@@ -88,8 +88,8 @@ namespace ModularRex.RexNetwork.RexLogin
             {
                 m_Registered = true;
                 new RexLoginServiceInConnector(m_Config, MainServer.Instance, scene);
-                Object[] args = new Object[] { m_Config, MainServer.Instance, this, scene };
-                ServerUtils.LoadPlugin<IServiceConnector>("OpenSim.Server.Handlers.dll:LLLoginServiceInConnector", args);
+                //Object[] args = new Object[] { m_Config, MainServer.Instance, this, scene };
+                //ServerUtils.LoadPlugin<IServiceConnector>("OpenSim.Server.Handlers.dll:LLLoginServiceInConnector", args);
             }
 
         }
