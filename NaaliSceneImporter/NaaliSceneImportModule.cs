@@ -254,37 +254,35 @@ namespace NaaliSceneImporter
             {
                 string text = entity.ComponentData;
 
-                if (m_scene.Modules.ContainsKey("EntityComponentModule"))
+                IEntityComponentModule ec_module = m_scene.RequestModuleInterface<IEntityComponentModule>();
+                if (ec_module != null)
                 {
-                    IEntityComponentModule ec_module = m_scene.RequestModuleInterface<IEntityComponentModule>();
-                    if (ec_module != null)
+                    XmlDocument document = new XmlDocument();
+                    try
                     {
-                        XmlDocument document = new XmlDocument();
-                        try
-                        {
-                            document.LoadXml(text);
+                        document.LoadXml(text);
 
-                            XmlNodeList entityNodes = document.GetElementsByTagName("entity");
-                            foreach (XmlNode parseEntity in entityNodes)
+                        XmlNodeList entityNodes = document.GetElementsByTagName("entity");
+                        foreach (XmlNode parseEntity in entityNodes)
+                        {
+                            foreach (XmlNode component in parseEntity.ChildNodes)
                             {
-                                foreach (XmlNode component in parseEntity.ChildNodes)
-                                {
-                                    string component_type = component.Attributes["type"].Value;
-                                    string component_name = string.Empty;
-                                    if (component.Attributes["name"] != null)
-                                        component_name = component.Attributes["name"].Value;
-                                    string component_string = "<entity>" + component.OuterXml + "</entity>";
-                                    ec_module.SaveECData(this, new ECData(sceneObject.UUID, component_type, component_name, component_string));
-                                }
+                                string component_type = component.Attributes["type"].Value;
+                                string component_name = string.Empty;
+                                if (component.Attributes["name"] != null)
+                                    component_name = component.Attributes["name"].Value;
+                                string component_string = "<entity>" + component.OuterXml + "</entity>";
+                                ec_module.SaveECData(this, new ECData(sceneObject.UUID, component_type, component_name, component_string));
                             }
+                        }
 
-                        }
-                        catch (XmlException e)
-                        {
-                            m_log.ErrorFormat("[NAALISCENE]: Could not load XML data: {0}", e);
-                        }
-                        return;
                     }
+                    catch (XmlException e)
+                    {
+                        m_log.ErrorFormat("[NAALISCENE]: Could not load XML data: {0}", e);
+                    }
+                    robject.RexData = String.Empty; //ensure that RexData is now empty
+                    return;
                 }
 
                 if (text.Length > 1000)
