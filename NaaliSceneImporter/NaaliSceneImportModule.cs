@@ -141,7 +141,7 @@ namespace NaaliSceneImporter
         private void AddEntityToScene(NaaliEntity entity)
         {
             Vector3 pos = entity.SceneData.position;
-            if (pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0 && pos.X <= 256 && pos.Y <= 256)
+            if (pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0 && pos.X <= OpenSim.Framework.Constants.RegionSize && pos.Y <= OpenSim.Framework.Constants.RegionSize)
             {
                 // Create new object
                 SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.EstateSettings.EstateOwner, m_scene.RegionInfo.EstateSettings.EstateOwner,
