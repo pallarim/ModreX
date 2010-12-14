@@ -415,7 +415,7 @@ namespace ModularRex.RexParts
         {
             try
             {
-                if (!m_entity_components.ContainsKey(id))
+                if (m_entity_components.ContainsKey(id))
                 {
                     Entity ent = m_entity_components[id];
                     KeyValuePair<string, string> tn = new KeyValuePair<string, string>(typeName, name);
