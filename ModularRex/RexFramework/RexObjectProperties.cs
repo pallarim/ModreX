@@ -224,7 +224,14 @@ namespace ModularRex.RexFramework
                     foreach (RexMaterialsDictionaryItem e in value)
                     {
                         //rexMaterialDictionary.Add(e.Num, e.AssetID);
-                        RexMaterials.Add(e.Num, e);
+                        try
+                        {
+                            RexMaterials.Add(e.Num, e);
+                        }
+                        catch (ArgumentException)
+                        {
+                            m_log.WarnFormat("[REXOBJECT]: Failed to add RexMaterialDictionaryItem to object. Material already exists for object {0} in slot {1}.", this.ParentObjectID, e.Num);
+                        }
                     }
                 }
             }
