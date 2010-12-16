@@ -46,8 +46,6 @@ namespace ModularRex.RexNetwork
 
         public void Initialise(Nini.Config.IConfigSource source)
         {
-            MainServer.Instance.AddXmlRPCHandler("realXtend_avatar_url", new OpenSim.Framework.Servers.HttpServer.XmlRpcMethod(XmlRpcHandler));
-            this.OnNewAvatarUrl += new AppearanceAddedDelegate(AvatarUrlReciver_OnNewAvatarUrl);
         }
 
         public void Close()
@@ -57,6 +55,12 @@ namespace ModularRex.RexNetwork
 
         public void AddRegion(OpenSim.Region.Framework.Scenes.Scene scene)
         {
+            if (m_scenes.Count == 0) //do this only once
+            {
+                MainServer.Instance.AddXmlRPCHandler("realXtend_avatar_url", new OpenSim.Framework.Servers.HttpServer.XmlRpcMethod(XmlRpcHandler));
+                this.OnNewAvatarUrl += new AppearanceAddedDelegate(AvatarUrlReciver_OnNewAvatarUrl);
+            }
+
             m_scenes.Add(scene);
 
             scene.EventManager.OnClientConnect += new EventManager.OnClientConnectCoreDelegate(HandleOnClientConnect);
