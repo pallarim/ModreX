@@ -165,15 +165,18 @@ namespace ModularRex.NHibernate
         /// <param name="regionUUID">the region UUID</param>
         public void StoreObject(RexObjectProperties obj)
         {
-            if (m_nullStorage)
-                return;
-            try
+            lock (manager)
             {
-                SaveOrUpdate(obj);
-            }
-            catch (Exception e)
-            {
-                m_log.Error("Can't save: ", e);
+                if (m_nullStorage)
+                    return;
+                try
+                {
+                    SaveOrUpdate(obj);
+                }
+                catch (Exception e)
+                {
+                    m_log.Error("Can't save: ", e);
+                }
             }
         }
 
