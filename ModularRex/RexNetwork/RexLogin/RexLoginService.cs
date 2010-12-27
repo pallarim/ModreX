@@ -1,27 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSim.Services.LLLoginService;
-using Nini.Config;
-using OpenSim.Services.Interfaces;
-using System.Net;
-using ModularRex.RexDBObjects;
-using OpenMetaverse;
-using log4net;
-using System.Reflection;
-using GridRegion = OpenSim.Services.Interfaces.GridRegion;
-using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
-using OpenSim.Framework;
 using System.Collections;
+using System.Collections.Generic;
+using System.Net;
+using System.Reflection;
+using log4net;
+using ModularRex.RexDBObjects;
+using ModularRex.RexFramework;
+using Nini.Config;
 using Nwc.XmlRpc;
+using OpenMetaverse;
+using OpenSim.Framework;
+using OpenSim.Services.Interfaces;
+using OpenSim.Services.LLLoginService;
+using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
+using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
-    public interface IRexLoginService : ILoginService
-    {
-        LoginResponse Login(string account, string sessionHash, string startLocation, UUID scopeID, string clientVersion, IPEndPoint clientIP, string channel, string mac, string id0);
-    }
-
     public class RexLoginService : LLLoginService, IRexLoginService
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

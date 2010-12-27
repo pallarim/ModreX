@@ -16,6 +16,7 @@ using OpenMetaverse.StructuredData;
 using Nwc.XmlRpc;
 using Nini.Config;
 using log4net;
+using ModularRex.RexFramework;
 
 namespace ModularRex.RexNetwork.RexLogin
 {
