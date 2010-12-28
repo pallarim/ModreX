@@ -13,6 +13,7 @@ using OpenMetaverse;
 using log4net;
 
 using ModularRex.RexFramework;
+using System.Xml;
 
 namespace NaaliSceneImporter
 {
@@ -140,7 +141,7 @@ namespace NaaliSceneImporter
         private void AddEntityToScene(NaaliEntity entity)
         {
             Vector3 pos = entity.SceneData.position;
-            if (pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0 && pos.X <= 256 && pos.Y <= 256)
+            if (pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0 && pos.X <= OpenSim.Framework.Constants.RegionSize && pos.Y <= OpenSim.Framework.Constants.RegionSize)
             {
                 // Create new object
                 SceneObjectGroup sceneObject = m_scene.AddNewPrim(m_scene.RegionInfo.MasterAvatarAssignedUUID, m_scene.RegionInfo.MasterAvatarAssignedUUID,
@@ -250,7 +251,44 @@ namespace NaaliSceneImporter
             // Insert freedata, insert correct local id to the xml
             // Note: this will trigger sending the whole data to all clients after my fix to the setter
             if (entity.ComponentData != string.Empty)
-                robject.RexData = entity.ComponentData.Replace("REPLACE_ENTITY_LOCAL_ID", sceneObject.LocalId.ToString());
+            {
+                string text = entity.ComponentData;
+
+                IEntityComponentModule ec_module = m_scene.RequestModuleInterface<IEntityComponentModule>();
+                if (ec_module != null)
+                {
+                    XmlDocument document = new XmlDocument();
+                    try
+                    {
+                        document.LoadXml(text);
+
+                        XmlNodeList entityNodes = document.GetElementsByTagName("entity");
+                        foreach (XmlNode parseEntity in entityNodes)
+                        {
+                            foreach (XmlNode component in parseEntity.ChildNodes)
+                            {
+                                string component_type = component.Attributes["type"].Value;
+                                string component_name = string.Empty;
+                                if (component.Attributes["name"] != null)
+                                    component_name = component.Attributes["name"].Value;
+                                string component_string = "<entity>" + component.OuterXml + "</entity>";
+                                ec_module.SaveECData(this, new ECData(sceneObject.UUID, component_type, component_name, component_string));
+                            }
+                        }
+
+                    }
+                    catch (XmlException e)
+                    {
+                        m_log.ErrorFormat("[NAALISCENE]: Could not load XML data: {0}", e);
+                    }
+                    robject.RexData = String.Empty; //ensure that RexData is now empty
+                    return;
+                }
+
+                if (text.Length > 1000)
+                    m_log.Warn("[NAALISCENE]: Data to store is over 1000 char limit.");
+                robject.RexData = text;
+            }
         }
     }
 }

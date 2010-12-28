@@ -13,10 +13,8 @@ using System.Reflection;
 
 namespace ModularRex.RexParts
 {
-    public delegate bool UpdateECData(object sender, ref ECData data);
-    public delegate bool RemoveECData(object sender, UUID entityId, string componentType, string componentName);
 
-    public class EntityComponentModule : ISharedRegionModule
+    public class EntityComponentModule : ISharedRegionModule, IEntityComponentModule
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -56,7 +54,7 @@ namespace ModularRex.RexParts
 
         public Type ReplaceableInterface
         {
-            get { return null; }
+            get { return typeof(IEntityComponentModule); }
         }
 
         public void Initialise(Nini.Config.IConfigSource source)
@@ -86,6 +84,7 @@ namespace ModularRex.RexParts
         public void AddRegion(Scene scene)
         {
             m_scenes.Add(scene);
+            scene.RegisterModuleInterface<IEntityComponentModule>(this);
 
             if (m_db_initialized)
             {
@@ -120,15 +119,15 @@ namespace ModularRex.RexParts
             if (client.TryGet<NaaliClientView>(out naali))
             {
                 naali.OnBinaryGenericMessage += new OpenSim.Region.ClientStack.LindenUDP.LLClientView.BinaryGenericMessage(HandleGenericBinaryMessage);
-                naali.AddGenericPacketHandler("ECString", HandleEcStringGenericMessage);
+                naali.AddGenericPacketHandler("ECString", DummyGenericMessageHandler);
                 naali.AddGenericPacketHandler("ECRemove", HandleEcRemoveGenericMessage);
-                naali.AddGenericPacketHandler("ECSync", HandleEcSyncGenericMessage);
+                naali.AddGenericPacketHandler("ECSync", DummyGenericMessageHandler);
 
                 SendAllData(naali);
             }
         }
 
-        private void HandleEcSyncGenericMessage(object sender, string method, List<string> args)
+        private void DummyGenericMessageHandler(object sender, string method, List<string> args)
         {
             return; //Handle this really in BinaryGenericMessageHandler
         }
@@ -190,6 +189,16 @@ namespace ModularRex.RexParts
                         SaveECData(sender, new ECData(entityId, componentType, componentName, ecdata, false));
                     }
                     break;
+                case "ecstring":
+
+                    List<string> sargs = new List<string>();
+                    foreach (byte[] arg in args)
+                    {
+                        string s = FieldToUTF8String(arg);
+                        sargs.Add(s);
+                    }
+                    HandleEcStringGenericMessage(sender, method, sargs);
+                    break;
                 default:
                     return;
             }
@@ -233,6 +242,14 @@ namespace ModularRex.RexParts
         }
 
         #endregion
+
+        protected static string FieldToUTF8String(byte[] bytes)
+        {
+            if (bytes.Length > 0 && bytes[bytes.Length - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes);
+        }
 
         private void SaveLocal(ECData component)
         {
@@ -311,7 +328,12 @@ namespace ModularRex.RexParts
                     SendECDataToAll(component);
 
                     if (m_db_initialized)
-                        return m_db.StoreComponent(component);
+                    {
+                        lock (m_db)
+                        {
+                            return m_db.StoreComponent(component);
+                        }
+                    }
                 }
 
                 return true;
@@ -365,6 +387,50 @@ namespace ModularRex.RexParts
         public void RegisterECRemoveCallback(string componentType, RemoveECData callback)
         {
             m_ec_remove_callbacks[componentType] = callback;
+        }
+
+        public List<ECData> GetData(UUID id)
+        {
+            List<ECData> data = new List<ECData>();
+            try
+            {
+                if (m_entity_components.ContainsKey(id))
+                {
+                    foreach (ECData item in m_entity_components[id].Components.Values)
+                    {
+                        data.Add(item);
+                    }
+                }
+
+                return data;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[ECDATA]: Failed to fetch EC Data for object {0}. Exception {1} occurred. {2}", id, e.Message, e.StackTrace);
+                return null;
+            }
+        }
+
+        public ECData GetData(UUID id, string typeName, string name)
+        {
+            try
+            {
+                if (m_entity_components.ContainsKey(id))
+                {
+                    Entity ent = m_entity_components[id];
+                    KeyValuePair<string, string> tn = new KeyValuePair<string, string>(typeName, name);
+                    if (ent.Components.ContainsKey(tn))
+                    {
+                        return ent.Components[tn];
+                    }
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                m_log.ErrorFormat("[ECDATA]: Failed to fetch EC Data for object {0} {3} {4}. Exception {1} occurred. {2}", id, e.Message, e.StackTrace, typeName, name);
+                return null;
+            }
         }
     }
 }
