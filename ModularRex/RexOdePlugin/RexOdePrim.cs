@@ -2777,19 +2777,27 @@ namespace ModularRex.RexOdePlugin
         // This function should be called only outside of simulation loop -> OdeLock used.
         public void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
         {
-            lock (_parent_scene.OdeLock)
+            try
             {
-                m_DotMeshCollision = false;
-                if (m_OriginalMesh != null)
+                lock (_parent_scene.OdeLock)
                 {
-                    // Never pinned so skip m_OriginalMesh.releasePinned();
-                    m_OriginalMesh = null;
+                    m_DotMeshCollision = false;
+                    if (m_OriginalMesh != null)
+                    {
+                        // Never pinned so skip m_OriginalMesh.releasePinned();
+                        m_OriginalMesh = null;
+                    }
+
+                    if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
+                        m_DotMeshCollision = true;
+
+                    m_ReCreateCollision = true;
                 }
-
-                if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
-                    m_DotMeshCollision = true;
-
-                m_ReCreateCollision = true;
+            }
+            catch (Exception ex)
+            {
+                m_log.Error("[REXODEPHYSICS]: Error importing mesh " + ex.Message);
+                
             }
 
             _parent_scene.AddPhysicsActorTaint(this);
@@ -2990,12 +2998,12 @@ namespace ModularRex.RexOdePlugin
             Quaternion meshRotA = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.5705f);
             Quaternion meshRotB = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), 3.1415f);
             Quaternion mytemprot = _orientation * meshRotA * meshRotB;
-
             myrot.W = mytemprot.W;
             myrot.X = mytemprot.X;
             myrot.Y = mytemprot.Y;
             myrot.Z = mytemprot.Z;
             d.GeomSetQuaternion(prim_geom, ref myrot);
+
 
             //d.GeomBoxSetLengths(prim_geom, _size.X, _size.Y, _size.Z);
             if (IsPhysical && Body == IntPtr.Zero && !childPrim)
@@ -3048,6 +3056,9 @@ namespace ModularRex.RexOdePlugin
             switch (m_CollisionPrim)
             {
                 case "cube":
+                    SetGeom(d.CreateBox(m_targetSpace, _size.X, _size.Y, _size.Z));
+                    break;
+                case "box":
                     SetGeom(d.CreateBox(m_targetSpace, _size.X, _size.Y, _size.Z));
                     break;
                 case "sphere":

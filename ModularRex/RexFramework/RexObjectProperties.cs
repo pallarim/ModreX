@@ -155,7 +155,7 @@ namespace ModularRex.RexFramework
             get { return m_RexCollisionPrim; }
             set
             {
-                // not sending m_RexCollisionPrim to clients, but need to upate new collisions to clients,
+                // Need to upate new collisions to clients,
                 // so calling TriggerChangedRexObjectProperties, after changing collision mesh
                 string oldPrim = m_RexCollisionPrim;
                 m_RexCollisionPrim = value;

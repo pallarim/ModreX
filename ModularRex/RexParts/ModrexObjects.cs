@@ -331,8 +331,6 @@ namespace ModularRex.RexParts
                             if(!RexObjectPropertiesCache.ContainsKey(part.UUID))
                                 RexObjectPropertiesCache.Add(part.UUID, p);
 
-                            //if(p.RexCollisionPrim != ""
-
                             // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
                             if (p.RexCollisionMeshUUID != UUID.Zero || p.RexCollisionPrim != String.Empty)
                             {

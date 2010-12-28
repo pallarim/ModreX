@@ -491,6 +491,8 @@ namespace OgreSceneImporter
                     SceneObjectGroup sceneObject = AddObjectToScene(node, ent);
                     if (sceneObject != null)
                     {
+                        bool UsePhysics = ((sceneObject.RootPart.Flags & PrimFlags.Physics) != 0);
+                        sceneObject.UpdatePrimFlags(sceneObject.LocalId, UsePhysics, false, ent.Phantom, false);
                         if (sceneDataID != UUID.Zero)
                         {
                             NHibernateSceneStorage storage;
@@ -843,24 +845,26 @@ namespace OgreSceneImporter
         {
             RexObjectProperties robject = CreateRexObjectProperties(objectId, ent);
             robject.RexMeshUUID = meshId;
-            
-            if (useCollision)
+            if (!ent.Phantom)
             {
-                try
+                if (useCollision)
                 {
-                    if (collisionPrim != String.Empty)
+                    try
                     {
-                        robject.RexCollisionPrim = collisionPrim;
-                        //robject.RexCollisionMeshUUID = meshId;
+                        if (collisionPrim != String.Empty)
+                        {
+                            robject.RexCollisionPrim = collisionPrim;
+                            //robject.RexCollisionMeshUUID = meshId;
+                        }
+                        else
+                        {
+                            if (collisionID != UUID.Zero) { robject.RexCollisionMeshUUID = collisionID; }
+                            else { robject.RexCollisionMeshUUID = meshId; }
+                        }
                     }
-                    else
+                    catch (Exception)
                     {
-                        if (collisionID != UUID.Zero) { robject.RexCollisionMeshUUID = collisionID; }
-                        else { robject.RexCollisionMeshUUID = meshId; }
                     }
-                }
-                catch (Exception)
-                {
                 }
             }
 
@@ -889,14 +893,17 @@ namespace OgreSceneImporter
                 robject.RexMaterials.AddMaterial((uint)i, UUID.Zero, baseUrl + materialNames[i]+".material");
             }
 
-            if (collisionId != UUID.Zero)
+            if (!ent.Phantom)
             {
-                try
+                if (collisionId != UUID.Zero)
                 {
-                    robject.RexCollisionMeshUUID = collisionId;
-                }
-                catch (Exception)
-                {
+                    try
+                    {
+                        robject.RexCollisionMeshUUID = collisionId;
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
         }
