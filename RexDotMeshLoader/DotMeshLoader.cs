@@ -65,19 +65,30 @@ namespace RexDotMeshLoader
                     SubMesh sm = mesh.subMeshList[i];
                     int numFaces = sm.indexData.indexCount / 3;
                     int vCount = 0;
-                    int posInc = sm.vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
-                    int index = 0;
-                    VertexElement elemPos = sm.vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
+                    VertexData vertexData = null;
+                    if (sm.useSharedVertices == false)
+                    {
+                        vertexData = sm.vertexData;
+                    }
+                    else
+                    { // use shared vertices data instead
+                        vertexData = mesh.SharedVertexData;
+                    }
 
-                    vertexList = new float[sm.vertexData.vertexCount * 3];
+                    int posInc = vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
+                    int index = 0;
+                    
+                    VertexElement elemPos = vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
+
+                    vertexList = new float[vertexData.vertexCount * 3];
                     indexList = new int[sm.indexData.indexCount];
 
-                    for (int k = 0; k < sm.vertexData.vertexCount; k++)
+                    for (int k = 0; k < vertexData.vertexCount; k++)
                     {
                         index = elemPos.Offset + (posInc * k);
-                        vert.X = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index));
-                        vert.Y = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 4));
-                        vert.Z = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 8));
+                        vert.X = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index));
+                        vert.Y = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index + 4));
+                        vert.Z = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index + 8));
                         vertexList[vCount++] = vert.X;
                         vertexList[vCount++] = vert.Y;
                         vertexList[vCount++] = vert.Z;
