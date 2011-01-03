@@ -74,6 +74,8 @@ namespace RexDotMeshLoader
                     return Marshal.SizeOf( typeof( short ) ) * 4;
                 case VertexElementType.UByte4:
                     return Marshal.SizeOf( typeof( byte ) ) * 4;
+                case VertexElementType.VET_COLOUR_ARGB:
+                    return 4;
             }
             return 0;
         }
