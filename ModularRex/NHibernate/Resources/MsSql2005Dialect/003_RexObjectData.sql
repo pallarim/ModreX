@@ -1,0 +1,1 @@
+﻿ALTER TABLE RexObjectProperties ADD RexCollisionPrim nvarchar(20) NULL;

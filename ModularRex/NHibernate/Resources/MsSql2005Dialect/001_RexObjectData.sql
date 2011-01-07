@@ -21,7 +21,6 @@ CREATE TABLE [RexObjectProperties](
 	[RexLOD] [float] NULL,
 	[RexMeshUUID] [varchar](50) NULL,
 	[RexCollisionMeshUUID] [varchar](50) NULL,
-	[RexCollisionPrim] [varchar](20) NULL,	
 	[RexParticleScriptUUID] [varchar](50) NULL,
 	[RexAnimationPackageUUID] [varchar](50) NULL,
 	[RexAnimationName] [varchar](64) NULL,

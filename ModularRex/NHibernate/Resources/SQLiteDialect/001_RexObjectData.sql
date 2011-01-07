@@ -17,7 +17,6 @@ CREATE TABLE `RexObjectProperties` (
     `RexLOD` FLOAT NULL,
     `RexMeshUUID` VARCHAR(50) NULL,
     `RexCollisionMeshUUID` VARCHAR(50) NULL,
-    `RexCollisionPrim` VARCHAR(20) NULL,    
     `RexParticleScriptUUID` VARCHAR(50) NULL,
     `RexAnimationPackageUUID` VARCHAR(50) NULL,
     `RexAnimationName` VARCHAR(64) NULL,
