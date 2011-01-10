@@ -68,7 +68,8 @@ namespace RexDotMeshLoader
         Short2,
         Short3,
         Short4,
-        UByte4
+        UByte4,
+        VET_COLOUR_ARGB
     }
 
     public enum MeshChunkID : ushort

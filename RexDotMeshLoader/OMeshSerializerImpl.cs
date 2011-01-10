@@ -170,7 +170,7 @@ namespace RexDotMeshLoader
             }
             else
             {
-                subMesh.indices_s = new short[subMesh.indexData.indexCount];
+                subMesh.indices_s = new ushort[subMesh.indexData.indexCount];
                 ReadShorts(reader, subMesh.indexData.indexCount, subMesh.indices_s);
             }
            
@@ -280,8 +280,8 @@ namespace RexDotMeshLoader
 
             MeshChunkID cid = ReadChunk( reader );
             if ( cid != MeshChunkID.GeometryVertexBufferData )
-                throw new Exception("Missing vertex buffer data"); 
-            
+                throw new Exception("Missing vertex buffer data");
+
             if(data.vertexDeclaration.GetVertexSize( bindIdx ) != vertexSize)
                 throw new Exception("Vertex decl size and vertex buffer size mismatch");
             
@@ -372,7 +372,7 @@ namespace RexDotMeshLoader
                 }
                 else
                 {
-                    short[] barray = new short[tempindexcount];
+                    ushort[] barray = new ushort[tempindexcount];
                     ReadShorts(reader, tempindexcount, barray);
                 }
             } 

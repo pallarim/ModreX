@@ -29,7 +29,7 @@ namespace RexDotMeshLoader
 {
     public class SubMesh
     {
-        public short[] indices_s = null;
+        public ushort[] indices_s = null;
         public int[] indices_i = null;
         public OMesh Parent;
         public string MaterialName;

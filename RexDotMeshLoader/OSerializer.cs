@@ -117,11 +117,11 @@ namespace RexDotMeshLoader
             }
         }
 
-        protected void ReadShorts( BinaryReader vReader, int count, short[] dest )
+        protected void ReadShorts(BinaryReader vReader, int count, ushort[] dest)
         {
             for (int i = 0; i < count; i++)
             {
-                dest[i] = vReader.ReadInt16();
+                dest[i] = vReader.ReadUInt16();
             }
         }
 

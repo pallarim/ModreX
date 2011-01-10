@@ -264,6 +264,15 @@ namespace OgreSceneImporter
             // Process attributes
             String name = getAttrib(XMLNode, "name");
             String meshFile = getAttrib(XMLNode, "meshFile");
+            String collisionFile = getAttrib(XMLNode, "collisionFile");
+            String collisionPrim = getAttrib(XMLNode, "collisionPrim");
+            String phantomStr = getAttrib(XMLNode, "ghost");
+            bool phantom = false;
+            if (phantomStr != null)
+            {
+                bool parsed = Boolean.TryParse(phantomStr, out phantom);
+                if (!parsed) phantom = false;
+            }
 
             bool bstatic = getAttribBool(XMLNode, "static", false);
             if (bstatic)
@@ -285,9 +294,12 @@ namespace OgreSceneImporter
                 //mesh.BuildTangentVectors(Mogre.VertexElementSemantic.VES_TANGENT, src, dest);
 
                 pEntity = mSceneMgr.CreateEntity(name, meshFile);
+                pEntity.CollisionMeshName = collisionFile;
+                pEntity.CollisionPrim = collisionPrim;
                 pEntity.Visible = bvisible;
                 pEntity.CastShadows = bcastshadows;
                 pEntity.RenderingDistance = brenderingDistance;
+                pEntity.Phantom = phantom;
 
                 XmlElement pElement;
                 // Process subentities (?)
@@ -509,6 +521,20 @@ namespace OgreSceneImporter
             if (pElement != null)
             {
                 pNode.Scale = parseVector3(pElement);
+                // can't have server crash on negative scales, adding checks
+                if (pNode.Scale.X < 0) 
+                {
+                    pNode.Scale.X = -pNode.Scale.X;
+                }
+                if (pNode.Scale.Y < 0)
+                {
+                    pNode.Scale.Y = -pNode.Scale.Y;
+                }
+                if (pNode.Scale.Z < 0)
+                {
+                    pNode.Scale.Z = -pNode.Scale.Z;
+                }
+
                 pNode.SetInitialState();
             }
 

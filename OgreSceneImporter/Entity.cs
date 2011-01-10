@@ -14,6 +14,9 @@ namespace OgreSceneImporter
 
         public string Name = String.Empty;
         public string MeshName = String.Empty;
+        public string CollisionMeshName = String.Empty;
+        public string CollisionPrim = String.Empty;
+        public bool Phantom = false;
 
         public Entity()
         {

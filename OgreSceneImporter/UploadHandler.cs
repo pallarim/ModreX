@@ -330,7 +330,14 @@ namespace OgreSceneImporter
                 if (sa.AssetType == 1)
                     meshes.Add(sa);
             }
-            Scene scene = GetScene(region);// handle for scene where we want to do unload
+            UUID result;
+            Scene scene;
+            if (UUID.TryParse(region, out result)) { 
+                scene = GetSceneByUUID(region); 
+            }
+            else {
+                scene = GetScene(region); // handle for scene where we want to do unload
+            }
             //if (m_scene.RegionInfo.RegionName == region)
             if (scene!=null)
             {
@@ -449,7 +456,11 @@ namespace OgreSceneImporter
                 System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
                 string scenexml = enc.GetString(sceneFile);
 
+                // Not adding the 2 offsets:
+                Vector3 tempOffset = m_osi.Offset;
+                m_osi.Offset = Vector3.Zero;
                 m_osi.ImportUploadedOgreScene(basePath, scenexml, m_scene, offset);
+                m_osi.Offset = tempOffset;
 
                 return true;
             }
@@ -775,6 +786,16 @@ namespace OgreSceneImporter
             foreach (Scene s in m_osi.GetScenes())
             {
                 if (s.RegionInfo.RegionName == region)
+                    return s;
+            }
+            return null;
+        }
+
+        private Scene GetSceneByUUID(string region)
+        {
+            foreach (Scene s in m_osi.GetScenes())
+            {
+                if (s.RegionInfo.RegionID.ToString() == region)
                     return s;
             }
             return null;

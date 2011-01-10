@@ -33,6 +33,7 @@ namespace OgreSceneImporter
                 {
                     if (line.StartsWith("material"))
                     {
+                        line = line.Trim();
                         string[] matStrParts = line.Split(' ');
                         string materialName = String.Empty;
                         if (matStrParts.Length > 2)
