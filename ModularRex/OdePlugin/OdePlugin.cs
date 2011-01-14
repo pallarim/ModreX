@@ -84,7 +84,7 @@ namespace ModularRex.OdePlugin
 
         public string GetName()
         {
-            return ("OpenDynamicsEngine");
+            return ("RexOpenDynamicsEngine");
         }
 
         public void Dispose()
