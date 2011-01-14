@@ -291,7 +291,7 @@ namespace ModularRex.RexParts
             {
                 if (sop.PhysActor is IRexPhysicsActor)
                 {
-                    if (p.RexCollisionPrim == String.Empty)
+                    if (String.IsNullOrEmpty(p.RexCollisionPrim))
                     {
                         AssetBase tempmodel = sop.ParentGroup.Scene.AssetService.Get(p.RexCollisionMeshUUID.ToString());
                         if (tempmodel != null)
@@ -491,7 +491,7 @@ namespace ModularRex.RexParts
             }
             if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
             {
-                if (p.RexCollisionPrim != String.Empty)
+                if(!String.IsNullOrEmpty(p.RexCollisionPrim))
                 {
                     ((IRexPhysicsActor)sop.PhysActor).SetCollisionPrim(p.RexCollisionPrim);
                 }
