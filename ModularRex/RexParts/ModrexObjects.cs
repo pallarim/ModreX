@@ -286,14 +286,23 @@ namespace ModularRex.RexParts
                 return;
             }
 
-            if (p.RexCollisionMeshUUID != UUID.Zero && sop.PhysActor is IRexPhysicsActor)
+            if (p.RexCollisionMeshUUID != UUID.Zero || p.RexCollisionPrim != String.Empty) 
             {
-                AssetBase tempmodel = sop.ParentGroup.Scene.AssetService.Get(p.RexCollisionMeshUUID.ToString());
-                if (tempmodel != null)
-                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
+                if (sop.PhysActor is IRexPhysicsActor)
+                {
+                    if (p.RexCollisionPrim == String.Empty)
+                    {
+                        AssetBase tempmodel = sop.ParentGroup.Scene.AssetService.Get(p.RexCollisionMeshUUID.ToString());
+                        if (tempmodel != null)
+                            ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(tempmodel.Data, tempmodel.Name, p.RexScaleToPrim);
+                    }
+                    else 
+                    {
+                        ((IRexPhysicsActor)sop.PhysActor).SetCollisionPrim(p.RexCollisionPrim);
+                    }
+                }
             }
         }
-
 
         #region RexObjectProperties Cache
 
@@ -304,7 +313,7 @@ namespace ModularRex.RexParts
                 m_log.ErrorFormat("LoadRexObjectPropertiesToCache failed, db not initialized");
                 return;
             }
-            
+
             foreach (Scene s in m_scenes)
             {
                 foreach (EntityBase e in s.GetEntities())
@@ -322,8 +331,10 @@ namespace ModularRex.RexParts
                                 RexObjectPropertiesCache.Add(part.UUID, p);
 
                             // Since loaded objects have their properties already set, any initialization that needs to be done should be here.
-                            if (p.RexCollisionMeshUUID != UUID.Zero)
+                            if (p.RexCollisionMeshUUID != UUID.Zero || p.RexCollisionPrim != String.Empty)
+                            {
                                 TriggerOnChangeCollisionMesh(part.UUID);
+                            }
 
                             if (p.RexClassName.Length > 0)
                             {
@@ -450,12 +461,45 @@ namespace ModularRex.RexParts
 
             if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
             {
-                if (p.RexCollisionMeshUUID != UUID.Zero)
+                if (p.RexCollisionMeshUUID != UUID.Zero || p.RexCollisionPrim != String.Empty)
+                {
                     RexUpdateCollisionMesh(id);
+                }
                 else
                     ((IRexPhysicsActor)sop.PhysActor).SetCollisionMesh(null, "", false);
             }
         }
+
+        public void TriggerOnChangeCollisionPrim(UUID id)
+        {
+            RexObjectProperties p = GetObject(id);
+            SceneObjectPart sop = null;// = m_scenes[0].GetSceneObjectPart(id);
+            foreach (Scene scene in m_scenes)
+            {
+                SceneObjectPart part = scene.GetSceneObjectPart(id);
+                if (part != null)
+                {
+                    sop = part;
+                    break;
+                }
+            }
+            if (sop == null)
+            {
+                m_log.Error("[REXOBJS] TriggerOnChangeCollisionPrim, no SceneObjectPart for id:" + id.ToString());
+                return;
+            }
+            if (sop.ParentGroup != null && sop.PhysActor is IRexPhysicsActor)
+            {
+                if (p.RexCollisionPrim != String.Empty)
+                {
+                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionPrim(p.RexCollisionPrim);
+                }
+                else
+                    ((IRexPhysicsActor)sop.PhysActor).SetCollisionPrim("");
+            }
+
+        }
+
 
         public void TriggerOnChangeScaleToPrim(UUID id)
         {

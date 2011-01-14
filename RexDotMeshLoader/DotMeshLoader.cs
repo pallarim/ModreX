@@ -55,43 +55,58 @@ namespace RexDotMeshLoader
                 boundsInfo[5] = mesh.boundingBoxMax.Z;
                 boundsInfo[6] = mesh.BoundingSphereRadius;
 
-                Vector3 vert = new Vector3();
 
-                // Only first submesh used in collision at the moment!
-                // for(int i=0;i< mesh.subMeshList.Count;i++)
-                if (mesh.subMeshList.Count > 0)
+                bool allShared = AllSubMeshesUseSharedVertices(mesh);
+                bool allNonShared = AllSubMeshesUseOwnVertices(mesh);
+                // if (allShared && mesh.subMeshList.Count>1)
+                if (allShared)
                 {
-                    int i = 0;
-                    SubMesh sm = mesh.subMeshList[i];
-                    int numFaces = sm.indexData.indexCount / 3;
-                    int vCount = 0;
-                    int posInc = sm.vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
-                    int index = 0;
-                    VertexElement elemPos = sm.vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
+                    DoVerticesAndIndexesForSharedSubMeshes(mesh, out vertexList, out indexList);
+                }
+                else if (allNonShared)
+                {
+                    DoVerticesAndIndexesForNonSharedSubMeshes(mesh, out vertexList, out indexList);
+                }
+                else
+                { // currently no way to test meshes with both kind of submeshes just use first submesh
+                    Vector3 vert = new Vector3();
 
-                    vertexList = new float[sm.vertexData.vertexCount * 3];
-                    indexList = new int[sm.indexData.indexCount];
-
-                    for (int k = 0; k < sm.vertexData.vertexCount; k++)
+                    // Only first submesh used in collision at the moment!
+                    // for(int i=0;i< mesh.subMeshList.Count;i++)
+                    if (mesh.subMeshList.Count > 0)
                     {
-                        index = elemPos.Offset + (posInc * k);
-                        vert.X = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index));
-                        vert.Y = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 4));
-                        vert.Z = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 8));
-                        vertexList[vCount++] = vert.X;
-                        vertexList[vCount++] = vert.Y;
-                        vertexList[vCount++] = vert.Z;
-                    }
+                        int i = 0;
+                        SubMesh sm = mesh.subMeshList[i];
+                        int numFaces = sm.indexData.indexCount / 3;
+                        int vCount = 0;
+                        int posInc = sm.vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
+                        int index = 0;
+                        VertexElement elemPos = sm.vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
 
-                    for (int k = 0; k < sm.indexData.indexCount; k++)
-                    {
-                        if (sm.indices_i != null)
+                        vertexList = new float[sm.vertexData.vertexCount * 3];
+                        indexList = new int[sm.indexData.indexCount];
+
+                        for (int k = 0; k < sm.vertexData.vertexCount; k++)
                         {
-                            indexList[k] = sm.indices_i[k];
+                            index = elemPos.Offset + (posInc * k);
+                            vert.X = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index));
+                            vert.Y = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 4));
+                            vert.Z = (float)(BitConverter.ToSingle(sm.vertexData.vertexBuffer, index + 8));
+                            vertexList[vCount++] = vert.X;
+                            vertexList[vCount++] = vert.Y;
+                            vertexList[vCount++] = vert.Z;
                         }
-                        else
+
+                        for (int k = 0; k < sm.indexData.indexCount; k++)
                         {
-                            indexList[k] = sm.indices_s[k];
+                            if (sm.indices_i != null)
+                            {
+                                indexList[k] = sm.indices_i[k];
+                            }
+                            else
+                            {
+                                indexList[k] = sm.indices_s[k];
+                            }
                         }
                     }
                 }
@@ -125,5 +140,169 @@ namespace RexDotMeshLoader
                 errorMessage = e.Message.ToString();
             }
         }
+
+        private static bool AllSubMeshesUseSharedVertices(OMesh mesh)
+        {
+            foreach (SubMesh sm in mesh.subMeshList)
+            {
+                if (sm.useSharedVertices == false)
+                    return false;
+            }
+            return true;
+        }
+
+        private static bool AllSubMeshesUseOwnVertices(OMesh mesh)
+        { 
+            foreach (SubMesh sm in mesh.subMeshList)
+            {
+                if (sm.useSharedVertices == true)
+                    return false;
+            }
+            return true;
+        }
+
+        private static VertexData DecideVertexDataToUse(OMesh mesh, SubMesh sm)
+        {
+            VertexData vertexData = null;
+            if (sm.useSharedVertices == false)
+            {
+                vertexData = sm.vertexData;
+            }
+            else
+            { // use shared vertices data instead
+                vertexData = mesh.SharedVertexData;
+            }
+
+            return vertexData;
+        }
+
+        private static int TotalVertexCount(OMesh mesh)
+        {
+            int count =0;
+            if(mesh.SharedVertexData!=null)
+                count+= mesh.SharedVertexData.vertexCount;
+
+            foreach(SubMesh sm in mesh.subMeshList)
+            {
+                if (!sm.useSharedVertices) {
+                    count += sm.vertexData.vertexCount;
+                }
+            }
+            return count;
+        }
+
+        private static void DoVerticesAndIndexesForSharedSubMeshes(OMesh mesh, out float[] vertexList, out int[] indexList)
+        {
+            // setup vertexList
+            
+            vertexList = new float[mesh.SharedVertexData.vertexCount*3];
+            Vector3 vert = new Vector3();
+            int index = 0;
+            int vCount = 0;
+            for (int i = 0; i < mesh.SharedVertexData.vertexCount; i++)
+            {
+                int posInc = mesh.SharedVertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
+                //index = 0;
+                VertexElement elemPos = mesh.SharedVertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
+                index = elemPos.Offset + (posInc * i);
+                vert.X = (float)(BitConverter.ToSingle(mesh.SharedVertexData.vertexBuffer, index));
+                vert.Y = (float)(BitConverter.ToSingle(mesh.SharedVertexData.vertexBuffer, index + 4));
+                vert.Z = (float)(BitConverter.ToSingle(mesh.SharedVertexData.vertexBuffer, index + 8));
+                vertexList[vCount++] = vert.X;
+                vertexList[vCount++] = vert.Y;
+                vertexList[vCount++] = vert.Z;
+            }                
+
+            // setup indexList (triangle faces foreach subbesh)
+            // calculate indexCount
+            int indexCount = 0;
+            foreach (SubMesh sm in mesh.subMeshList)
+            {
+                indexCount += sm.indexData.indexCount;
+            }
+
+            indexList = new int[indexCount];
+            index=0;
+            foreach (SubMesh sm in mesh.subMeshList)
+            {
+                for (int k = 0; k < sm.indexData.indexCount; k++)
+                {
+                    if (sm.indices_i != null)
+                    {
+                        indexList[index] = sm.indices_i[k];
+                    }
+                    else
+                    {
+                        indexList[index] = sm.indices_s[k];
+                    }
+                    index++;
+                }
+            }
+        }
+
+        private static void DoVerticesAndIndexesForNonSharedSubMeshes(OMesh mesh, out float[] vertexList, out int[] indexList)
+        {
+            Vector3 vert = new Vector3();
+
+            // Only first submesh used in collision at the moment!
+            //if (mesh.subMeshList.Count > 0)
+
+            int count = TotalVertexCount(mesh);
+            vertexList = new float[count * 3];
+            int indexCount = 0;
+            foreach (SubMesh sm in mesh.subMeshList)
+            {
+                indexCount += sm.indexData.indexCount;
+            }
+            indexList = new int[indexCount];
+            int ind = 0;
+            int vCount = 0;
+            int indexOffset = 0;
+            for (int i = 0; i < mesh.subMeshList.Count; i++)
+            {
+                //int i = 0;
+                SubMesh sm = mesh.subMeshList[i];
+                int numFaces = sm.indexData.indexCount / 3;
+
+                VertexData vertexData = null;
+                vertexData = DecideVertexDataToUse(mesh, sm);
+
+                int posInc = vertexData.vertexDeclaration.GetVertexSize(0); // fixme, bindindex, where to get it?
+
+                VertexElement elemPos = vertexData.vertexDeclaration.FindElementBySemantic(VertexElementSemantic.Position);
+
+                //vertexList = new float[vertexData.vertexCount * 3];
+                //indexList = new int[sm.indexData.indexCount];
+
+                int index = 0;
+
+                for (int k = 0; k < vertexData.vertexCount; k++)
+                {
+                    index = elemPos.Offset + (posInc * k);
+                    vert.X = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index));
+                    vert.Y = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index + 4));
+                    vert.Z = (float)(BitConverter.ToSingle(vertexData.vertexBuffer, index + 8));
+                    vertexList[vCount++] = vert.X;
+                    vertexList[vCount++] = vert.Y;
+                    vertexList[vCount++] = vert.Z;
+                }
+
+                for (int k = 0; k < sm.indexData.indexCount; k++)
+                {
+                    if (sm.indices_i != null)
+                    {
+                        indexList[ind] = sm.indices_i[k] + indexOffset;
+                    }
+                    else
+                    {
+                        indexList[ind] = sm.indices_s[k] + indexOffset;
+                    }
+                    ind++;
+                }
+                //indexOffset += vertexData.vertexCount * 3;
+                indexOffset += vertexData.vertexCount;
+            }            
+        }
+
     }
 }

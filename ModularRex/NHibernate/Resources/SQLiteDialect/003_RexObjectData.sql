@@ -1,0 +1,5 @@
+﻿BEGIN;
+
+ALTER TABLE RexObjectProperties ADD COLUMN RexCollisionPrim VARCHAR(20) NULL;
+
+COMMIT;

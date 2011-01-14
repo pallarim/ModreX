@@ -149,6 +149,24 @@ namespace ModularRex.RexFramework
             }
         }
 
+        
+        private string m_RexCollisionPrim = String.Empty;
+        public string RexCollisionPrim {
+            get { return m_RexCollisionPrim; }
+            set
+            {
+                // Need to upate new collisions to clients,
+                // so calling TriggerChangedRexObjectProperties, after changing collision mesh
+                string oldPrim = m_RexCollisionPrim;
+                m_RexCollisionPrim = value;
+                if (oldPrim != m_RexCollisionPrim && RexEventManager != null)
+                {
+                    RexEventManager.TriggerOnChangeCollisionPrim(parentObjectID);
+                }
+                TriggerChangedRexObjectProperties();
+            }        
+        }
+
         private UUID m_RexParticleScriptUUID = UUID.Zero;
         public UUID RexParticleScriptUUID
         {
