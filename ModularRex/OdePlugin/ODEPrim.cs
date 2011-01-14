@@ -64,7 +64,9 @@ namespace ModularRex.OdePlugin
 
         //rex start
         private Mesh m_OriginalMesh = null; // rex
+        private string m_CollisionPrim = String.Empty; // rex, name for collision type
         private bool m_DotMeshCollision = false; // rex
+        private bool m_DPrimCollision = false; // rex
         private bool m_PrimVolume = false; // rex
         private bool m_ReCreateCollision = false; // rex
         private bool m_BoundsScaling = false; // rex
@@ -3256,22 +3258,41 @@ Console.WriteLine(" JointCreateFixed");
 
         public void SetCollisionMesh(byte[] meshdata, string meshname, bool scalemesh)
         {
-            lock (_parent_scene.OdeLock)
+            try
             {
-                m_DotMeshCollision = false;
-                if (m_OriginalMesh != null)
+                lock (_parent_scene.OdeLock)
                 {
-                    // Never pinned so skip m_OriginalMesh.releasePinned();
-                    m_OriginalMesh = null;
+                    m_DotMeshCollision = false;
+                    if (m_OriginalMesh != null)
+                    {
+                        // Never pinned so skip m_OriginalMesh.releasePinned();
+                        m_OriginalMesh = null;
+                    }
+
+                    if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
+                        m_DotMeshCollision = true;
+
+                    m_ReCreateCollision = true;
                 }
-
-                if (meshdata != null && CreateOSMeshFromDotMesh(meshdata, meshname, scalemesh))
-                    m_DotMeshCollision = true;
-
-                m_ReCreateCollision = true;
+            }
+            catch (Exception ex)
+            {
+                m_log.Error("[REXODEPHYSICS]: Error importing mesh " + ex.Message);
             }
 
             _parent_scene.AddPhysicsActorTaint(this);
+        }
+
+        public void SetCollisionPrim(string collisionprimname)
+        {
+            lock (_parent_scene.OdeLock)
+            {
+                m_CollisionPrim = collisionprimname;
+                m_DPrimCollision = true;
+                m_DotMeshCollision = true;
+                m_ReCreateCollision = true;
+                _parent_scene.AddPhysicsActorTaint(this);
+            }
         }
 
         public void SetBoundsScaling(bool vbScaleMesh)
@@ -3395,11 +3416,19 @@ Console.WriteLine(" JointCreateFixed");
             prim_geom = IntPtr.Zero;
             // we don't need to do space calculation because the client sends a position update also.
 
-            // Construction of new prim        
-            Mesh mesh = CreateMeshFromOriginal();
+            if (m_DPrimCollision)
+            {
+                changeToPredifinedPrim(timestamp);
+                m_DPrimCollision = false;
+            }
+            else
+            {
+                // Construction of new prim        
+                Mesh mesh = CreateMeshFromOriginal();
 
-            CreateGeom(m_targetSpace, mesh);
-            d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
+                CreateGeom(m_targetSpace, mesh);
+                d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
+            }
 
             d.Quaternion myrot = new d.Quaternion();
             Quaternion meshRotA = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.5705f);
@@ -3481,6 +3510,59 @@ Console.WriteLine(" JointCreateFixed");
             else
                 return null;
 
+        }
+
+        public void changeToPredifinedPrim(float timestamp)
+        {
+            float radius = 0;
+            float length = 0;
+
+            switch (m_CollisionPrim)
+            {
+                case "cube":
+                    SetGeom(d.CreateBox(m_targetSpace, _size.X, _size.Y, _size.Z));
+                    break;
+                case "box":
+                    SetGeom(d.CreateBox(m_targetSpace, _size.X, _size.Y, _size.Z));
+                    break;
+                case "sphere":
+                    SetGeom(d.CreateSphere(m_targetSpace, _size.X / 2));
+                    break;
+                case "capsule":
+                    // what way is the length of the capsule
+                    DecideCapsuleDimendions(ref radius, ref length);
+                    SetGeom(d.CreateCapsule(m_targetSpace, radius, length));
+                    break;
+                case "cylinder":
+                    // what way is the length of the cylinder
+                    DecideCylinderDimendions(ref radius, ref length);
+                    SetGeom(d.CreateCylinder(m_targetSpace, radius, length));
+                    break;
+                default:
+                    //fail
+                    break;
+            }
+
+            SetGeom(d.CreateCapsule(m_targetSpace, _size.X, _size.Y));
+
+            d.GeomSetPosition(prim_geom, _position.X, _position.Y, _position.Z);
+
+        }
+
+        // return axis for capsule alingment
+        private void DecideCapsuleDimendions(ref float radius, ref float length)
+        {
+            // Allways set objects z-axis as tip and tail:
+            length = _size.Z;
+            radius = (_size.X + _size.Y) / 2;
+        }
+
+        // return axis for cylinder alingment
+        private void DecideCylinderDimendions(ref float radius, ref float length)
+        {
+            // Allways set objects z-axis as tip and tail:
+            length = _size.Z;
+            radius = (_size.X + _size.Y) / 2;
         }
 
         #endregion

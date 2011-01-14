@@ -779,7 +779,7 @@ namespace OgreSceneImporter
                 if (!overlappingMeshes.Keys.Contains(baseUrl + ent.CollisionMeshName))
                 {
                     overlappingCollisionMesh = false;
-                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43);
+                    AssetBase asset = new AssetBase(UUID.Random(), ent.MeshName, 43, UUID.Zero.ToString()); //TODO: change creator id to correct one
                     asset.Description = ent.CollisionMeshName;
                     // read coll mesh data
                     if (useBaseUrl)
