@@ -173,6 +173,16 @@ namespace ModularRex.RexParts
                 naali.AddGenericPacketHandler("ECRemove", HandleEcRemoveGenericMessage);
                 naali.AddGenericPacketHandler("ECSync", DummyGenericMessageHandler);
 
+                if (m_db_initialized)
+                {
+                    //check if avatar has any components and send them to all
+                    foreach (ECData data in m_db.GetComponents(naali.AgentId))
+                    {
+                        SaveLocal(data);
+                        SendECDataToAll(data);
+                    }
+                }
+
                 SendAllData(naali);
             }
         }
