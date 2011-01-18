@@ -107,11 +107,61 @@ namespace ModularRex.RexParts
         public void RegionLoaded(Scene scene)
         {
             scene.EventManager.OnClientConnect += new EventManager.OnClientConnectCoreDelegate(HandleNewClient);
+            if (m_db_initialized)
+            {
+                InitialECDataLoader loader = new InitialECDataLoader(this, scene, m_db);
+                loader.OnComponentsLoaded += new InitialECDataLoader.ComponentsLoadedDelegate(loader_OnComponentsLoaded);
+            }
         }
 
         #endregion
 
+        class InitialECDataLoader
+        {
+            private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+            EntityComponentModule m_ecModule;
+            Scene m_scene;
+            NHibernateECData m_db;
+
+            public delegate void ComponentsLoadedDelegate(List<ECData> components);
+            public event ComponentsLoadedDelegate OnComponentsLoaded;
+
+            public InitialECDataLoader(EntityComponentModule ecModule, Scene scene, NHibernateECData db)
+            {
+                m_ecModule = ecModule;
+                m_scene = scene;
+                m_db = db;
+                //handle first update. this indicates that objects are loaded
+                scene.EventManager.OnParcelPrimCountUpdate += new EventManager.OnParcelPrimCountUpdateDelegate(EventManager_OnParcelPrimCountUpdate);
+            }
+
+            public void EventManager_OnParcelPrimCountUpdate()
+            {
+                List<ECData> all_components = new List<ECData>();
+                m_scene.ForEachSOG(delegate(SceneObjectGroup e)
+                {
+                    IList<ECData> components = m_db.GetComponents(e.UUID);
+                    all_components.AddRange(components);
+                });
+                m_log.InfoFormat("[ECDATA]: Loaded {0} components for region {1}", all_components.Count, m_scene.RegionInfo.RegionName);
+                if (OnComponentsLoaded != null)
+                {
+                    OnComponentsLoaded(all_components);
+                }
+                m_scene.EventManager.OnParcelPrimCountUpdate -= new EventManager.OnParcelPrimCountUpdateDelegate(EventManager_OnParcelPrimCountUpdate);
+            }
+        }
+
         #region Event handlers
+
+        void loader_OnComponentsLoaded(List<ECData> components)
+        {
+            foreach (ECData component in components)
+            {
+                SaveLocal(component);
+            }
+        }
 
         private void HandleNewClient(OpenSim.Framework.Client.IClientCore client)
         {
@@ -255,13 +305,14 @@ namespace ModularRex.RexParts
         {
             if (!m_entity_components.ContainsKey(component.EntityID))
             {
-                m_entity_components[component.EntityID] = new Entity(component.EntityID);
+                m_entity_components.Add(component.EntityID, new Entity(component.EntityID));
             }
             m_entity_components[component.EntityID].Components[new KeyValuePair<string, string>(component.ComponentType, component.ComponentName)] = component;
         }
 
         public void SendAllData(NaaliClientView client)
         {
+            int count = 0;
             foreach (KeyValuePair<UUID, Entity> entity in m_entity_components)
             {
                 if (entity.Value != null)
@@ -269,9 +320,11 @@ namespace ModularRex.RexParts
                     foreach (KeyValuePair<KeyValuePair<string, string>, ECData> data in entity.Value.Components)
                     {
                         client.SendECData(data.Value);
+                        count++;
                     }
                 }
             }
+            m_log.DebugFormat("[ECDATA]: Sent {0} components to user {1}", count, client.Name);
         }
 
         public void SendECDataToAll(ECData component)
